@@ -1,0 +1,62 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+                min-height: 100vh;
+            }
+
+            .sidebar-active {
+                @apply bg-amber-50 border-l-4 border-amber-500 text-amber-700;
+            }
+
+            .stat-card {
+                @apply bg-gradient-to-br from-white to-gray-50 rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow;
+            }
+
+            .btn-primary {
+                @apply bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium py-2 px-4 rounded-lg transition-all;
+            }
+
+            .btn-secondary {
+                @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-all;
+            }
+
+            .table-hover tr:hover {
+                @apply bg-amber-50;
+            }
+
+            .badge-success {
+                @apply bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium;
+            }
+
+            .badge-warning {
+                @apply bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium;
+            }
+
+            .badge-danger {
+                @apply bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium;
+            }
+
+            .nav-link {
+                @apply flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-amber-50 hover:text-amber-700 rounded-lg transition-all duration-200 border-l-4 border-transparent;
+            }
+
+            .nav-link.active {
+                @apply bg-amber-50 text-amber-700 border-l-4 border-amber-500 font-medium;
+            }
+
+            .rotate-180 {
+                transform: rotate(180deg);
+            }
+

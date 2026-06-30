@@ -1,0 +1,34 @@
+created:
+    - database/factories/ProductFactory.php
+    - database/factories/RegionFactory.php
+    - database/factories/SupplierFactory.php
+    - database/factories/SupplierPaymentFactory.php
+    - database/factories/CustomerFactory.php
+    - database/factories/CustomerPaymentFactory.php
+    - database/factories/PurchaseFactory.php
+    - database/factories/SaleFactory.php
+    - database/migrations/2026_06_30_111629_create_products_table.php
+    - database/migrations/2026_06_30_111630_create_regions_table.php
+    - database/migrations/2026_06_30_111631_create_suppliers_table.php
+    - database/migrations/2026_06_30_111632_create_supplier_payments_table.php
+    - database/migrations/2026_06_30_111633_create_customers_table.php
+    - database/migrations/2026_06_30_111634_create_customer_payments_table.php
+    - database/migrations/2026_06_30_111635_create_purchases_table.php
+    - database/migrations/2026_06_30_111636_create_sales_table.php
+    - app/Models/Product.php
+    - app/Models/Region.php
+    - app/Models/Supplier.php
+    - app/Models/SupplierPayment.php
+    - app/Models/Customer.php
+    - app/Models/CustomerPayment.php
+    - app/Models/Purchase.php
+    - app/Models/Sale.php
+models:
+    Product: { name: 'string:255', description: 'longtext nullable', soldCreateWise: 'boolean default:true', is_active: 'boolean default:true', relationships: { hasMany: Purchase } }
+    Region: { name: 'string:255', category: 'enum:purchase,sale', relationships: { hasMany: 'Customer,Supplier' } }
+    Supplier: { name: 'string:255', phone_number: 'string:255 nullable', description: 'longtext nullable', region_id: integer, opening_balance: 'decimal:10,2', relationships: { belongsTo: Region, hasMany: 'SupplierPayment,Purchase' } }
+    SupplierPayment: { supplier_id: integer, amount: 'integer nullable', description: 'longtext nullable', date: date, type: 'enum:bank,cash', relationships: { belongsTo: Supplier, hasMany: SupplierPayment } }
+    Customer: { name: 'string:255', phone_number: 'string:255 nullable', description: 'longtext nullable', region_id: integer, opening_balance: 'decimal:10,2', category: 'enum:hotel,customer', relationships: { belongsTo: Region, hasMany: 'Sale,CustomerPayment' } }
+    CustomerPayment: { customer_id: integer, amount: 'integer nullable', description: 'longtext nullable', type: 'enum:bank,cash', date: date, relationships: { belongsTo: Customer } }
+    Purchase: { product_id: integer, supplier_id: integer, vehicle_no: 'integer nullable', crate_qty: integer, total_weight: integer, weight_cut: 'integer nullable', netweight: integer, rate: 'integer nullable', rate_date: date, total_amount: 'integer nullable', relationships: { belongsTo: 'Product,Supplier' } }
+    Sale: { product_id: integer, customer_id: integer, crate_qty: integer, total_weight: integer, weight_cut: 'integer nullable', netweight: integer, rate: integer, total_amount: 'integer nullable', relationships: { belongsTo: 'Product,Customer' } }
