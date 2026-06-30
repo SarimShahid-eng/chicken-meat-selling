@@ -2,18 +2,56 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ProductStoreRequest;
 use App\Models\Product;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::paginate(10);
+        $products = Product::withSum('purchases as total_purchased_weight', 'netweight')
+            ->withSum('sales as total_sold_weight', 'netweight')
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $searchTerm = '%'.$request->input('search').'%';
 
-        return view('product.index', compact('products'));
+                $q->where(function ($query) use ($searchTerm) {
+                    $query->where('name', 'LIKE', $searchTerm)
+                        ->orWhere('description', 'LIKE', $searchTerm);
+                });
+            })
+            ->paginate(10)
+
+            ->through(function ($product) {
+                $purchased = $product->total_purchased_weight ?? 0;
+                $sold = $product->total_sold_weight ?? 0;
+
+                // Append the stock calculation dynamically
+                $product->current_stock_weight = $purchased - $sold;
+
+                return $product;
+            });
+
+        return view('products.index', compact('products'));
     }
 
-    public function create() {}
+    public function create()
+    {
+        return view('products.create');
+    }
 
-    public function store(ProductStoreRequest $request) {}
+    public function store(ProductStoreRequest $request)
+    {
+        $validated = $request->validated();
+        Product::create($validated);
+        return redirect()
+        ->route('products.index')
+        ->with('toast_success', 'Product has been added successfully!');
+
+        // return redirect()->route('products.index');
+    }
+    public function edit(Product $product)
+    {
+
+    }
 }

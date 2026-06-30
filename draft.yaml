@@ -5,7 +5,7 @@ models:
     soldCreateWise: boolean default:true
     is_active: boolean default:true
     relationships:
-      hasMany: Purchase
+      hasMany: Purchase,Sale
 
   Region:
     name: string:255

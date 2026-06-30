@@ -12,7 +12,9 @@ class ProductStoreRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        // dd($this->all());
+
+        return true;
     }
 
     /**
@@ -23,7 +25,9 @@ class ProductStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => 'required|string',
+            'description' => 'nullable|string',
+            'soldCreateWise' => 'required|in:0,1',
         ];
     }
 }

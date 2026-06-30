@@ -28,6 +28,7 @@
                     @yield('content')
                 </div>
             </main>
+            <x-toast />
 
             <!-- Footer -->
             @include('partials.footer')
@@ -42,11 +43,11 @@
         }
 
         // Highlight active nav link
-        document.querySelectorAll('.nav-link').forEach(link => {
-            if (link.href === window.location.href) {
-                link.classList.add('active');
-            }
-        });
+        // document.querySelectorAll('.nav-link').forEach(link => {
+        //     if (link.href === window.location.href) {
+        //         link.classList.add('active');
+        //     }
+        // });
     </script>
 
     @stack('scripts')

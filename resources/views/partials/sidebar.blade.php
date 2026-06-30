@@ -3,7 +3,8 @@
     <!-- Logo Section -->
     <div class="p-6 border-b border-gray-700">
         <div class="flex items-center gap-3">
-            <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 rounded-lg flex items-center justify-center">
+            <div
+                class="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 rounded-lg flex items-center justify-center">
                 <i class="fas fa-drumstick-bite text-white text-xl"></i>
             </div>
             <div>
@@ -17,34 +18,55 @@
     <nav class="flex-1 overflow-y-auto p-4">
         <div class="space-y-2">
             <!-- Dashboard -->
-            <a href="{{ route('dashboard') ?? '#' }}" class="nav-link">
+            <a href="{{ route('dashboard') ?? '#' }}"
+                class="nav-link      @routeis('dashboard')
+active
+@endrouteis">
                 <i class="fas fa-chart-line w-5 text-center"></i>
                 <span>Dashboard</span>
             </a>
 
             <!-- Sales -->
             <div class="space-y-2">
-                <button onclick="toggleSubmenu('sales-menu')" class="w-full nav-link justify-between">
+                <button onclick="toggleSubmenu('products-menu')"
+                    class="w-full nav-link justify-between
+                @routeis('products.*')
+active
+@else
+hidden
+@endrouteis">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-cash-register w-5 text-center"></i>
-                        <span>Sales</span>
+                        <span>Products</span>
                     </div>
                     <i class="fas fa-chevron-down text-xs"></i>
                 </button>
-                <div id="sales-menu" class="hidden pl-8 space-y-2">
-                    <a href="{{ route('sales.create') ?? '#' }}" class="nav-link text-sm">
+                <div id="products-menu"
+                    class=" pl-8 space-y-2 @routeis('products.*')
+active
+@else
+hidden
+@endrouteis">
+                    <a href="{{ route('products.create') ?? '#' }}"
+                        class="nav-link text-sm  @routeis('products.create')
+active
+@endrouteis">
                         <i class="fas fa-plus w-4 text-center"></i>
-                        <span>New Sale</span>
+                        <span>New Product</span>
                     </a>
-                    <a href="{{ route('sales.index') ?? '#' }}" class="nav-link text-sm">
+                    <a href="{{ route('products.index') ?? '#' }}" class="nav-link text-sm
+                    @routeis('products.index')
+active
+@endrouteis
+                    ">
                         <i class="fas fa-list w-4 text-center"></i>
-                        <span>All Sales</span>
+                        <span>All Products</span>
                     </a>
                 </div>
             </div>
 
             <!-- Inventory -->
-           {{--  <div class="space-y-2">
+            {{--  <div class="space-y-2">
                 <button onclick="toggleSubmenu('inventory-menu')" class="w-full nav-link justify-between">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-boxes w-5 text-center"></i>
@@ -109,7 +131,8 @@
     <div class="p-4 border-t border-gray-700">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <img src="https://ui-avatars.com/api/?name=Admin&background=random" alt="User" class="w-10 h-10 rounded-full">
+                <img src="https://ui-avatars.com/api/?name=Admin&background=random" alt="User"
+                    class="w-10 h-10 rounded-full">
                 <div class="text-sm">
                     <p class="font-medium text-white">{{ auth()->user()->name ?? 'Admin' }}</p>
                     <p class="text-xs text-gray-400">Administrator</p>
