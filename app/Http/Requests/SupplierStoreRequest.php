@@ -4,9 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class ProductStoreRequest extends FormRequest
+class SupplierStoreRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,15 +23,12 @@ class ProductStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'update_id' => 'nullable|exists:products,id',
-            'name' => [
-                'required',
-                'string',
-                // Checks uniqueness in 'products' table, 'name' column, but ignores this product's ID
-                Rule::unique('products', 'name')->ignore($this->update_id),
-            ],
-            'description' => 'nullable|string',
-            'soldCreateWise' => 'required|in:0,1',
+                'update_id' => 'nullable|exists:suppliers,id',
+            'name' => 'required|string|max:255|unique:suppliers,name',
+            'phone_number' => 'required|string|max:50|unique:suppliers,phone_number',
+            'region_id' => 'required|integer|exists:regions,id',
+            'opening_balance' => 'nullable|numeric|min:0',
+            'description' => 'nullable|string|max:1000',
         ];
     }
 }

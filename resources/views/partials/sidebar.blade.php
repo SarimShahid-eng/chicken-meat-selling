@@ -26,7 +26,7 @@ active
                 <span>Dashboard</span>
             </a>
 
-            <!-- Sales -->
+            <!-- Products -->
             <div class="space-y-2">
                 <button onclick="toggleSubmenu('products-menu')"
                     class="w-full nav-link justify-between
@@ -54,13 +54,53 @@ active
                         <i class="fas fa-plus w-4 text-center"></i>
                         <span>New Product</span>
                     </a>
-                    <a href="{{ route('products.index') ?? '#' }}" class="nav-link text-sm
+                    <a href="{{ route('products.index') ?? '#' }}"
+                        class="nav-link text-sm
                     @routeis('products.index')
 active
 @endrouteis
                     ">
                         <i class="fas fa-list w-4 text-center"></i>
                         <span>All Products</span>
+                    </a>
+                </div>
+            </div>
+            <!-- Suppliers -->
+            <div class="space-y-2">
+                <button onclick="toggleSubmenu('suppliers-menu')"
+                    class="w-full nav-link justify-between
+                @routeis('suppliers.*')
+active
+@else
+hidden
+@endrouteis">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-cash-register w-5 text-center"></i>
+                        <span>Suppliers</span>
+                    </div>
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </button>
+                <div id="suppliers-menu"
+                    class=" pl-8 space-y-2 @routeis('suppliers.*')
+active
+@else
+hidden
+@endrouteis">
+                    <a href="{{ route('suppliers.create') ?? '#' }}"
+                        class="nav-link text-sm  @routeis('suppliers.create')
+active
+@endrouteis">
+                        <i class="fas fa-plus w-4 text-center"></i>
+                        <span>New Supplier</span>
+                    </a>
+                    <a href="{{ route('suppliers.index') ?? '#' }}"
+                        class="nav-link text-sm
+                    @routeis('suppliers.index')
+active
+@endrouteis
+                    ">
+                        <i class="fas fa-list w-4 text-center"></i>
+                        <span>All Suppliers</span>
                     </a>
                 </div>
             </div>

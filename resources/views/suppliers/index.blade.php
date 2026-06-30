@@ -1,17 +1,17 @@
-@extends('partials.app', ['title' => 'Products'])
+@extends('partials.app', ['title' => 'Suppliers'])
 
 @section('content')
     <div class="space-y-6">
         <div class="flex items-center justify-between flex-wrap gap-4">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Products</h1>
-                <p class="text-gray-500 mt-1 text-sm">Manage your chicken meat products inventory and stock levels</p>
+                <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Suppliers</h1>
+                <p class="text-gray-500 mt-1 text-sm">Manage your chicken meat suppliers inventory and stock levels</p>
             </div>
             <a
-            href="{{ route('products.create') }}"
+            href="{{ route('suppliers.create') }}"
                 class="btn-primary cursor-pointer inline-flex items-center justify-center bg-amber-600 hover:bg-amber-700 text-white font-medium px-4 py-2.5 rounded-lg shadow-sm transition-colors text-sm">
                 <i class="fas fa-plus mr-2 text-xs"></i>
-                Add New Product
+                Add New Supplier
             </a>
         </div>
 
@@ -21,9 +21,9 @@
                     Search Inventory
                 </label>
                 <div class="flex items-center gap-2">
-                    <form action="{{ route('products.index') }}" method="GET" class="flex items-center gap-2 w-full">
+                    <form action="{{ route('suppliers.index') }}" method="GET" class="flex items-center gap-2 w-full">
                         <div class="relative flex-1">
-                            <input type="text" placeholder="Search products..." name="search"
+                            <input type="text" placeholder="Search suppliers..." name="search"
                                 class="w-full pl-3 pr-10 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors">
                             <div
                                 class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
@@ -35,7 +35,7 @@
                             Search
                         </button>
                         <a
-                        href="{{ route('products.index') }}"
+                        href="{{ route('suppliers.index') }}"
 
                             class="btn-sm cursor-pointer bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
                             Reset
@@ -50,63 +50,42 @@
                 <table class="w-full border-collapse text-left text-sm text-gray-500">
                     <thead class="bg-gray-50/70 border-b border-gray-100">
                         <tr>
-                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Product</th>
+                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Name</th>
+                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Phone number</th>
                             <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Description</th>
-                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Total Purchases</th>
-                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Total Sold</th>
-                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Current Stock</th>
+                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Region</th>
                             <th scope="col" class="px-6 py-4 font-semibold text-gray-700 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 border-t border-gray-100">
-                        @forelse ($products as $product)
+                        @forelse ($suppliers as $supplier)
                             <tr class="hover:bg-gray-50/50 transition-colors">
                                 <td class="px-6 py-4 font-medium text-gray-900">
-                                    {{ $product->name }}
+                                    {{ $supplier->name }}
                                 </td>
 
                                 <td class="px-6 py-4 text-gray-500">
-                                    <div class="max-w-xs truncate" title="{{ $product->description }}">
-                                        {{ $product->description ?? 'No description available.' }}
+                                    <div class="max-w-xs truncate" title="{{ $supplier->phone_number }}">
+                                        {{ $supplier->phone_number ?? 'No phone.no available.' }}
                                     </div>
                                 </td>
-
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md text-xs">
-                                        {{ number_format($product->total_purchased_weight ?? 0, 2) }} KG
-                                    </span>
+                                <td class="px-6 py-4 text-gray-500">
+                                    <div class="max-w-xs truncate" title="{{ $supplier->description }}">
+                                        {{ $supplier->description ?? 'No description available.' }}
+                                    </div>
                                 </td>
-
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="font-semibold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md text-xs">
-                                        {{ number_format($product->total_sold_weight ?? 0, 2) }} KG
-                                    </span>
-                                </td>
-
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if (($product->current_stock_weight ?? 0) < 10)
-                                        <span
-                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700">
-                                            <span class="h-1.5 w-1.5 rounded-full bg-red-600 animate-pulse"></span>
-                                            {{ number_format($product->current_stock_weight, 2) }} kg (Low)
-                                        </span>
-                                    @else
-                                        <span
-                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
-                                            <span class="h-1.5 w-1.5 rounded-full bg-green-600"></span>
-                                            {{ number_format($product->current_stock_weight, 2) }} kg
-                                        </span>
-                                    @endif
+                                 <td class="px-6 py-4 font-medium text-gray-900">
+                                    {{ $supplier->region->name }}
                                 </td>
 
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="inline-flex items-center gap-3">
-                                    <a  href="{{ route('products.edit',['product'=>$product->id]) }}" class="cursor-pointer text-gray-400 hover:text-blue-600 transition-colors"
-                                            title="Edit Product">
+                                    <a  href="{{ route('suppliers.edit',['supplier'=>$supplier->id]) }}" class="cursor-pointer text-gray-400 hover:text-blue-600 transition-colors"
+                                            title="Edit Supplier">
                                             <i class="fas fa-edit text-base"></i>
                                         </a>
                                         {{-- <button class="text-gray-400 hover:text-red-600 transition-colors"
-                                            title="Delete Product">
+                                            title="Delete Supplier">
                                             <i class="fas fa-trash text-base"></i>
                                         </button> --}}
                                     </div>
@@ -118,7 +97,7 @@
                                     <div class="text-gray-400 mb-2">
                                         <i class="fas fa-box-open text-4xl"></i>
                                     </div>
-                                    <p class="text-gray-500 font-medium">No products found</p>
+                                    <p class="text-gray-500 font-medium">No suppliers found</p>
                                     <p class="text-gray-400 text-xs mt-1">Try refining your search terms or add a new item.
                                     </p>
                                 </td>
@@ -130,7 +109,7 @@
         </div>
 
         <div class="mt-4">
-            {{ $products->links() }}
+            {{ $suppliers->links() }}
         </div>
     </div>
 @endsection

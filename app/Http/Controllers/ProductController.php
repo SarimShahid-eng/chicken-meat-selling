@@ -43,15 +43,21 @@ class ProductController extends Controller
     public function store(ProductStoreRequest $request)
     {
         $validated = $request->validated();
-        Product::create($validated);
-        return redirect()
-        ->route('products.index')
-        ->with('toast_success', 'Product has been added successfully!');
 
-        // return redirect()->route('products.index');
+        $product = Product::updateOrCreate(
+            ['id' => $validated['update_id']],
+            $validated);
+        $message = filled($validated['update_id']) ? 'updated' : 'created';
+
+        return redirect()
+            ->route('products.index')
+            ->with('toast_success', 'Product has been '.$message.' successfully!');
+
     }
+
     public function edit(Product $product)
     {
-
+        //    dd($product->soldCreateWise, $product->is_active);
+        return view('products.create', compact('product'));
     }
 }
