@@ -18,6 +18,7 @@ return new class extends Migration
             $table->longText('description')->nullable();
             $table->foreignId('region_id');
             $table->decimal('opening_balance', 10, 2);
+            $table->date('date');
             $table->timestamps();
         });
     }

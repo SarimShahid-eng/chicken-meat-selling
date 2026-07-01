@@ -69,38 +69,95 @@ active
             <div class="space-y-2">
                 <button onclick="toggleSubmenu('suppliers-menu')"
                     class="w-full nav-link justify-between
-                @routeis('suppliers.*')
-active
-@else
-hidden
-@endrouteis">
+                    @routeis('suppliers.*')
+                            active
+                            @else
+                            hidden
+                            @endrouteis">
                     <div class="flex items-center gap-3">
-                        <i class="fas fa-cash-register w-5 text-center"></i>
+                        <i class="fas fa-users w-5 text-center"></i>
                         <span>Suppliers</span>
                     </div>
                     <i class="fas fa-chevron-down text-xs"></i>
                 </button>
                 <div id="suppliers-menu"
-                    class=" pl-8 space-y-2 @routeis('suppliers.*')
-active
-@else
-hidden
-@endrouteis">
+                    class=" pl-8 space-y-2 @routeis(['suppliers.*','suppliersPayment.*'])
+                                active
+                                @else
+                                hidden
+                                @endrouteis">
                     <a href="{{ route('suppliers.create') ?? '#' }}"
                         class="nav-link text-sm  @routeis('suppliers.create')
-active
-@endrouteis">
+                                                    active
+                                                    @endrouteis">
                         <i class="fas fa-plus w-4 text-center"></i>
                         <span>New Supplier</span>
                     </a>
                     <a href="{{ route('suppliers.index') ?? '#' }}"
                         class="nav-link text-sm
-                    @routeis('suppliers.index')
-active
-@endrouteis
-                    ">
+                                @routeis('suppliers.index')
+                                    active
+                                    @endrouteis
+                                ">
                         <i class="fas fa-list w-4 text-center"></i>
                         <span>All Suppliers</span>
+                    </a>
+                    <a href="{{ route('suppliersPayment.index') ?? '#' }}"
+                        class="nav-link text-sm
+                                @routeis('suppliersPayment.*')
+                                    active
+                                    @endrouteis
+                                ">
+                        <i class="fas fa-receipt w-4 text-center"></i>
+                        <span>Payment</span>
+                    </a>
+                </div>
+            </div>
+            <!-- Customers -->
+            <div class="space-y-2">
+                <button onclick="toggleSubmenu('customers-menu')"
+                    class="w-full nav-link justify-between
+                    @routeis('customers.*')
+                            active
+                            @else
+                            hidden
+                            @endrouteis">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-user w-5 text-center"></i>
+                        <span>Customers</span>
+                    </div>
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </button>
+                <div id="customers-menu"
+                    class=" pl-8 space-y-2 @routeis(['customers.*','customersPayment.*'])
+                                active
+                                @else
+                                hidden
+                                @endrouteis">
+                    <a href="{{ route('customers.create') ?? '#' }}"
+                        class="nav-link text-sm  @routeis('customers.create')
+                                                    active
+                                                    @endrouteis">
+                        <i class="fas fa-plus w-4 text-center"></i>
+                        <span>New Customer</span>
+                    </a>
+                    <a href="{{ route('customers.index') ?? '#' }}"
+                        class="nav-link text-sm
+                                @routeis('customers.index')
+                                    active
+                                    @endrouteis
+                                ">
+                        <i class="fas fa-list w-4 text-center"></i>
+                        <span>All Customers</span>
+                    </a>
+                     <a href="{{ route('customersPayment.index') ?? '#' }}"
+                        class="nav-link text-sm
+                                @routeis('customersPayment.*')
+                                    active
+                                    @endrouteis
+                                ">
+                        <i class="fas fa-receipt w-4 text-center"></i>
+                        <span>Payment</span>
                     </a>
                 </div>
             </div>

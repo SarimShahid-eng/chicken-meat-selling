@@ -18,6 +18,7 @@ class SupplierFactory extends Factory
             'description' => fake()->text(),
             'region_id' => Region::factory(),
             'opening_balance' => fake()->randomFloat(2, 0, 99999999.99),
+            'date'=>now()
         ];
     }
 }

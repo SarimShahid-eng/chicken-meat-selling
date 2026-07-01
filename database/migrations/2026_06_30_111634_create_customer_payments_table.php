@@ -16,7 +16,8 @@ return new class extends Migration
             $table->foreignId('customer_id');
             $table->integer('amount')->nullable();
             $table->longText('description')->nullable();
-            $table->enum('type', ["bank","cash"]);
+            $table->enum('type', ['bank', 'cash']);
+            $table->enum('payment_type', ['credit', 'debit'])->default('credit');
             $table->date('date');
             $table->timestamps();
         });

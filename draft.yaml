@@ -19,6 +19,7 @@ models:
     description : longtext nullable
     region_id: integer
     opening_balance: decimal:10,2
+    date: date
     relationships:
       belongsTo: Region
       hasMany: SupplierPayment,Purchase
@@ -28,6 +29,7 @@ models:
     amount: integer nullable
     description : longtext nullable
     date: date
+    payment_type: enum:credit,debit default:credit
     type: enum:bank,cash
     relationships:
       belongsTo: Supplier
@@ -40,6 +42,7 @@ models:
     region_id: integer
     opening_balance: decimal:10,2
     category: enum:hotel,customer
+    date: date
     relationships:
       belongsTo: Region
       hasMany: Sale,CustomerPayment

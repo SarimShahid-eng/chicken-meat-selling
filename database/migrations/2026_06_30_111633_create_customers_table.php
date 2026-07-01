@@ -18,7 +18,9 @@ return new class extends Migration
             $table->longText('description')->nullable();
             $table->foreignId('region_id');
             $table->decimal('opening_balance', 10, 2);
-            $table->enum('category', ["hotel","customer"]);
+            $table->enum('category', ['hotel', 'customer']);
+            $table->enum('payment_type', ['credit', 'debit'])->default('credit');
+            $table->date('date');
             $table->timestamps();
         });
     }

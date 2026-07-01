@@ -23,6 +23,7 @@ class Customer extends Model
         'region_id',
         'opening_balance',
         'category',
+        'date'
     ];
 
     /**

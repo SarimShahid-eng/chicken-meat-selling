@@ -50,6 +50,7 @@ class CustomerController extends Controller
 
     public function edit(Customer $customer)
     {
+        // dd($customer);
         $regions = Region::where('category', 'purchase')->get();
 
         return view('customers.create', compact('customer', 'regions'));

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CustomerStoreRequest extends FormRequest
 {
@@ -12,7 +13,7 @@ class CustomerStoreRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,10 +23,24 @@ class CustomerStoreRequest extends FormRequest
      */
     public function rules(): array
     {
+        $updateId = $this->update_id;
+
         return [
             'update_id' => 'nullable|exists:customers,id',
-            'name' => 'required|string|max:255|unique:customers,name',
-            'phone_number' => 'required|string|max:50|unique:customers,phone_number',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('customers', 'name')->ignore($updateId),
+            ],
+            'phone_number' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('customers', 'phone_number')->ignore($updateId),
+            ],
+            'date' => 'required|date|before_or_equal:today',
+            'category' => 'required|in:hotel,customer',
             'region_id' => 'required|integer|exists:regions,id',
             'opening_balance' => 'nullable|numeric|min:0',
             'description' => 'nullable|string|max:1000',

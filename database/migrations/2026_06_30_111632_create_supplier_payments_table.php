@@ -17,6 +17,7 @@ return new class extends Migration
             $table->integer('amount')->nullable();
             $table->longText('description')->nullable();
             $table->date('date');
+            $table->enum('payment_type', ["credit","debit"])->default('credit');
             $table->enum('type', ["bank","cash"]);
             $table->timestamps();
         });

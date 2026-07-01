@@ -22,6 +22,7 @@ class Supplier extends Model
         'description',
         'region_id',
         'opening_balance',
+        'date'
     ];
 
     /**

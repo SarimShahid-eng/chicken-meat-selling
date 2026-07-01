@@ -1,9 +1,12 @@
 <?php
 
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CustomerPaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\SupplierPaymentController;
 use Illuminate\Support\Facades\Route;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -29,6 +32,15 @@ Route::controller(SupplierController::class)->name('suppliers.')
         Route::post('store', 'store')->name('store');
         Route::get('edit/{supplier}', 'edit')->name('edit');
     });
+// Supplier Payment
+Route::controller(SupplierPaymentController::class)->name('suppliersPayment.')
+    ->prefix('suppliersPayment')
+    ->group(function () {
+        Route::get('index', 'index')->name('index');
+        Route::get('create', 'create')->name('create');
+        Route::post('store', 'store')->name('store');
+        Route::get('edit/{payment}', 'edit')->name('edit');
+    });
 
 // Customer
 Route::controller(CustomerController::class)->name('customers.')
@@ -38,4 +50,14 @@ Route::controller(CustomerController::class)->name('customers.')
         Route::get('create', 'create')->name('create');
         Route::post('store', 'store')->name('store');
         Route::get('edit/{customer}', 'edit')->name('edit');
+    });
+
+// Customer Payment
+Route::controller(CustomerPaymentController::class)->name('customersPayment.')
+    ->prefix('customersPayment')
+    ->group(function () {
+        Route::get('index', 'index')->name('index');
+        Route::get('create', 'create')->name('create');
+        Route::post('store', 'store')->name('store');
+        Route::get('edit/{payment}', 'edit')->name('edit');
     });

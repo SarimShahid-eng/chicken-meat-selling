@@ -18,7 +18,8 @@ class CustomerFactory extends Factory
             'description' => fake()->text(),
             'region_id' => Region::factory(),
             'opening_balance' => fake()->randomFloat(2, 0, 99999999.99),
-            'category' => fake()->randomElement(["hotel","customer"]),
+            'category' => fake()->randomElement(['hotel', 'customer']),
+            'date' => now(),
         ];
     }
 }
