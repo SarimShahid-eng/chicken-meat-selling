@@ -41,7 +41,7 @@ class Supplier extends Model
 
     public function region(): BelongsTo
     {
-        return $this->belongsTo(Region::class);
+        return $this->belongsTo(Region::class)->where('category','purchase');
     }
 
     public function supplierPayments(): HasMany

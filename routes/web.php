@@ -3,10 +3,10 @@
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerPaymentController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\SupplierPaymentController;
 use Illuminate\Support\Facades\Route;
-
 
 Route::get('/', function () {
     return view('welcome');
@@ -60,4 +60,13 @@ Route::controller(CustomerPaymentController::class)->name('customersPayment.')
         Route::get('create', 'create')->name('create');
         Route::post('store', 'store')->name('store');
         Route::get('edit/{payment}', 'edit')->name('edit');
+    });
+// Purchase
+Route::controller(PurchaseController::class)->name('purchases.')
+    ->prefix('purchases')
+    ->group(function () {
+        Route::get('index', 'index')->name('index');
+        Route::get('create', 'create')->name('create');
+        Route::post('store', 'store')->name('store');
+        Route::get('edit/{purchase}', 'edit')->name('edit');
     });

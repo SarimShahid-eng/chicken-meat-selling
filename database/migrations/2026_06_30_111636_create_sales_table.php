@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('product_id');
             $table->foreignId('customer_id');
+            $table->integer('voucher_no')->unique();
             $table->integer('crate_qty');
             $table->integer('total_weight');
             $table->integer('weight_cut')->nullable();
