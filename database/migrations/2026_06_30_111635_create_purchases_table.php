@@ -16,14 +16,14 @@ return new class extends Migration
             $table->foreignId('product_id');
             $table->foreignId('supplier_id');
             $table->integer('voucher_no')->unique();
-            $table->integer('vehicle_no')->nullable();
-            $table->integer('crate_qty');
-            $table->integer('total_weight');
-            $table->integer('weight_cut')->nullable();
-            $table->integer('netweight');
-            $table->integer('rate')->nullable();
-            $table->date('rate_date');
-            $table->integer('total_amount')->nullable();
+            $table->string('vehicle_no')->nullable();
+            $table->decimal('crate_qty',10,2);
+            $table->decimal('total_weight',10,2);
+            $table->decimal('weight_cut', 10, 2)->nullable();
+            $table->decimal('netweight', 10, 2);
+            $table->decimal('rate', 10, 2)->nullable();
+            $table->date('rate_date')->nullable();
+            $table->decimal('total_amount',10,2)->nullable();
             $table->timestamps();
         });
     }

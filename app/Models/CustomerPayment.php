@@ -16,11 +16,13 @@ class CustomerPayment extends Model
      * @var array
      */
     protected $fillable = [
+        'sale_id',
         'customer_id',
         'amount',
         'description',
         'type',
         'date',
+        'payment_type'
     ];
 
     /**
@@ -40,5 +42,9 @@ class CustomerPayment extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+    public function sale(): BelongsTo
+    {
+        return $this->belongsTo(Sale::class);
     }
 }

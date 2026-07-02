@@ -12,6 +12,9 @@ class SupplierPaymentController extends Controller
     public function index(Request $request)
     {
         $suppliersPayments = SupplierPayment::query()
+            ->with(['purchase' => function ($q) {
+                $q->whereNotNull('rate');
+            }])
             ->when($request->filled('search'), function ($q) use ($request) {
                 $searchTerm = '%'.$request->input('search').'%';
 

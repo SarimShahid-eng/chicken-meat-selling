@@ -17,11 +17,13 @@ class SupplierPayment extends Model
      * @var array
      */
     protected $fillable = [
+        'purchase_id',
         'supplier_id',
         'amount',
         'description',
         'date',
         'type',
+        'payment_type'
     ];
 
     /**
@@ -46,5 +48,9 @@ class SupplierPayment extends Model
     public function supplierPayments(): HasMany
     {
         return $this->hasMany(SupplierPayment::class);
+    }
+    public function purchase(): BelongsTo
+    {
+        return $this->belongsTo(Purchase::class);
     }
 }

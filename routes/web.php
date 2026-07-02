@@ -69,4 +69,6 @@ Route::controller(PurchaseController::class)->name('purchases.')
         Route::get('create', 'create')->name('create');
         Route::post('store', 'store')->name('store');
         Route::get('edit/{purchase}', 'edit')->name('edit');
+        Route::get('show/{purchase}', 'show')->name('show');
+        Route::post('update-rate/{purchase}', 'update_rate')->name('update_rate');
     });

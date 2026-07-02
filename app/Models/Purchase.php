@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Purchase extends Model
 {
@@ -16,6 +17,7 @@ class Purchase extends Model
      * @var array
      */
     protected $fillable = [
+        'voucher_no',
         'product_id',
         'supplier_id',
         'vehicle_no',
@@ -51,5 +53,9 @@ class Purchase extends Model
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
+    }
+    public function supplierPayment(): HasOne
+    {
+        return $this->hasOne(SupplierPayment::class);
     }
 }

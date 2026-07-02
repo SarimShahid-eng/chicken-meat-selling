@@ -12,9 +12,9 @@ class PurchaseStoreRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        dd($this->all());
+        // dd($this->all());
 
-        return false;
+        return true;
     }
 
     /**
@@ -25,6 +25,7 @@ class PurchaseStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'update_id'=>'nullable|exists:purchases,id',
             'voucher_no' => 'required|string|max:50',
             'product_id' => 'required|integer|exists:products,id',
             'supplier_id' => 'required|integer|exists:suppliers,id',
