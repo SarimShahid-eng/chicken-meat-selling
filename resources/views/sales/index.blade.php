@@ -1,321 +1,328 @@
-@extends('partials.app', ['title' => 'Products'])
+@extends('partials.app', ['title' => 'Purchases'])
 
 @section('content')
     <div class="space-y-6">
-        <!-- Header with Actions -->
         <div class="flex items-center justify-between flex-wrap gap-4">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800">Products</h1>
-                <p class="text-gray-600 mt-1">Manage your chicken meat products inventory</p>
+                <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Purchases</h1>
+                <p class="text-gray-500 mt-1 text-sm">Manage your chicken meat purchases inventory and stock levels</p>
             </div>
-            <button class="btn-primary">
-                <i class="fas fa-plus mr-2"></i>
-                Add New Product
-            </button>
+            <a href="{{ route('purchases.create') }}"
+                class="btn-primary cursor-pointer inline-flex items-center justify-center bg-amber-600 hover:bg-amber-700 text-white font-medium px-4 py-2.5 rounded-lg shadow-sm transition-colors text-sm">
+                <i class="fas fa-plus mr-2 text-xs"></i>
+                Add New Purchase
+            </a>
         </div>
 
-        <!-- Filters and Search -->
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
-                    <input type="text" placeholder="Search products..."
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-amber-500">
-                        <option>All Categories</option>
-                        <option>Breast</option>
-                        <option>Legs</option>
-                        <option>Wings</option>
-                        <option>Whole</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-amber-500">
-                        <option>All Status</option>
-                        <option>Active</option>
-                        <option>Inactive</option>
-                    </select>
-                </div>
-                <div class="flex items-end">
-                    <button class="btn-primary w-full">
-                        <i class="fas fa-filter mr-2"></i>
-                        Apply Filter
-                    </button>
+        <div class="flex justify-start">
+            <div class="w-full max-w-[1200px] bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+
+                <div class="flex items-center gap-2">
+                    <form action="{{ route('purchases.index') }}" method="GET" class="flex items-center gap-2 w-full">
+                        <div class="relative flex-1">
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                                Search Inventory
+                            </label>
+                            <input type="text" placeholder="Search purchases..." name="search"
+                                class="w-full pl-3 pr-10 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors">
+                            <div
+                                class="absolute inset-y-0 right-0 top-5 flex items-center pr-3 pointer-events-none text-gray-400">
+                                <i class="fas fa-search text-xs"></i>
+                            </div>
+                        </div>
+                        <div class="relative flex-1">
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                                From
+                            </label>
+                            <input type="date" placeholder="Search purchases..." name="search"
+                                class="w-full pl-3 pr-10 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors">
+                        </div>
+                        <div class="relative flex-1">
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                                To
+                            </label>
+                            <input type="date" placeholder="Search purchases..." name="search"
+                                class="w-full pl-3 pr-10 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors">
+
+                        </div>
+
+                        <div class="relative flex-1">
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                                Supplier
+                            </label>
+                            <select name="supplier_id" class="main" id="supplier">
+                                <option value="">Select Supplier</option>
+                                @foreach ($suppliers as $supplier)
+                                    <option @selected(request('supplier_id') == $supplier->id) value="{{ $supplier->id }}">
+                                        {{ $supplier->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="relative flex-1">
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                                Product
+                            </label>
+                            <select name="product_id" class="main" id="product">
+                                <option value="">Select Product</option>
+
+                                @foreach ($products as $product)
+                                    <option value="{{ $product->id }}" @selected(request('product') == $product->id)>
+                                        {{ $product->name }}</option>
+                                @endforeach
+                            </select>
+
+                        </div>
+                        <button
+                            class="mt-5 btn-xs btn-primary bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
+                            <i class="fa fa-search text-xs"></i>
+                        </button>
+                        <a href="{{ route('purchases.index') }}"
+                            class="mt-5 btn-sm cursor-pointer bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
+                            <i class="text-xs fa-solid fa-arrow-rotate-left"></i>
+                        </a>
+
+                    </form>
                 </div>
             </div>
         </div>
 
-        <!-- Products Table -->
-        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full table-hover">
-                    <thead>
-                        <tr class="bg-gray-50 border-b border-gray-200">
-                            <th class="px-6 py-4 text-left font-semibold text-gray-700">Product</th>
-                            <th class="px-6 py-4 text-left font-semibold text-gray-700">Category</th>
-                            <th class="px-6 py-4 text-left font-semibold text-gray-700">Price</th>
-                            <th class="px-6 py-4 text-left font-semibold text-gray-700">Stock</th>
-                            <th class="px-6 py-4 text-left font-semibold text-gray-700">Status</th>
-                            <th class="px-6 py-4 text-left font-semibold text-gray-700">Actions</th>
+                <table class="w-full border-collapse text-left text-sm text-gray-500">
+                    <thead class="bg-gray-50/70 border-b border-gray-100">
+                        <tr>
+                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Voucher</th>
+                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Supplier</th>
+                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Product</th>
+                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Crate</th>
+                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Net.Weight</th>
+                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Rate</th>
+                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Total</th>
+                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <!-- Product Row 1 -->
-                        <tr class="border-b border-gray-200">
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                                        <i class="fas fa-drumstick-bite text-green-600"></i>
+                    <tbody class="divide-y divide-gray-100 border-t border-gray-100">
+                        @forelse ($purchases as $purchase)
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="px-6 py-4 font-medium text-gray-900">
+                                    {{ $purchase->voucher_no }}
+                                </td>
+                                <td class="px-6 py-4 font-medium text-gray-900">
+                                    <span class="text-xs">
+                                        {{ $purchase->supplier->name }} /
+                                        {{ $purchase->supplier->region->name }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 font-medium text-gray-900">
+                                    <span class="text-xs">
+                                        {{ $purchase->product->name }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-gray-500">
+                                    <div class="max-w-xs truncate" title="{{ $purchase->crate_qty }}">
+                                        {{ $purchase->crate_qty }}
                                     </div>
-                                    <div>
-                                        <p class="font-medium text-gray-800">Chicken Breast</p>
-                                        <p class="text-sm text-gray-500">Premium grade</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 text-gray-600">Breast</td>
-                            <td class="px-6 py-4">
-                                <span class="font-bold text-amber-600">₨450/KG</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div>
-                                    <p class="font-medium text-gray-800">245</p>
-                                    <p class="text-xs text-gray-500">Available</p>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="badge-success">Active</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-2">
-                                    <button class="text-blue-600 hover:text-blue-800 transition" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="text-red-600 hover:text-red-800 transition" title="Delete">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
 
-                        <!-- Product Row 2 -->
-                        <tr class="border-b border-gray-200">
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                        <i class="fas fa-drumstick-bite text-blue-600 transform -rotate-45"></i>
+                                <td class="px-6 py-4 text-gray-500">
+                                    <div class="max-w-xs truncate" title="{{ $purchase->crate_qty }}">
+                                        {{ $purchase->netweight }}
                                     </div>
-                                    <div>
-                                        <p class="font-medium text-gray-800">Chicken Legs</p>
-                                        <p class="text-sm text-gray-500">With thighs</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 text-gray-600">Legs</td>
-                            <td class="px-6 py-4">
-                                <span class="font-bold text-amber-600">₨380/KG</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div>
-                                    <p class="font-medium text-gray-800">189</p>
-                                    <p class="text-xs text-gray-500">Available</p>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="badge-success">Active</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-2">
-                                    <button class="text-blue-600 hover:text-blue-800 transition" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="text-red-600 hover:text-red-800 transition" title="Delete">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                                <td class="px-6 py-4 text-gray-500">
+                                    <div class="max-w-xs truncate" title="{{ $purchase->crate_qty }}">
+                                        <span @class([
+                                            'text-red-400' => is_null($purchase->rate),
+                                            'font-bold' => is_null($purchase->rate),
+                                        ])>
+                                            {{ $purchase->rate ? $purchase->rate : 'Not final yet' }}
 
-                        <!-- Product Row 3 -->
-                        <tr class="border-b border-gray-200">
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                                        <i class="fas fa-feather text-amber-600"></i>
+                                        </span>
                                     </div>
-                                    <div>
-                                        <p class="font-medium text-gray-800">Chicken Wings</p>
-                                        <p class="text-sm text-gray-500">Fresh cut</p>
+                                </td>
+                                <td class="px-6 py-4 text-gray-500">
+                                    <div class="max-w-xs truncate" title="{{ $purchase->total_amount }}">
+                                        {{ $purchase->total_amount }}
                                     </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 text-gray-600">Wings</td>
-                            <td class="px-6 py-4">
-                                <span class="font-bold text-amber-600">₨320/KG</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div>
-                                    <p class="font-medium text-gray-800">45</p>
-                                    <p class="text-xs text-yellow-600">Low stock</p>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="badge-warning">Active</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-2">
-                                    <button class="text-blue-600 hover:text-blue-800 transition" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="text-red-600 hover:text-red-800 transition" title="Delete">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
 
-                        <!-- Product Row 4 -->
-                        <tr class="border-b border-gray-200">
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                                        <i class="fas fa-egg text-red-600"></i>
-                                    </div>
-                                    <div>
-                                        <p class="font-medium text-gray-800">Whole Chicken</p>
-                                        <p class="text-sm text-gray-500">Dressed & cleaned</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 text-gray-600">Whole</td>
-                            <td class="px-6 py-4">
-                                <span class="font-bold text-amber-600">₨550/KG</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div>
-                                    <p class="font-medium text-gray-800">78</p>
-                                    <p class="text-xs text-gray-500">Available</p>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="badge-success">Active</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-2">
-                                    <button class="text-blue-600 hover:text-blue-800 transition" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="text-red-600 hover:text-red-800 transition" title="Delete">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
 
-                        <!-- Product Row 5 -->
-                        <tr>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
-                                        <i class="fas fa-bone text-pink-600"></i>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <div class="inline-flex items-center gap-3">
+                                        <button type="button"
+                                            class="cursor-pointer text-gray-400 hover:text-amber-600 transition-colors js-view-purchase"
+                                            title="View Details"
+                                            data-url="{{ route('purchases.show', ['purchase' => $purchase->id]) }}">
+                                            <i class="fas fa-eye text-base"></i>
+                                        </button>
+                                        <a href="{{ route('purchases.edit', ['purchase' => $purchase->id]) }}"
+                                            class="cursor-pointer text-gray-400 hover:text-blue-600 transition-colors"
+                                            title="Edit Purchase">
+                                            <i class="fas fa-edit text-base"></i>
+                                        </a>
+                                        @if (is_null($purchase->rate))
+                                            <button type="button"
+                                                class="cursor-pointer text-gray-400 hover:text-amber-600 transition-colors js-rate-confirm"
+                                                title="Set Rate"
+                                                data-update-url="{{ route('purchases.update_rate', ['purchase' => $purchase->id]) }}">
+                                                <i class="fas fa-receipt text-base"></i>
+                                            </button>
+                                        @endif
                                     </div>
-                                    <div>
-                                        <p class="font-medium text-gray-800">Chicken Bones</p>
-                                        <p class="text-sm text-gray-500">For broth</p>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="px-6 py-12 text-center">
+                                    <div class="text-gray-400 mb-2">
+                                        <i class="fas fa-box-open text-4xl"></i>
                                     </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 text-gray-600">Bones</td>
-                            <td class="px-6 py-4">
-                                <span class="font-bold text-amber-600">₨120/KG</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div>
-                                    <p class="font-medium text-gray-800">0</p>
-                                    <p class="text-xs text-red-600">Out of stock</p>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="badge-danger">Inactive</span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-2">
-                                    <button class="text-blue-600 hover:text-blue-800 transition" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="text-red-600 hover:text-red-800 transition" title="Delete">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                                    <p class="text-gray-500 font-medium">No purchases found</p>
+                                    <p class="text-gray-400 text-xs mt-1">Try refining your search terms or add a new item.
+                                    </p>
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
-
-            <!-- Pagination -->
-            <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                <p class="text-sm text-gray-600">Showing 1 to 5 of 12 products</p>
-                <div class="flex gap-2">
-                    <button class="btn-secondary">Previous</button>
-                    <button class="btn-primary">Next</button>
-                </div>
-            </div>
         </div>
 
-        <!-- Quick Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="stat-card">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-gray-500 text-sm font-medium">Total Products</p>
-                        <h3 class="text-3xl font-bold text-gray-800 mt-2">12</h3>
-                        <p class="text-blue-600 text-sm mt-2">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            <span>1 inactive</span>
-                        </p>
-                    </div>
-                    <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-boxes text-white text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-gray-500 text-sm font-medium">Low Stock Items</p>
-                        <h3 class="text-3xl font-bold text-gray-800 mt-2">3</h3>
-                        <p class="text-yellow-600 text-sm mt-2">
-                            <i class="fas fa-arrow-up mr-1"></i>
-                            <span>Need reorder</span>
-                        </p>
-                    </div>
-                    <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-exclamation-triangle text-white text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-gray-500 text-sm font-medium">Average Price</p>
-                        <h3 class="text-3xl font-bold text-gray-800 mt-2">₨384</h3>
-                        <p class="text-green-600 text-sm mt-2">
-                            <i class="fas fa-dollar-sign mr-1"></i>
-                            <span>Per KG</span>
-                        </p>
-                    </div>
-                    <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-chart-line text-white text-xl"></i>
-                    </div>
-                </div>
-            </div>
+        <div class="mt-4">
+            {{ $purchases->links() }}
         </div>
     </div>
+
+    @include('purchases.modal')
+    @push('scripts')
+        @push('scripts')
+            <script>
+                $(document).ready(function() {
+                    $('.main').select2();
+                });
+
+                (function() {
+                    // Details Modal Elements
+                    const viewModal = document.getElementById('purchaseDetailsModal');
+                    const loadingEl = document.getElementById('modalLoading');
+                    const errorEl = document.getElementById('modalError');
+                    const contentEl = document.getElementById('modalContent');
+
+                    // Rate Modal Elements
+                    const rateModal = document.getElementById('rateConfirmModal');
+                    const rateForm = document.getElementById('rateConfirmForm');
+                    const rateInput = document.getElementById('modalInputRate');
+
+                    // --- Details Modal Management ---
+                    function setViewState(state) {
+                        loadingEl.classList.toggle('hidden', state !== 'loading');
+                        errorEl.classList.toggle('hidden', state !== 'error');
+                        contentEl.classList.toggle('hidden', state !== 'content');
+                    }
+
+                    function populateView(data) {
+                        document.getElementById('modalVoucherNo').textContent = data.voucher_no ?? '—';
+                        document.getElementById('modalProduct').textContent = data.product?.name ?? '—';
+                        document.getElementById('modalSupplier').textContent = data.supplier?.name ?? '—';
+                        document.getElementById('modalRegion').textContent = data.supplier?.region?.name ?? '—';
+                        document.getElementById('modalVehicleNo').textContent = data.vehicle_no ?? '—';
+                        document.getElementById('modalCrateQty').textContent = data.crate_qty ?? '—';
+                        document.getElementById('modalTotalWeight').textContent = data.total_weight ?? '—';
+                        document.getElementById('modalWeightCut').textContent = data.weight_cut ?? '—';
+                        document.getElementById('modalNetWeight').textContent = data.netweight ?? '—';
+                        document.getElementById('modalRate').textContent = data.rate ?? 'Not set';
+                        document.getElementById('modalRateDate').textContent = data.rate_date_formatted ?? data.rate_date ??
+                        '—';
+                        document.getElementById('modalTotalAmount').textContent = data.total_amount ?? '—';
+                        document.getElementById('modalCreatedAt').textContent = data.created_at_formatted ?? data.created_at ??
+                            '—';
+                    }
+
+                    function openViewModal() {
+                        viewModal.classList.remove('hidden');
+                        document.body.classList.add('overflow-hidden');
+                    }
+
+                    function closeViewModal() {
+                        viewModal.classList.add('hidden');
+                        document.body.classList.remove('overflow-hidden');
+                    }
+
+                    function loadAndShow(url) {
+                        openViewModal();
+                        setViewState('loading');
+
+                        fetch(url, {
+                                headers: {
+                                    'Accept': 'application/json'
+                                }
+                            })
+                            .then(response => {
+                                if (!response.ok) throw new Error('Request failed');
+                                return response.json();
+                            })
+                            .then(data => {
+                                const purchase = data.purchase ?? data;
+                                populateView(purchase);
+                                setViewState('content');
+                            })
+                            .catch(() => setViewState('error'));
+                    }
+
+                    // --- Rate Modal Management ---
+                    function openRateModal(updateUrl) {
+                        rateForm.action = updateUrl; // Dynamically binds the update URL
+                        rateInput.value = ''; // Resets the input field
+                        rateModal.classList.remove('hidden');
+                        document.body.classList.add('overflow-hidden');
+                        setTimeout(() => rateInput.focus(), 100);
+                    }
+
+                    function closeRateModal() {
+                        rateModal.classList.add('hidden');
+                        if (viewModal.classList.contains('hidden')) {
+                            document.body.classList.remove('overflow-hidden');
+                        }
+                    }
+
+                    // --- Event Listeners ---
+
+                    // View purchases click events
+                    document.querySelectorAll('.js-view-purchase').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const url = btn.dataset.url;
+                            if (url) loadAndShow(url);
+                        });
+                    });
+
+                    document.querySelectorAll('.js-close-modal').forEach(el => {
+                        el.addEventListener('click', closeViewModal);
+                    });
+
+                    // Rate conversion click events
+                    document.querySelectorAll('.js-rate-confirm').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const updateUrl = btn.dataset.updateUrl;
+                            if (updateUrl) openRateModal(updateUrl);
+                        });
+                    });
+
+                    document.querySelectorAll('.js-close-rate-modal').forEach(el => {
+                        el.addEventListener('click', closeRateModal);
+                    });
+
+                    // Master Escape Key Handler for both Modals
+                    document.addEventListener('keydown', (e) => {
+                        if (e.key === 'Escape') {
+                            if (!rateModal.classList.contains('hidden')) {
+                                closeRateModal();
+                            } else if (!viewModal.classList.contains('hidden')) {
+                                closeViewModal();
+                            }
+                        }
+                    });
+                })();
+            </script>
+        @endpush
+    @endpush
 @endsection

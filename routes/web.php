@@ -4,6 +4,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerPaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\SupplierPaymentController;
 use Illuminate\Support\Facades\Route;
@@ -63,6 +64,17 @@ Route::controller(CustomerPaymentController::class)->name('customersPayment.')
     });
 // Purchase
 Route::controller(PurchaseController::class)->name('purchases.')
+    ->prefix('purchases')
+    ->group(function () {
+        Route::get('index', 'index')->name('index');
+        Route::get('create', 'create')->name('create');
+        Route::post('store', 'store')->name('store');
+        Route::get('edit/{purchase}', 'edit')->name('edit');
+        Route::get('show/{purchase}', 'show')->name('show');
+        Route::post('update-rate/{purchase}', 'update_rate')->name('update_rate');
+    });
+// Purchase
+Route::controller(SaleController::class)->name('purchases.')
     ->prefix('purchases')
     ->group(function () {
         Route::get('index', 'index')->name('index');

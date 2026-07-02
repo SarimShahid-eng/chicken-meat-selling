@@ -19,7 +19,6 @@ class PurchaseController extends Controller
      */
     public function index(Request $request)
     {
-
         $purchases = Purchase::query()
             ->with('supplier', 'product')
             ->when($request->filled('search'), function ($q) use ($request) {
@@ -56,8 +55,8 @@ class PurchaseController extends Controller
                 $q->whereDate('date', $date);
             })
             ->paginate(10);
-        $products = Product::all();
-        $suppliers = Supplier::all();
+        $products = Product::all(['id', 'name']);
+        $suppliers = Supplier::with('region')->get();
 
         return view('purchases.index', compact('purchases', 'products', 'suppliers'));
     }
@@ -70,7 +69,6 @@ class PurchaseController extends Controller
         $voucher_no = Purchase::max('voucher_no') + 1;
         $products = Product::all();
         $suppliers = Supplier::with('region')->get();
-        // dd(Region::all());
 
         return view('purchases.create', compact('products', 'suppliers', 'voucher_no'));
         //
@@ -100,7 +98,6 @@ class PurchaseController extends Controller
             'created_at' => $purchase->created_at->format('d-m-Y'),
             'rate_date' => $purchase->rate_date ? $purchase->rate_date->format('Y-m-d') : 'rate not finalized',
         ];
-        // dd($data);
 
         return response()->json($data);
     }
@@ -143,8 +140,10 @@ class PurchaseController extends Controller
      */
     public function edit(Purchase $purchase)
     {
-        return view('purchases.create');
-        //
+        $products = Product::all(['id', 'name']);
+        $suppliers = Supplier::with('region')->get();
+
+        return view('purchases.create', compact('purchase', 'products', 'suppliers'));
     }
 
     public function update_rate(Purchase $purchase, Request $request)
