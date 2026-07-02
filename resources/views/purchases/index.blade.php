@@ -34,14 +34,14 @@
                             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                                 From
                             </label>
-                            <input type="date" placeholder="Search purchases..." name="search"
+                            <input type="date" name="from_date"
                                 class="w-full pl-3 pr-10 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors">
                         </div>
                         <div class="relative flex-1">
                             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                                 To
                             </label>
-                            <input type="date" placeholder="Search purchases..." name="search"
+                            <input type="date" name="to_date"
                                 class="w-full pl-3 pr-10 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors">
 
                         </div>
@@ -93,6 +93,7 @@
                         <tr>
                             <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Voucher</th>
                             <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Supplier</th>
+                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Date</th>
                             <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Product</th>
                             <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Crate</th>
                             <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Net.Weight</th>
@@ -111,6 +112,11 @@
                                     <span class="text-xs">
                                         {{ $purchase->supplier->name }} /
                                         {{ $purchase->supplier->region->name }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 font-medium text-gray-900">
+                                    <span class="text-xs">
+                                        {{ $purchase->date->format('m-d-Y')}}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 font-medium text-gray-900">

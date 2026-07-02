@@ -28,6 +28,7 @@ class Purchase extends Model
         'rate',
         'rate_date',
         'total_amount',
+        'date'
     ];
 
     /**
@@ -42,6 +43,7 @@ class Purchase extends Model
             'product_id' => 'integer',
             'supplier_id' => 'integer',
             'rate_date' => 'date',
+            'date'=>'date'
         ];
     }
 

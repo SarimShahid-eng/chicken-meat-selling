@@ -17,12 +17,14 @@ class Sale extends Model
      * @var array
      */
     protected $fillable = [
+        'voucher_no',
         'product_id',
         'customer_id',
         'crate_qty',
         'total_weight',
         'weight_cut',
         'netweight',
+        'date',
         'rate',
         'total_amount',
     ];
@@ -38,6 +40,7 @@ class Sale extends Model
             'id' => 'integer',
             'product_id' => 'integer',
             'customer_id' => 'integer',
+            'date'=>'date'
         ];
     }
 

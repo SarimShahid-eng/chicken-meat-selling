@@ -1,25 +1,25 @@
-@extends('partials.app', ['title' => isset($purchase) ? 'Edit Purchase' : 'Create Purchase'])
+@extends('partials.app', ['title' => isset($sale) ? 'Edit Sale' : 'Create Sale'])
 
 @section('content')
     <div class="max-w-4xl mx-auto space-y-6 animate-fade-in">
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">
-                    {{ isset($purchase) ? 'Edit Purchase' : 'Add New Purchase' }}
+                    {{ isset($sale) ? 'Edit Sale' : 'Add New Sale' }}
                 </h1>
-                <p class="text-sm text-gray-500 mt-1">Record incoming chicken meat stock purchases from your suppliers.</p>
+                <p class="text-sm text-gray-500 mt-1">Record incoming chicken meat stock sales from your customers.</p>
             </div>
-            <a href="{{ route('purchases.index') }}"
+            <a href="{{ route('sales.index') }}"
                 class="btn-secondary flex items-center gap-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors">
                 <i class="fa-solid fa-arrow-left"></i> Back to List
             </a>
         </div>
 
         <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-            <form id="purchaseForm" action="{{ route('purchases.store') }}" method="POST" class="p-6 sm:p-8 space-y-6">
+            <form id="saleForm" action="{{ route('sales.store') }}" method="POST" class="p-6 sm:p-8 space-y-6">
                 @csrf
 
-                <input type="hidden" name="update_id" value="{{ old('update_id') ?? @$purchase->id }}">
+                <input type="hidden" name="update_id" value="{{ old('update_id') ?? @$sale->id }}">
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -33,7 +33,7 @@
                                 <i class="fa-solid fa-hashtag"></i>
                             </span>
                             <input type="text" id="voucher_no" name="voucher_no" readonly
-                                value="{{ old('voucher_no') ?? @$purchase->voucher_no ?? $voucher_no ?? '' }}"
+                                value="{{ old('voucher_no') ?? @$sale->voucher_no ?? $voucher_no ?? '' }}"
                                 placeholder="Auto-generated"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 font-semibold focus:outline-none cursor-not-allowed">
                         </div>
@@ -55,13 +55,14 @@
                             <select id="product_id" name="product_id" required
                                 class="w-full pl-10 pr-10 py-2.5 bg-gray-50 border @error('product_id') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors appearance-none">
 
-                                <option value="" disabled {{ old('product_id') === null && !isset($purchase) ? 'selected' : '' }}>
+                                <option value="" disabled {{ old('product_id') === null && !isset($sale) ? 'selected' : '' }}>
                                     Select a product
                                 </option>
 
                                 @foreach ($products as $product)
                                     <option value="{{ $product->id }}"
-                                        {{ (string) old('product_id', @$purchase->product_id) === (string) $product->id ? 'selected' : '' }}>
+                                          data-soldcrate-wise="{{ $product->soldCrateWise ?? '' }}"
+                                        {{ (string) old('product_id', @$sale->product_id) === (string) $product->id ? 'selected' : '' }}>
                                         {{ $product->name }}
                                     </option>
                                 @endforeach
@@ -77,25 +78,25 @@
 
                     {{-- Supplier --}}
                     <div class="space-y-2">
-                        <label for="supplier_id" class="block text-sm font-semibold text-gray-700">
-                            Supplier <span class="text-red-500">*</span>
+                        <label for="customer_id" class="block text-sm font-semibold text-gray-700">
+                            Customer <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 <i class="fa-solid fa-truck-field"></i>
                             </span>
-                            <select id="supplier_id" name="supplier_id" required
-                                class="w-full pl-10 pr-10 py-2.5 bg-gray-50 border @error('supplier_id') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors appearance-none">
+                            <select id="customer_id" name="customer_id" required
+                                class="w-full pl-10 pr-10 py-2.5 bg-gray-50 border @error('customer_id') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors appearance-none">
 
-                                <option value="" disabled {{ old('supplier_id') === null && !isset($purchase) ? 'selected' : '' }}>
-                                    Select a supplier
+                                <option value="" disabled {{ old('customer_id') === null && !isset($sale) ? 'selected' : '' }}>
+                                    Select a customer
                                 </option>
 
-                                @foreach ($suppliers as $supplier)
-                                    <option value="{{ $supplier->id }}"
-                                        data-region="{{ $supplier->region->name ?? '' }}"
-                                        {{ (string) old('supplier_id', @$purchase->supplier_id) === (string) $supplier->id ? 'selected' : '' }}>
-                                        {{ $supplier->name }}--{{$supplier->region->name  }}
+                                @foreach ($customers as $customer)
+                                    <option value="{{ $customer->id }}"
+
+                                        {{ (string) old('customer_id', @$sale->customer_id) === (string) $customer->id ? 'selected' : '' }}>
+                                        {{ $customer->name }}--{{$customer->region->name  }}
                                     </option>
                                 @endforeach
                             </select>
@@ -104,33 +105,15 @@
                             </span>
                         </div>
                         <p id="regionHint" class="text-xs font-medium mt-1 hidden text-amber-600">
-                            <i class="fa-solid fa-circle-info"></i> Punjab region supplier — an extra 2% of total weight will be deducted as weight cut.
+                            <i class="fa-solid fa-circle-info"></i> Punjab region customer — an extra 2% of total weight will be deducted as weight cut.
                         </p>
-                        @error('supplier_id')
+                        @error('customer_id')
                             <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    {{-- Vehicle No --}}
-                    <div class="space-y-2">
-                        <label for="vehicle_no" class="block text-sm font-semibold text-gray-700">
-                            Vehicle No <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                <i class="fa-solid fa-truck"></i>
-                            </span>
-                            <input type="text" id="vehicle_no" name="vehicle_no"
-                                value="{{ old('vehicle_no') ?? @$purchase->vehicle_no }}" required
-                                placeholder="e.g., LEA-4521"
-                                class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('vehicle_no') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
-                        </div>
-                        @error('vehicle_no')
-                            <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
 
-                    {{-- Rate Date --}}
+                    {{-- Date --}}
                     <div class="space-y-2">
                         <label for="date" class="block text-sm font-semibold text-gray-700">
                             Date
@@ -140,7 +123,7 @@
                                 <i class="fa-solid fa-calendar"></i>
                             </span>
                             <input type="date" id="date" name="date"
-                                value="{{ old('date', isset($purchase) ? date('Y-m-d', strtotime($purchase->date)) : date('Y-m-d')) }}"
+                                value="{{ old('date', isset($sale) ? date('Y-m-d', strtotime($sale->date)) : date('Y-m-d')) }}"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('date') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
                         </div>
                         @error('date')
@@ -158,7 +141,7 @@
                                 <i class="fa-solid fa-boxes-stacked"></i>
                             </span>
                             <input type="number" step="1" min="0" id="crate_qty" name="crate_qty"
-                                value="{{ old('crate_qty') ?? @$purchase->crate_qty }}" required
+                                value="{{ old('crate_qty') ?? @$sale->crate_qty }}" required
                                 placeholder="e.g., 20"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('crate_qty') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
                         </div>
@@ -178,7 +161,7 @@
                                 <i class="fa-solid fa-weight-scale"></i>
                             </span>
                             <input type="number" step="0.01" min="0" id="total_weight" name="total_weight"
-                                value="{{ old('total_weight') ?? @$purchase->total_weight }}" required
+                                value="{{ old('total_weight') ?? @$sale->total_weight }}" required
                                 placeholder="0.00"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('total_weight') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
                         </div>
@@ -196,12 +179,12 @@
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 <i class="fa-solid fa-scissors"></i>
                             </span>
-                            <input type="number" step="0.01" min="0" id="weight_cut" name="weight_cut" readonly
-                                value="{{ old('weight_cut') ?? @$purchase->weight_cut ?? '0.00' }}"
+                            <input type="number" step="0.01" min="0" id="weight_cut" name="weight_cut"
+                                value="{{ old('weight_cut') ?? @$sale->weight_cut ?? '0.00' }}"
                                 placeholder="0.00"
-                                class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 focus:outline-none cursor-not-allowed">
+                                class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 focus:outline-none ">
                         </div>
-                        <p class="text-xs text-gray-400">Auto-calculated: (crates × 0.5kg) + 2% of total weight if supplier region is Punjab.</p>
+                        <p class="text-xs text-gray-400">Auto-calculated: (crates × 8kg)</p>
                         @error('weight_cut')
                             <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
                         @enderror
@@ -217,7 +200,7 @@
                                 <i class="fa-solid fa-balance-scale"></i>
                             </span>
                             <input type="number" step="0.01" min="0" id="netweight" name="netweight" readonly
-                                value="{{ old('netweight') ?? @$purchase->netweight ?? '0.00' }}"
+                                value="{{ old('netweight') ?? @$sale->netweight ?? '0.00' }}"
                                 placeholder="0.00"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 focus:outline-none cursor-not-allowed">
                         </div>
@@ -229,18 +212,17 @@
                     {{-- Rate (optional — may be decided later) --}}
                     <div class="space-y-2">
                         <label for="rate" class="block text-sm font-semibold text-gray-700">
-                            Rate (per kg) <span class="text-gray-400 font-normal">(optional)</span>
+                            Rate (per kg) <span class="text-gray-400 font-normal"></span>
                         </label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 <i class="fa-solid fa-tag"></i>
                             </span>
                             <input type="number" step="0.01" min="0" id="rate" name="rate"
-                                value="{{ old('rate') ?? @$purchase->rate }}"
+                                value="{{ old('rate') ?? @$sale->rate }}"
                                 placeholder="To be decided later"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('rate') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
                         </div>
-                        <p class="text-xs text-gray-400">Leave blank if the rate hasn't been decided yet — it will be saved as empty and can be updated later.</p>
                         @error('rate')
                             <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
                         @enderror
@@ -256,7 +238,7 @@
                                 <i class="fa-solid fa-wallet"></i>
                             </span>
                             <input type="number" step="0.01" min="0" id="total_amount" name="total_amount" readonly
-                                value="{{ old('total_amount') ?? @$purchase->total_amount ?? '0.00' }}"
+                                value="{{ old('total_amount') ?? @$sale->total_amount ?? '0.00' }}"
                                 placeholder="0.00"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 font-semibold focus:outline-none cursor-not-allowed">
                         </div>
@@ -276,7 +258,7 @@
                     </button>
                     <button type="submit"
                         class="btn-primary inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-medium px-5 py-2.5 rounded-lg text-sm shadow-md hover:shadow-amber-500/20 transition-all">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> Save Purchase
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Save Sale
                     </button>
                 </div>
             </form>
@@ -291,16 +273,15 @@
             const netWeightInput = document.getElementById('netweight');
             const rateInput = document.getElementById('rate');
             const totalAmountInput = document.getElementById('total_amount');
-            const supplierSelect = document.getElementById('supplier_id');
+            const productSelect = document.getElementById('product_id');
             const regionHint = document.getElementById('regionHint');
 
-            const CRATE_CUT_PER_UNIT = 0.5;   // kg cut per crate
-            const PUNJAB_CUT_PERCENT = 0.02;  // 2% of total weight for Punjab suppliers
+            const CRATE_CUT_PER_UNIT = 8;   // kg cut per crate
 
-            function isPunjabSupplier() {
-                const selectedOption = supplierSelect.options[supplierSelect.selectedIndex];
-                const region = selectedOption ? (selectedOption.getAttribute('data-region') || '') : '';
-                return region.trim().toLowerCase() === 'punjab';
+            function isSoldCreateWise() {
+                const selectedOption = productSelect.options[productSelect.selectedIndex];
+                const soldCrateWise = selectedOption ? (selectedOption.getAttribute('data-soldcrate-wise') || '') : '';
+                return soldCrateWise;
             }
 
             function recalculate() {
@@ -309,12 +290,10 @@
                 const rate = parseFloat(rateInput.value) || 0;
 
                 const crateCut = crateQty * CRATE_CUT_PER_UNIT;
-                const punjab = isPunjabSupplier();
-                const regionCut = punjab ? (totalWeight * PUNJAB_CUT_PERCENT) : 0;
 
-                regionHint.classList.toggle('hidden', !punjab);
 
-                let weightCut = crateCut + regionCut;
+
+                let weightCut = crateCut;
                 let netWeight = totalWeight - weightCut;
                 if (netWeight < 0) netWeight = 0;
 
@@ -328,7 +307,7 @@
             [cratesInput, totalWeightInput, rateInput].forEach(el => {
                 el.addEventListener('input', recalculate);
             });
-            supplierSelect.addEventListener('change', recalculate);
+            customerSelect.addEventListener('change', recalculate);
 
             // Run once on load (handles edit mode / old() repopulation)
             recalculate();

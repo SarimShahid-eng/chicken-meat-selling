@@ -2,23 +2,30 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SaleStoreRequest;
+use App\Models\Customer;
+use App\Models\CustomerPayment;
+use App\Models\Product;
+use App\Models\Sale;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SaleController extends Controller
 {
-     /**
+    /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $purchases = Purchase::query()
-            ->with('supplier', 'product')
+        $sales = Sale::query()
+            ->with('customer', 'product')
             ->when($request->filled('search'), function ($q) use ($request) {
                 $searchTerm = '%'.$request->input('search').'%';
 
                 $q->where(function ($query) use ($searchTerm) {
                     $query->where('voucher_no', 'LIKE', $searchTerm)
-                        ->orWhereHas('supplier', function ($subQuery) use ($searchTerm) {
+                        ->orWhereHas('customer', function ($subQuery) use ($searchTerm) {
                             $subQuery->where('name', 'LIKE', $searchTerm);
                         })
                         ->orWhereHas('product', function ($subQuery) use ($searchTerm) {
@@ -26,11 +33,24 @@ class SaleController extends Controller
                         });
                 });
             })
-            ->when($request->filled('supplier_id'), function ($q) use ($request) {
-                $supplier = $request->input('supplier_id');
-                $q->where(function ($query) use ($supplier) {
-                    $query->WhereHas('supplier', function ($subQuery) use ($supplier) {
-                        $subQuery->where('id', 'LIKE', $supplier);
+            ->when($request->filled('from_date') && $request->filled('to_date'), function ($q) use ($request) {
+                $fromDate = $request->input('from_date');
+                $toDate = $request->input('to_date');
+                $q->where(function ($query) use ($fromDate, $toDate) {
+                    $query->whereBetween('date', [$fromDate, $toDate]);
+                });
+            })
+            ->when($request->filled('from_date'), function ($q) use ($request) {
+                $fromDate = $request->input('from_date');
+                $q->where(function ($query) use ($fromDate) {
+                    $query->whereDate('date', $fromDate);
+                });
+            })
+            ->when($request->filled('customer_id'), function ($q) use ($request) {
+                $customer = $request->input('customer_id');
+                $q->where(function ($query) use ($customer) {
+                    $query->WhereHas('customer', function ($subQuery) use ($customer) {
+                        $subQuery->where('id', 'LIKE', $customer);
                     });
                 });
             })
@@ -42,15 +62,11 @@ class SaleController extends Controller
                     });
                 });
             })
-            ->when($request->filled('date'), function ($q) use ($request) {
-                $date = $request->input('date');
-                $q->whereDate('date', $date);
-            })
             ->paginate(10);
         $products = Product::all(['id', 'name']);
-        $suppliers = Supplier::with('region')->get();
+        $customers = Customer::with('region')->get();
 
-        return view('purchases.index', compact('purchases', 'products', 'suppliers'));
+        return view('sales.index', compact('sales', 'products', 'customers'));
     }
 
     /**
@@ -58,37 +74,35 @@ class SaleController extends Controller
      */
     public function create()
     {
-        $voucher_no = Purchase::max('voucher_no') + 1;
+        $voucher_no = Sale::max('voucher_no') + 1;
         $products = Product::all();
-        $suppliers = Supplier::with('region')->get();
+        $customers = Customer::with('region')->get();
 
-        return view('purchases.create', compact('products', 'suppliers', 'voucher_no'));
+        return view('sales.create', compact('products', 'customers', 'voucher_no'));
         //
     }
 
-    public function show(Purchase $purchase)
+    public function show(Sale $sale)
     {
-        $purchase->load(['product', 'supplier.region']);
+        $sale->load(['product', 'customer.region']);
         $data = [
             'product' => [
-                'name' => $purchase->product->name,
+                'name' => $sale->product->name,
             ],
-            'supplier' => [
-                'name' => $purchase->supplier->name,
+            'customer' => [
+                'name' => $sale->customer->name,
                 'region' => [
-                    'name' => $purchase->supplier->region->name,
+                    'name' => $sale->customer->region->name,
                 ],
             ],
-            'voucher_no' => $purchase->voucher_no,
-            'vehicle_no' => $purchase->vehicle_no,
-            'crate_qty' => $purchase->crate_qty,
-            'total_weight' => $purchase->total_weight,
-            'weight_cut' => $purchase->weight_cut,
-            'netweight' => $purchase->netweight,
-            'rate' => $purchase->rate,
-            'total_amount' => $purchase->total_amount,
-            'created_at' => $purchase->created_at->format('d-m-Y'),
-            'rate_date' => $purchase->rate_date ? $purchase->rate_date->format('Y-m-d') : 'rate not finalized',
+            'voucher_no' => $sale->voucher_no,
+            'crate_qty' => $sale->crate_qty,
+            'total_weight' => $sale->total_weight,
+            'weight_cut' => $sale->weight_cut,
+            'netweight' => $sale->netweight,
+            'rate' => $sale->rate,
+            'total_amount' => $sale->total_amount,
+            'created_at' => $sale->created_at->format('d-m-Y'),
         ];
 
         return response()->json($data);
@@ -97,30 +111,31 @@ class SaleController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(PurchaseStoreRequest $request)
+    public function store(SaleStoreRequest $request)
     {
         $validated = $request->validated();
         try {
             DB::transaction(function () use ($validated) {
-                $purchase = Purchase::updateOrCreate(
+                $sale = Sale::updateOrCreate(
                     ['id' => $validated['update_id']],
                     $validated);
-                SupplierPayment::create([
-                    'purchase_id' => $purchase->id,
-                    'supplier_id' => $validated['supplier_id'],
+                CustomerPayment::create([
+                    'sale_id' => $sale->id,
+                    'customer_id' => $validated['customer_id'],
                     'amount' => $validated['total_amount'],
                     'date' => $validated['date'],
+                    'payment_type' => 'debit',
                     'type' => 'cash',
                 ]);
             });
             $message = filled($validated['update_id']) ? 'updated' : 'created';
 
             return redirect()
-                ->route('purchases.index')
-                ->with('toast_success', 'Purchase has been '.$message.' successfully!');
+                ->route('sales.index')
+                ->with('toast_success', 'Sale has been '.$message.' successfully!');
         } catch (Exception $e) {
             return redirect()
-                ->route('purchases.index')
+                ->route('sales.index')
                 ->with('toast_error', $e->getMessage());
         }
 
@@ -130,32 +145,32 @@ class SaleController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Purchase $purchase)
+    public function edit(Sale $sale)
     {
         $products = Product::all(['id', 'name']);
-        $suppliers = Supplier::with('region')->get();
+        $customers = Customer::with('region')->get();
 
-        return view('purchases.create', compact('purchase', 'products', 'suppliers'));
+        return view('sales.create', compact('sale', 'products', 'customers'));
     }
 
-    public function update_rate(Purchase $purchase, Request $request)
+    public function update_rate(Sale $sale, Request $request)
     {
         $validated = $request->validate([
             'rate' => 'required',
         ]);
-        $total_amount = $validated['rate'] * $purchase->netweight;
-        $purchase->update([
+        $total_amount = $validated['rate'] * $sale->netweight;
+        $sale->update([
             'rate' => $validated['rate'],
             'rate_date' => now(),
             'total_amount' => $total_amount,
         ]);
-        $purchase->supplierPayment->update([
+        $sale->customerPayment->update([
             'amount' => $total_amount,
         ]);
 
         return redirect()
-            ->route('purchases.index')
-            ->with('toast_success', 'Purchase rate has been updated successfully!');
+            ->route('sales.index')
+            ->with('toast_success', 'Sale rate has been updated successfully!');
 
     }
 }

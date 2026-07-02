@@ -165,7 +165,7 @@
             <div class="space-y-2">
                 <button onclick="toggleSubmenu('purchases-menu')"
                     class="w-full nav-link justify-between
-                    @routeis(['purchases.*', 'purchasesPayment.*'])
+                    @routeis('purchases.*')
                             active
                             @else
                             hidden
@@ -177,7 +177,7 @@
                     <i class="fas fa-chevron-down text-xs"></i>
                 </button>
                 <div id="purchases-menu"
-                    class=" pl-8 space-y-2 @routeis(['purchases.*', 'purchasesPayment.*'])
+                    class=" pl-8 space-y-2 @routeis('purchases.*')
                         active
                         @else
                         hidden
@@ -197,6 +197,45 @@
                                 ">
                         <i class="fas fa-list w-4 text-center"></i>
                         <span>All Purchases</span>
+                    </a>
+                </div>
+            </div>
+            <!-- Sale -->
+            <div class="space-y-2">
+                <button onclick="toggleSubmenu('sales-menu')"
+                    class="w-full nav-link justify-between
+                    @routeis('sales.*')
+                            active
+                            @else
+                            hidden
+                            @endrouteis">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-brands fa-sellsy"></i>
+                        <span>Sale</span>
+                    </div>
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </button>
+                <div id="sales-menu"
+                    class=" pl-8 space-y-2 @routeis('sales.*')
+                        active
+                        @else
+                        hidden
+                        @endrouteis">
+                    <a href="{{ route('sales.create') ?? '#' }}"
+                        class="nav-link text-sm  @routeis('sales.create')
+                        active
+                        @endrouteis">
+                        <i class="fas fa-plus w-4 text-center"></i>
+                        <span>New Sale</span>
+                    </a>
+                    <a href="{{ route('sales.index') ?? '#' }}"
+                        class="nav-link text-sm
+                                @routeis('sales.index')
+                                        active
+                                        @endrouteis
+                                ">
+                        <i class="fas fa-list w-4 text-center"></i>
+                        <span>All Sales</span>
                     </a>
                 </div>
             </div>

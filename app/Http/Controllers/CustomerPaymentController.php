@@ -45,6 +45,7 @@ class CustomerPaymentController extends Controller
     public function store(CustomerPaymentRequestStore $request)
     {
         $validated = $request->validated();
+        $validated['payment_type'] = 'credit';
         CustomerPayment::updateOrCreate(
             ['id' => $validated['update_id']],
             $validated);

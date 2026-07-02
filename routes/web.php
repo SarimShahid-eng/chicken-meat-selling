@@ -74,13 +74,12 @@ Route::controller(PurchaseController::class)->name('purchases.')
         Route::post('update-rate/{purchase}', 'update_rate')->name('update_rate');
     });
 // Purchase
-Route::controller(SaleController::class)->name('purchases.')
-    ->prefix('purchases')
+Route::controller(SaleController::class)->name('sales.')
+    ->prefix('sales')
     ->group(function () {
         Route::get('index', 'index')->name('index');
         Route::get('create', 'create')->name('create');
         Route::post('store', 'store')->name('store');
-        Route::get('edit/{purchase}', 'edit')->name('edit');
-        Route::get('show/{purchase}', 'show')->name('show');
-        Route::post('update-rate/{purchase}', 'update_rate')->name('update_rate');
+        Route::get('edit/{sale}', 'edit')->name('edit');
+        Route::get('show/{sale}', 'show')->name('show');
     });
