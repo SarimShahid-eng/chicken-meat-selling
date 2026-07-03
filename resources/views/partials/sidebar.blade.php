@@ -239,6 +239,45 @@
                     </a>
                 </div>
             </div>
+            <!-- Ledger -->
+            <div class="space-y-2">
+                <button onclick="toggleSubmenu('ledger-menu')"
+                    class="w-full nav-link justify-between
+                    @routeis('ledger.*')
+                            active
+                            @else
+                            hidden
+                            @endrouteis">
+                    <div class="flex items-center gap-3">
+                      <i class="fa-solid fa-book"></i>
+                        <span>Ledger</span>
+                    </div>
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </button>
+                <div id="ledger-menu"
+                    class=" pl-8 space-y-2 @routeis('ledger.*')
+                        active
+                        @else
+                        hidden
+                        @endrouteis">
+                    <a href="{{ route('ledger.supplier') ?? '#' }}"
+                        class="nav-link text-sm  @routeis(['ledger.supplier','ledger.supplierReport'])
+                        active
+                        @endrouteis">
+                        <i class="fas fa-users w-4 text-center"></i>
+                        <span>Supplier</span>
+                    </a>
+                    <a href="{{ route('ledger.customer') ?? '#' }}"
+                        class="nav-link text-sm
+                                @routeis('ledger.customer')
+                                        active
+                                        @endrouteis
+                                ">
+                        <i class="fas fa-user w-4 text-center"></i>
+                        <span>Customer</span>
+                    </a>
+                </div>
+            </div>
 
             <!-- Inventory -->
             {{--  <div class="space-y-2">
@@ -329,7 +368,7 @@
     function logout() {
         if (confirm('Are you sure you want to logout?')) {
             // Add your logout route here
-            window.location.href = '/logout';
+            window.location.href = "{{ route('logout') }}";
         }
     }
 </script>

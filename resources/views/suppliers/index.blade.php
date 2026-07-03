@@ -52,8 +52,8 @@
                         <tr>
                             <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Name</th>
                             <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Phone number</th>
-                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Description</th>
-                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Region</th>
+                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Opening Balance</th>
+                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Balance</th>
                             <th scope="col" class="px-6 py-4 font-semibold text-gray-700 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -61,7 +61,9 @@
                         @forelse ($suppliers as $supplier)
                             <tr class="hover:bg-gray-50/50 transition-colors">
                                 <td class="px-6 py-4 font-medium text-gray-900">
-                                    {{ $supplier->name }}
+                                    <span clas="text-sm">
+                                        {{ $supplier->name }}/ {{ $supplier->region->name }}
+                                    </span>
                                 </td>
 
                                 <td class="px-6 py-4 text-gray-500">
@@ -69,14 +71,13 @@
                                         {{ $supplier->phone_number ?? 'No phone.no available.' }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-gray-500">
-                                    <div class="max-w-xs truncate" title="{{ $supplier->description }}">
-                                        {{ $supplier->description ?? 'No description available.' }}
-                                    </div>
+                                 <td class="px-6 py-4 font-medium text-gray-900">
+                                    {{ $supplier->opening_balance }}
                                 </td>
                                  <td class="px-6 py-4 font-medium text-gray-900">
-                                    {{ $supplier->region->name }}
+                                    {{ $supplier->current_balance }}
                                 </td>
+
 
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="inline-flex items-center gap-3">

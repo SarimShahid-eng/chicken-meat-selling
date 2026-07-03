@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('supplier_payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('purchase_id')->nullable();
+            $table->boolean('rate_finalized')->default(true)->nullable();
             $table->foreignId('supplier_id');
             $table->integer('amount')->nullable();
             $table->longText('description')->nullable();

@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\CustomerPayment;
 use App\Models\Product;
 use App\Models\Sale;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -34,13 +35,15 @@ class SaleController extends Controller
                 });
             })
             ->when($request->filled('from_date') && $request->filled('to_date'), function ($q) use ($request) {
-                $fromDate = $request->input('from_date');
-                $toDate = $request->input('to_date');
-                $q->where(function ($query) use ($fromDate, $toDate) {
-                    $query->whereBetween('date', [$fromDate, $toDate]);
-                });
+                $fromDate = Carbon::parse($request->input('from_date'))->startOfDay();
+
+                // Parse the end date to the absolute end of that day (23:59:59)
+                $toDate = Carbon::parse($request->input('to_date'))->endOfDay();
+
+                // Direct, unnested execution
+                $q->whereBetween('date', [$fromDate, $toDate]);
             })
-            ->when($request->filled('from_date'), function ($q) use ($request) {
+            ->when($request->filled('from_date') && ! $request->filled('to_date'), function ($q) use ($request) {
                 $fromDate = $request->input('from_date');
                 $q->where(function ($query) use ($fromDate) {
                     $query->whereDate('date', $fromDate);
@@ -119,7 +122,10 @@ class SaleController extends Controller
                 $sale = Sale::updateOrCreate(
                     ['id' => $validated['update_id']],
                     $validated);
-                CustomerPayment::create([
+
+                CustomerPayment::updateOrCreate([
+                    'sale_id' => $sale->id,
+                ], [
                     'sale_id' => $sale->id,
                     'customer_id' => $validated['customer_id'],
                     'amount' => $validated['total_amount'],

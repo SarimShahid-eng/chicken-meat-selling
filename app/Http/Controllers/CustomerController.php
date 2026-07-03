@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CustomerStoreRequest;
-use App\Models\Region;
 use App\Models\Customer;
+use App\Models\Region;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
@@ -12,6 +12,7 @@ class CustomerController extends Controller
     public function index(Request $request)
     {
         $customers = Customer::query()
+            ->with('customerPayments')
             ->when($request->filled('search'), function ($q) use ($request) {
                 $searchTerm = '%'.$request->input('search').'%';
 
@@ -20,7 +21,17 @@ class CustomerController extends Controller
                         ->orWhere('description', 'LIKE', $searchTerm);
                 });
             })
-            ->paginate(10);
+            ->paginate(10)
+            ->through(function ($customer) {
+                $credit = $customer->customerPayments->where('payment_type', 'credit')
+                    ->sum('amount') ?? 0;
+                $debit = $customer->customerPayments->where('payment_type', 'debit')
+                    ->sum('amount') ?? 0;
+
+                $customer->current_balance = $customer->opening_balance + $debit - $credit;
+
+                return $customer;
+            });
 
         return view('customers.index', compact('customers'));
     }

@@ -72,17 +72,17 @@
                             </select>
 
                         </div>
-                        <button
-                            class="mt-5 btn-xs btn-primary bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
-                            <i class="fa fa-search text-xs"></i>
-                        </button>
-                        <a href="{{ route('purchases.index') }}"
-                            class="mt-5 btn-sm cursor-pointer bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
-                            <i class="text-xs fa-solid fa-arrow-rotate-left"></i>
-                        </a>
 
-                    </form>
                 </div>
+                <button
+                    class="mt-5 btn-xs btn-primary bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
+                    <i class="fa fa-search text-xs mr-2"></i>Search
+                </button>
+                <a href="{{ route('sales.index') }}"
+                    class="mt-5 btn-sm cursor-pointer bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
+                    <i class="text-xs fa-solid fa-arrow-rotate-left mr-2"></i>Reset
+                </a>
+                </form>
             </div>
         </div>
 
@@ -116,7 +116,7 @@
                                 </td>
                                 <td class="px-6 py-4 font-medium text-gray-900">
                                     <span class="text-xs">
-                                        {{ $purchase->date->format('m-d-Y')}}
+                                        {{ $purchase->date->format('m-d-Y') }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 font-medium text-gray-900">
@@ -200,7 +200,6 @@
     </div>
 
     @include('purchases.modal')
-    @push('scripts')
         @push('scripts')
             <script>
                 $(document).ready(function() {
@@ -238,7 +237,7 @@
                         document.getElementById('modalNetWeight').textContent = data.netweight ?? '—';
                         document.getElementById('modalRate').textContent = data.rate ?? 'Not set';
                         document.getElementById('modalRateDate').textContent = data.rate_date_formatted ?? data.rate_date ??
-                        '—';
+                            '—';
                         document.getElementById('modalTotalAmount').textContent = data.total_amount ?? '—';
                         document.getElementById('modalCreatedAt').textContent = data.created_at_formatted ?? data.created_at ??
                             '—';
@@ -330,5 +329,4 @@
                 })();
             </script>
         @endpush
-    @endpush
 @endsection

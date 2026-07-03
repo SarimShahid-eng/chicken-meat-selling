@@ -18,12 +18,12 @@
             <div class="hidden lg:flex items-center gap-4 pr-4 border-r border-gray-200">
                 <div class="text-right">
                     <p class="text-xs text-gray-500">Today's Sales</p>
-                    <p class="text-lg font-bold text-green-600">₨45,230</p>
+                    <p class="text-lg font-bold text-green-600">₨.{{ number_format($globalTodaysSales ?? 0) }}</p>
                 </div>
                 <div class="w-px h-8 bg-gray-300"></div>
                 <div class="text-right">
                     <p class="text-xs text-gray-500">Stock Status</p>
-                    <p class="text-lg font-bold text-amber-600">125 items</p>
+                    <p class="text-lg font-bold text-amber-600">{{ $globalStockCount ?? 0 }} items</p>
                 </div>
             </div>
 
@@ -90,13 +90,13 @@
 
                 <!-- User Dropdown Menu -->
                 <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-50">
-                    <a href="#" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100">
+                    {{-- <a href="#" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100">
                         <i class="fas fa-user-circle mr-2"></i> My Profile
                     </a>
                     <a href="#" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100">
                         <i class="fas fa-sliders-h mr-2"></i> Preferences
-                    </a>
-                    <a href="#" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
+                    </a> --}}
+                    <a href="{{ route('logout') }}" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
                         <i class="fas fa-sign-out-alt mr-2"></i> Logout
                     </a>
                 </div>

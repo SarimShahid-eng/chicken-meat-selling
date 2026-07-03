@@ -72,17 +72,16 @@
                             </select>
 
                         </div>
-                        <button
+                    </div>
+                    <button
                             class="mt-5 btn-xs btn-primary bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
-                            <i class="fa fa-search text-xs"></i>
+                            <i class="fa fa-search text-xs mr-2"></i>Search
                         </button>
                         <a href="{{ route('sales.index') }}"
                             class="mt-5 btn-sm cursor-pointer bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
-                            <i class="text-xs fa-solid fa-arrow-rotate-left"></i>
+                            <i class="text-xs fa-solid fa-arrow-rotate-left mr-2"></i>Reset
                         </a>
-
-                    </form>
-                </div>
+                </form>
             </div>
         </div>
 

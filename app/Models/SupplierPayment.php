@@ -23,7 +23,8 @@ class SupplierPayment extends Model
         'description',
         'date',
         'type',
-        'payment_type'
+        'payment_type',
+        'rate_finalized'
     ];
 
     /**
@@ -37,6 +38,7 @@ class SupplierPayment extends Model
             'id' => 'integer',
             'supplier_id' => 'integer',
             'date' => 'date',
+            'rate_finalized'=>'boolean'
         ];
     }
 

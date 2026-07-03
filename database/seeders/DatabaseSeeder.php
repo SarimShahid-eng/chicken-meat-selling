@@ -21,10 +21,10 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+        User::factory()->create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+        ]);
         // 1. Create the specific regions first
         $regions = [
             ['name' => 'Sindh', 'category' => 'purchase'],
@@ -41,14 +41,14 @@ class DatabaseSeeder extends Seeder
         $purchaseRegionIds = Region::where('category', 'purchase')->pluck('id')->toArray();
         $saleRegionIds = Region::where('category', 'sale')->pluck('id')->toArray();
 
-        // // 3. Create Suppliers and assign a random 'purchase' region
+        // 3. Create Suppliers and assign a random 'purchase' region
         Supplier::factory(5)->create([
             'region_id' => function () use ($purchaseRegionIds) {
                 return collect($purchaseRegionIds)->random();
             },
         ]);
 
-        // // 4. Create Customers and assign a random 'sale' region
+        // 4. Create Customers and assign a random 'sale' region
         Customer::factory(10)->create([
             'region_id' => function () use ($saleRegionIds) {
                 return collect($saleRegionIds)->random();
@@ -58,5 +58,6 @@ class DatabaseSeeder extends Seeder
         // Region::factory(1)->create([
         //     'name'=>'sindh'
         // ]);
+        // User::factoy(1)->create();
     }
 }

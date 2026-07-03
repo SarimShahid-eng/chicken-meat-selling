@@ -1,7 +1,6 @@
 @extends('partials.app', ['title' => 'Dashboard'])
 
 @section('content')
-
     <div class="space-y-6">
         <!-- Top Stats Row -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -11,15 +10,15 @@
                 <div class="flex items-start justify-between">
                     <div>
                         <p class="text-gray-500 text-sm font-medium">Total Sales</p>
-                        <h3 class="text-3xl font-bold text-gray-800 mt-2">₨245,320</h3>
-                        <p class="text-green-600 text-sm mt-2">
+                        <h3 class="text-md font-bold text-gray-800 mt-2">{{ $totalSales ?? 0 }}</h3>
+                        {{-- <p class="text-green-600 text-sm mt-2">
                             <i class="fas fa-arrow-up mr-1"></i>
                             <span>+12.5% from last month</span>
-                        </p>
+                        </p> --}}
                     </div>
                     <div
                         class="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-dollar-sign text-white text-xl"></i>
+                        <i class="fa-brands fa-sellsy text-white text-xl"></i>
                     </div>
                 </div>
             </div>
@@ -28,16 +27,16 @@
             <div class="stat-card">
                 <div class="flex items-start justify-between">
                     <div>
-                        <p class="text-gray-500 text-sm font-medium">Total Orders</p>
-                        <h3 class="text-3xl font-bold text-gray-800 mt-2">1,234</h3>
-                        <p class="text-green-600 text-sm mt-2">
+                        <p class="text-gray-500 text-sm font-medium">Total Suppliers</p>
+                        <h3 class="text-md font-bold text-gray-800 mt-2">{{ $suppliersCount ?? 0 }}</h3>
+                        {{-- <p class="text-green-600 text-sm mt-2">
                             <i class="fas fa-arrow-up mr-1"></i>
                             <span>+8.2% from last month</span>
-                        </p>
+                        </p> --}}
                     </div>
                     <div
                         class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-shopping-cart text-white text-xl"></i>
+                        <i class="fas fa-users text-white text-xl"></i>
                     </div>
                 </div>
             </div>
@@ -47,10 +46,10 @@
                 <div class="flex items-start justify-between">
                     <div>
                         <p class="text-gray-500 text-sm font-medium">Stock Items</p>
-                        <h3 class="text-3xl font-bold text-gray-800 mt-2">1,847</h3>
+                        <h3 class="text-md font-bold text-gray-800 mt-2">{{ $stockCounts['available'] ?? 0 }}</h3>
                         <p class="text-yellow-600 text-sm mt-2">
                             <i class="fas fa-exclamation-triangle mr-1"></i>
-                            <span>12 items low</span>
+                            <span>{{ $stockCounts['low_stock'] ?? 0 }} items low</span>
                         </p>
                     </div>
                     <div
@@ -65,15 +64,15 @@
                 <div class="flex items-start justify-between">
                     <div>
                         <p class="text-gray-500 text-sm font-medium">Customers</p>
-                        <h3 class="text-3xl font-bold text-gray-800 mt-2">456</h3>
-                        <p class="text-green-600 text-sm mt-2">
+                        <h3 class="text-md font-bold text-gray-800 mt-2">{{ $customersCount ?? 0 }}</h3>
+                        {{-- <p class="text-green-600 text-sm mt-2">
                             <i class="fas fa-arrow-up mr-1"></i>
                             <span>+15 new this month</span>
-                        </p>
+                        </p> --}}
                     </div>
                     <div
                         class="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-users text-white text-xl"></i>
+                        <i class="fas fa-user text-white text-xl"></i>
                     </div>
                 </div>
             </div>
@@ -226,7 +225,7 @@
         </div>
 
         <!-- Quick Actions -->
-        <div class="stat-card">
+        {{-- <div class="stat-card">
             <h3 class="text-lg font-bold text-gray-800 mb-4">Quick Actions</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <button
@@ -250,7 +249,7 @@
                     <span class="font-medium text-gray-800">Print Report</span>
                 </button>
             </div>
-        </div>
+        </div> --}}
     </div>
 @endsection
 

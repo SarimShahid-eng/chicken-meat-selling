@@ -1,27 +1,27 @@
-@extends('partials.app', ['title' => 'Create Supplier'])
+@extends('partials.app', ['title' => 'Create Product'])
 
 @section('content')
     <div class="max-w-4xl mx-auto space-y-6 animate-fade-in">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900">Add New Supplier</h1>
+                <h1 class="text-2xl font-bold text-gray-900">Add New Product</h1>
                 <p class="text-sm text-gray-500 mt-1">Manage and expand your Chicken POS menu items.</p>
             </div>
-            <a href="{{ route('suppliers.index') }}"
+            <a href="{{ route('products.index') }}"
                 class="btn-secondary flex items-center gap-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors">
                 <i class="fa-solid fa-arrow-left"></i> Back to List
             </a>
         </div>
 
         <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-            <form action="{{ route('suppliers.store') }}" method="POST" class="p-6 sm:p-8 space-y-6">
+            <form action="{{ route('products.store') }}" method="POST" class="p-6 sm:p-8 space-y-6">
                 @csrf
                 <input type="hidden" name="update_id" value="{{ @$product->id }}">
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-2">
                         <label for="name" class="block text-sm font-semibold text-gray-700">
-                            Supplier Name <span class="text-red-500">*</span>
+                            Product Name <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
@@ -48,7 +48,7 @@
                                 class="w-full pl-10 pr-10 py-2.5 bg-gray-50 border @error('soldCreateWise') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors appearance-none">
 
                                 <option value="" disabled
-                                    {{ old('soldCreateWise') === null || isEmpty($product) ? 'selected' : '' }}>
+                                    {{ old('soldCreateWise') === null || isEmpty(@$product) ? 'selected' : '' }}>
                                     Select an option</option>
 
                                 <option value="1"
@@ -91,7 +91,7 @@
                     </button>
                     <button type="submit"
                         class="btn-primary inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-medium px-5 py-2.5 rounded-lg text-sm shadow-md hover:shadow-amber-500/20 transition-all">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> Save Supplier
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Save Product
                     </button>
                 </div>
             </form>

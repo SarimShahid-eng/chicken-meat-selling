@@ -12,6 +12,7 @@ class CustomerPaymentController extends Controller
     public function index(Request $request)
     {
         $customersPayments = CustomerPayment::query()
+        ->whereDoesntHave('sale')
             ->when($request->filled('search'), function ($q) use ($request) {
                 $searchTerm = '%'.$request->input('search').'%';
 

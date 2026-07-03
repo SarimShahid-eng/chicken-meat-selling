@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PurchaseStoreRequest;
 use App\Models\Product;
 use App\Models\Purchase;
-use App\Models\Region;
 use App\Models\Supplier;
 use App\Models\SupplierPayment;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -50,9 +50,20 @@ class PurchaseController extends Controller
                     });
                 });
             })
-            ->when($request->filled('date'), function ($q) use ($request) {
-                $date = $request->input('date');
-                $q->whereDate('date', $date);
+            ->when($request->filled('from_date') && $request->filled('to_date'), function ($q) use ($request) {
+                $fromDate = Carbon::parse($request->input('from_date'))->startOfDay();
+
+                // Parse the end date to the absolute end of that day (23:59:59)
+                $toDate = Carbon::parse($request->input('to_date'))->endOfDay();
+
+                // Direct, unnested execution
+                $q->whereBetween('date', [$fromDate, $toDate]);
+            })
+            ->when($request->filled('from_date') && ! $request->filled('to_date'), function ($q) use ($request) {
+                $fromDate = $request->input('from_date');
+                $q->where(function ($query) use ($fromDate) {
+                    $query->whereDate('date', $fromDate);
+                });
             })
             ->paginate(10);
         $products = Product::all(['id', 'name']);
@@ -108,22 +119,22 @@ class PurchaseController extends Controller
     public function store(PurchaseStoreRequest $request)
     {
         $validated = $request->validated();
-        // dd($validated);
-        // SQLSTATE[42S22]: Column not found: 1054 Unknown column 'date' in 'field list' (Connection: mysql, Host: 127.0.0.1,
-        // Port: 3306, Database: gexton_chicken_sell, SQL: insert into `purchases` (`voucher_no`, `product_id`, `supplier_id`, `vehicle_no`, `date`, `crate_qty`, `total_weight`, `weight_cut`, `netweight`, `rate`, `total_amount`, `updated_at`, `created_at`) values (1, 9, 4, Ut duis nihil debiti, 1995-11-26,
-        //  336, 19, 168.38, 0.00, 21, 0.00, 2026-07-02 12:47:55, 2026-07-02 12:47:55))
+        $isRatePresent = filled($validated['rate']) ? true : false;
         try {
-            DB::transaction(function () use ($validated) {
+            DB::transaction(function () use ($validated, $isRatePresent) {
                 $purchase = Purchase::updateOrCreate(
                     ['id' => $validated['update_id']],
                     $validated);
-                SupplierPayment::create([
-                    'purchase_id' => $purchase->id,
-                    'supplier_id' => $validated['supplier_id'],
-                    'amount' => $validated['total_amount'],
-                    'date' => $validated['date'],
-                    'type' => 'cash',
-                ]);
+                SupplierPayment::updateOrCreate(
+                    ['purchase_id' => $purchase->id], // This links it to the specific purchase
+                    [
+                        'rate_finalized' => $isRatePresent,
+                        'supplier_id' => $validated['supplier_id'],
+                        'amount' => $validated['total_amount'],
+                        'date' => $validated['date'],
+                        'type' => 'cash',
+                    ]
+                );
             });
             $message = filled($validated['update_id']) ? 'updated' : 'created';
 
@@ -153,8 +164,13 @@ class PurchaseController extends Controller
     public function update_rate(Purchase $purchase, Request $request)
     {
         $validated = $request->validate([
-            'rate' => 'required',
+            'rate' => 'required|numeric',
         ]);
+        if ($validated['rate'] <= 0) {
+            return redirect()
+                ->route('purchases.index')
+                ->with('toast_error', 'Rate must be greater than 0');
+        }
         $total_amount = $validated['rate'] * $purchase->netweight;
         $purchase->update([
             'rate' => $validated['rate'],
@@ -163,6 +179,7 @@ class PurchaseController extends Controller
         ]);
         $purchase->supplierPayment->update([
             'amount' => $total_amount,
+            'rate_finalized' => true,
         ]);
 
         return redirect()

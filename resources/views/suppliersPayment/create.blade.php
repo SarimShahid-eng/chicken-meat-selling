@@ -5,14 +5,14 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">
-                    {{ isset($payment) ? 'Edit Customer Payment' : 'Record New Customer Payment' }}
+                    {{ isset($payment) ? 'Edit Supplier Payment' : 'Record New Supplier Payment' }}
                 </h1>
-                <p class="text-sm text-gray-500 mt-1">Log ledger settlements, cash distributions, or wire transfers to customer balances.</p>
+                <p class="text-sm text-gray-500 mt-1">Log ledger settlements, cash distributions, or wire transfers to supplier balances.</p>
             </div>
         </div>
 
         <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-            <form action="{{ route('customersPayment.store') }}" method="POST" class="p-6 sm:p-8 space-y-6">
+            <form action="{{ route('suppliersPayment.store') }}" method="POST" class="p-6 sm:p-8 space-y-6">
                 @csrf
                 {{-- @if(isset($payment))
                     @method('PUT')
@@ -22,24 +22,24 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-2">
-                        <label for="customer_id" class="block text-sm font-semibold text-gray-700">
-                            Select Customer <span class="text-red-500">*</span>
+                        <label for="supplier_id" class="block text-sm font-semibold text-gray-700">
+                            Select Supplier <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 <i class="fa-solid fa-truck-field"></i>
                             </span>
-                            <select id="customer_id" name="customer_id" required
-                                class="w-full pl-10 pr-10 py-2.5 bg-gray-50 border @error('customer_id') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors appearance-none">
+                            <select id="supplier_id" name="supplier_id" required
+                                class="w-full pl-10 pr-10 py-2.5 bg-gray-50 border @error('supplier_id') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors appearance-none">
 
-                                <option value="" disabled {{ (old('customer_id') === null && !isset($payment)) ? 'selected' : '' }}>
-                                    Select a customer account
+                                <option value="" disabled {{ (old('supplier_id') === null && !isset($payment)) ? 'selected' : '' }}>
+                                    Select a supplier account
                                 </option>
 
-                                @foreach ($customers as $customer)
-                                    <option value="{{ $customer->id }}"
-                                        {{ (string) old('customer_id', @$payment->customer_id) === (string) $customer->id ? 'selected' : '' }}>
-                                        {{ $customer->name }}
+                                @foreach ($suppliers as $supplier)
+                                    <option value="{{ $supplier->id }}"
+                                        {{ (string) old('supplier_id', @$payment->supplier_id) === (string) $supplier->id ? 'selected' : '' }}>
+                                        {{ $supplier->name }}
                                     </option>
                                 @endforeach
                             </select>
@@ -47,7 +47,7 @@
                                 <i class="fa-solid fa-chevron-down text-xs"></i>
                             </span>
                         </div>
-                        @error('customer_id')
+                        @error('supplier_id')
                             <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
                         @enderror
                     </div>

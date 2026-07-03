@@ -12,6 +12,9 @@ class SupplierController extends Controller
     public function index(Request $request)
     {
         $suppliers = Supplier::query()
+            ->with(['supplierPayments' => function ($q) {
+                $q->where('rate_finalized', true);
+            }])
             ->when($request->filled('search'), function ($q) use ($request) {
                 $searchTerm = '%'.$request->input('search').'%';
 
@@ -20,8 +23,18 @@ class SupplierController extends Controller
                         ->orWhere('description', 'LIKE', $searchTerm);
                 });
             })
-            ->paginate(10);
+            ->paginate(10)
 
+            ->through(function ($supplier) {
+                $credit = $supplier->supplierPayments->where('payment_type', 'credit')
+                    ->sum('amount') ?? 0;
+                $debit = $supplier->supplierPayments->where('payment_type', 'debit')
+                    ->sum('amount') ?? 0;
+
+                $supplier->current_balance = $supplier->opening_balance + $credit - $debit;
+
+                return $supplier;
+            });
         return view('suppliers.index', compact('suppliers'));
     }
 
