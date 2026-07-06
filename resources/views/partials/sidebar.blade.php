@@ -269,7 +269,7 @@
                     </a>
                     <a href="{{ route('ledger.customer') ?? '#' }}"
                         class="nav-link text-sm
-                                @routeis('ledger.customer')
+                                @routeis(['ledger.customer','ledger.customerReport'])
                                         active
                                         @endrouteis
                                 ">
@@ -279,65 +279,7 @@
                 </div>
             </div>
 
-            <!-- Inventory -->
-            {{--  <div class="space-y-2">
-                <button onclick="toggleSubmenu('inventory-menu')" class="w-full nav-link justify-between">
-                    <div class="flex items-center gap-3">
-                        <i class="fas fa-boxes w-5 text-center"></i>
-                        <span>Inventory</span>
-                    </div>
-                    <i class="fas fa-chevron-down text-xs"></i>
-                </button>
-                <div id="inventory-menu" class="hidden pl-8 space-y-2">
-                    <a href="{{ route('inventory.index') ?? '#' }}" class="nav-link text-sm">
-                        <i class="fas fa-list w-4 text-center"></i>
-                        <span>Stock</span>
-                    </a>
-                    <a href="{{ route('inventory.create') ?? '#' }}" class="nav-link text-sm">
-                        <i class="fas fa-plus w-4 text-center"></i>
-                        <span>Add Stock</span>
-                    </a>
-                </div>
-            </div>
 
-            <!-- Products -->
-            <a href="{{ route('products.index') ?? '#' }}" class="nav-link">
-                <i class="fas fa-utensils w-5 text-center"></i>
-                <span>Products</span>
-            </a>
-
-            <!-- Customers -->
-            <a href="{{ route('customers.index') ?? '#' }}" class="nav-link">
-                <i class="fas fa-users w-5 text-center"></i>
-                <span>Customers</span>
-            </a>
-
-            <!-- Reports -->
-            <div class="space-y-2">
-                <button onclick="toggleSubmenu('reports-menu')" class="w-full nav-link justify-between">
-                    <div class="flex items-center gap-3">
-                        <i class="fas fa-chart-bar w-5 text-center"></i>
-                        <span>Reports</span>
-                    </div>
-                    <i class="fas fa-chevron-down text-xs"></i>
-                </button>
-                <div id="reports-menu" class="hidden pl-8 space-y-2">
-                    <a href="{{ route('reports.sales') ?? '#' }}" class="nav-link text-sm">
-                        <i class="fas fa-chart-line w-4 text-center"></i>
-                        <span>Sales Report</span>
-                    </a>
-                    <a href="{{ route('reports.inventory') ?? '#' }}" class="nav-link text-sm">
-                        <i class="fas fa-chart-pie w-4 text-center"></i>
-                        <span>Inventory Report</span>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Settings -->
-            <a href="{{ route('settings') ?? '#' }}" class="nav-link">
-                <i class="fas fa-cog w-5 text-center"></i>
-                <span>Settings</span>
-            </a> --}}
         </div>
     </nav>
 

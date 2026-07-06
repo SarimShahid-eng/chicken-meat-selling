@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\CustomerPayment;
+use App\Models\Sale;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CustomerLedgerController extends Controller
 {
@@ -21,21 +25,21 @@ class CustomerLedgerController extends Controller
             'from_date' => 'required|date',
             'to_date' => 'required|date',
         ]);
-        $supplierId = $validated['customer_id'];
+        $customerId = $validated['customer_id'];
         $fromDate = Carbon::parse($validated['from_date'])->format('Y-m-d');
         $toDate = Carbon::parse($validated['to_date'])->format('Y-m-d');
 
-        $suppliers = Customer::orderBy('name')->get();
+        $customers = Customer::orderBy('name')->get();
         $ledgerEntries = collect();
         $openingBalance = 0.00;
 
         if ($customerId) {
-            $supplier = Customer::findOrFail($customerId);
+            $customer = Customer::findOrFail($customerId);
 
             // 1. Calculate the initial baseline before 'from_date'
-            $priorPurchases = Purchase::where('customer_id', $customerId)
+            $priorSales = Sale::where('customer_id', $customerId)
                 ->whereDate('date', '<', $fromDate)
-                ->sum('total_amount');
+                ->sum('total_amount'); // Changed from total_amount to reflect common sales naming
 
             $priorPaymentsDebit = CustomerPayment::where('customer_id', $customerId)
                 ->where('payment_type', 'debit')
@@ -46,25 +50,42 @@ class CustomerLedgerController extends Controller
                 ->where('payment_type', 'credit')
                 ->whereDate('date', '<', $fromDate)
                 ->sum('amount');
-            // Customer Base Formula: Opening Balance + Purchases (Credit) - Payments (Debit)
-            $openingBalance = $supplier->opening_balance + $priorPurchases + $priorPaymentsCredit - $priorPaymentsDebit;
 
-            // // 2. Fetch target range records via UNION
-            $purchases = DB::table('purchases')
-                ->select('date', DB::raw('"Purchase" as description'), DB::raw('NULL as debit'), 'total_amount as credit', 'voucher_no as reference_id')
+            // Customer Accounting Formula: Opening Balance + Sales (Debit) + Payments Debit - Payments Credit
+            // Note: If standard sales are Debits, adjust signs below based on your payment_type definitions
+            $openingBalance = $customer->opening_balance + $priorSales + $priorPaymentsDebit - $priorPaymentsCredit;
+
+            // 2. Fetch target range records via UNION sorted precisely by timestamp
+            $sales = DB::table('sales')
+                ->select(
+                    'date',
+                    DB::raw('"Sale Invoice" as description'),
+                    'total_amount as debit', // Sales increase customer balance (Debit)
+                    DB::raw('NULL as credit'),
+                    'voucher_no as reference_id', // Swapped voucher_no to invoice_no
+                    'created_at'
+                )
                 ->where('customer_id', $customerId)
                 ->whereBetween('date', [$fromDate, $toDate]);
 
-            $ledgerEntries = DB::table('supplier_payments')
-                ->select('date', DB::raw('CONCAT("Payment (", type, ")") as description'), 'amount as debit', DB::raw('NULL as credit'), 'id as reference_id')
+            $ledgerEntries = DB::table('customer_payments')
+                ->select(
+                    'date',
+                    DB::raw('CONCAT("Payment (", payment_type, ")") as description'),
+                    DB::raw('NULL as debit'),
+                    'amount as credit', // Standard customer payments reduce balance (Credit)
+                    'id as reference_id',
+                    'created_at'
+                )
                 ->where('customer_id', $customerId)
-                ->where('payment_type', 'debit')
+                // If you want both debit and credit payments in the ledger timeline, use whereIn or remove this check
+                ->whereIn('payment_type', ['credit'])
                 ->whereBetween('date', [$fromDate, $toDate])
-                ->union($purchases)
-                ->orderBy('date', 'asc')
+                ->union($sales)
+                ->orderBy('created_at', 'asc') // Keeps everything perfectly sequential by time
                 ->get();
 
-            return view('ledger.supplier', compact('suppliers', 'ledgerEntries', 'openingBalance', 'fromDate', 'toDate'));
+            return view('ledger.customer', compact('customers', 'ledgerEntries', 'openingBalance', 'fromDate', 'toDate'));
 
         }
     }

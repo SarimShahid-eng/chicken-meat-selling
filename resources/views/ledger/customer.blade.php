@@ -7,8 +7,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Customer Statement Ledger</h1>
-                <p class="text-sm text-gray-500 mt-1">Track comprehensive purchase histories, cash payables, and outstanding
-                    party ledger balances.</p>
+                <p class="text-sm text-gray-500 mt-1">Track comprehensive sales histories, customer payments, and outstanding customer balances.</p>
             </div>
         </div>
 
@@ -21,12 +20,11 @@
                     <label for="customer_id" class="block text-sm font-semibold text-gray-700">Select Customer</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                            <i class="fa-solid fa-truck-field"></i>
+                            <i class="fa-solid fa-user-tie"></i>
                         </span>
                         <select id="customer_id" name="customer_id" required
                             class="w-full pl-10 pr-10 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none appearance-none text-sm">
-                            <option value="" disabled {{ !request('customer_id') ? 'selected' : '' }}>Choose a
-                                customer...</option>
+                            <option value="" disabled {{ !request('customer_id') ? 'selected' : '' }}>Choose a customer...</option>
                             @foreach ($customers as $cust)
                                 <option value="{{ $cust->id }}"
                                     {{ request('customer_id') == $cust->id ? 'selected' : '' }}>{{ $cust->name }}</option>
@@ -62,12 +60,11 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr
-                                class="bg-gray-50 border-b border-gray-100 text-xs font-bold text-gray-600 uppercase tracking-wider">
+                            <tr class="bg-gray-50 border-b border-gray-100 text-xs font-bold text-gray-600 uppercase tracking-wider">
                                 <th class="px-6 py-4">Date</th>
                                 <th class="px-6 py-4">Description / Reference</th>
-                                <th class="px-6 py-4 text-right">Debit (Amount Paid)</th>
-                                <th class="px-6 py-4 text-right">Credit (Purchase Vol)</th>
+                                <th class="px-6 py-4 text-right">Debit (Sales / Charges)</th>
+                                <th class="px-6 py-4 text-right">Credit (Payments Received)</th>
                                 <th class="px-6 py-4 text-right">Running Balance</th>
                             </tr>
                         </thead>
@@ -79,23 +76,21 @@
                                 <td class="px-6 py-3.5 italic">Opening Balance Carriage</td>
                                 <td class="px-6 py-3.5 text-right">-</td>
                                 <td class="px-6 py-3.5 text-right">-</td>
-                                <td class="px-6 py-3.5 text-right font-bold">Rs. {{ number_format($openingBalance, 2) }}
-                                </td>
+                                <td class="px-6 py-3.5 text-right font-bold">Rs. {{ number_format($openingBalance, 2) }}</td>
                             </tr>
 
                             @php $running = $openingBalance; @endphp
 
                             @forelse($ledgerEntries as $entry)
                                 @php
-                                    // Customer running calculation formula adjustments
-                                    $running += ($entry->credit ?? 0) - ($entry->debit ?? 0);
+                                    // Customer Accounting Formula: Debits (Sales) increase balance, Credits (Payments) decrease it.
+                                    $running += ($entry->debit ?? 0) - ($entry->credit ?? 0);
                                 @endphp
                                 <tr class="hover:bg-gray-50/70 transition-colors">
                                     <td class="px-6 py-3.5 text-gray-500">{{ date('d-M-Y', strtotime($entry->date)) }}</td>
                                     <td class="px-6 py-3.5 font-medium">
                                         {{ $entry->description }}
-                                        <span class="text-xs text-gray-400 block">Ref ID:
-                                            #{{ $entry->reference_id }}</span>
+                                        <span class="text-xs text-gray-400 block">Ref ID: #{{ $entry->reference_id }}</span>
                                     </td>
                                     <td class="px-6 py-3.5 text-right text-red-600 font-medium">
                                         {{ $entry->debit ? 'Rs. ' . number_format($entry->debit, 2) : '-' }}
@@ -121,11 +116,12 @@
             </div>
         @endif
     </div>
-      @push('scripts')
-      <script>
+
+    @push('scripts')
+    <script>
         $(document).ready(function(){
             $('#customer_id').select2()
         })
-      </script>
-      @endpush
+    </script>
+    @endpush
 @endsection

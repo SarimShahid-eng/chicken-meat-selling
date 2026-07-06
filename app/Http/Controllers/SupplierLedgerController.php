@@ -50,27 +50,41 @@ class SupplierLedgerController extends Controller
                 ->where('payment_type', 'credit')
                 ->whereDate('date', '<', $fromDate)
                 ->sum('amount');
+
             // Supplier Base Formula: Opening Balance + Purchases (Credit) - Payments (Debit)
             $openingBalance = $supplier->opening_balance + $priorPurchases + $priorPaymentsCredit - $priorPaymentsDebit;
 
-            // // 2. Fetch target range records via UNION
+            // 2. Fetch target range records via UNION (including created_at for chronologically exact sorting)
             $purchases = DB::table('purchases')
-                ->select('date', DB::raw('"Purchase" as description'), DB::raw('NULL as debit'), 'total_amount as credit', 'voucher_no as reference_id')
+                ->select(
+                    'date',
+                    DB::raw('"Purchase" as description'),
+                    DB::raw('NULL as debit'),
+                    'total_amount as credit',
+                    'voucher_no as reference_id',
+                    'created_at' // Added here
+                )
                 ->where('supplier_id', $supplierId)
                 ->whereBetween('date', [$fromDate, $toDate]);
 
             $ledgerEntries = DB::table('supplier_payments')
-                ->select('date', DB::raw('CONCAT("Payment (", type, ")") as description'), 'amount as debit', DB::raw('NULL as credit'), 'id as reference_id')
+                ->select(
+                    'date',
+                    DB::raw('CONCAT("Payment (", type, ")") as description'),
+                    'amount as debit',
+                    DB::raw('NULL as credit'),
+                    'id as reference_id',
+                    'created_at' // Added here to match the union layout
+                )
                 ->where('supplier_id', $supplierId)
                 ->where('payment_type', 'debit')
                 ->whereBetween('date', [$fromDate, $toDate])
                 ->union($purchases)
-                ->orderBy('date', 'asc')
+                ->orderBy('created_at', 'asc') // This solves the same-day sequencing issue
                 ->get();
 
             return view('ledger.supplier', compact('suppliers', 'ledgerEntries', 'openingBalance', 'fromDate', 'toDate'));
         }
 
     }
-    //
 }
