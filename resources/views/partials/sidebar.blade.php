@@ -278,6 +278,45 @@
                     </a>
                 </div>
             </div>
+            <!-- Report -->
+            <div class="space-y-2">
+                <button onclick="toggleSubmenu('report-menu')"
+                    class="w-full nav-link justify-between
+                    @routeis('reports.*')
+                            active
+                            @else
+                            hidden
+                            @endrouteis">
+                    <div class="flex items-center gap-3">
+                      <i class="fa fa-chart-bar"></i>
+                        <span>Report</span>
+                    </div>
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </button>
+                <div id="report-menu"
+                    class=" pl-8 space-y-2 @routeis('reports.*')
+                        active
+                        @else
+                        hidden
+                        @endrouteis">
+                    <a href="{{ route('reports.general') ?? '#' }}"
+                        class="nav-link text-sm  @routeis(['ledger.supplier','ledger.supplierReport'])
+                        active
+                        @endrouteis">
+                        <i class="fas fa-chart-line w-4 text-center"></i>
+                        <span>General Report</span>
+                    </a>
+                    {{-- <a href="{{ route('ledger.customer') ?? '#' }}"
+                        class="nav-link text-sm
+                                @routeis(['ledger.customer','ledger.customerReport'])
+                                        active
+                                        @endrouteis
+                                ">
+                        <i class="fas fa-chart-line w-4 text-center"></i>
+                        <span>Profit</span>
+                    </a> --}}
+                </div>
+            </div>
 
 
         </div>

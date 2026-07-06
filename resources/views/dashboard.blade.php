@@ -81,13 +81,13 @@
         <!-- Charts Section -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Sales Chart -->
-            <div class="lg:col-span-2 stat-card">
+            <div class="lg:col-span-4 stat-card">
                 <h3 class="text-lg font-bold text-gray-800 mb-4">Sales Overview</h3>
                 <canvas id="salesChart"></canvas>
             </div>
 
             <!-- Top Products -->
-            <div class="stat-card">
+            {{-- <div class="stat-card">
                 <h3 class="text-lg font-bold text-gray-800 mb-4">Top Products</h3>
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
@@ -131,7 +131,7 @@
                         <span class="text-sm font-bold text-gray-800 ml-3">55%</span>
                     </div>
                 </div>
-            </div>
+            </div> --}}
         </div>
 
         <!-- Recent Sales & Inventory -->
@@ -146,37 +146,25 @@
                     <table class="w-full text-sm table-hover">
                         <thead>
                             <tr class="border-b border-gray-200">
-                                <th class="text-left px-4 py-3 font-semibold text-gray-700">Order ID</th>
+                                <th class="text-left px-4 py-3 font-semibold text-gray-700">Voucher No.</th>
                                 <th class="text-left px-4 py-3 font-semibold text-gray-700">Customer</th>
                                 <th class="text-left px-4 py-3 font-semibold text-gray-700">Amount</th>
-                                <th class="text-left px-4 py-3 font-semibold text-gray-700">Status</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td class="px-4 py-3 font-medium text-gray-800">#1024</td>
-                                <td class="px-4 py-3 text-gray-600">Ahmed Hassan</td>
-                                <td class="px-4 py-3 font-semibold text-gray-800">₨2,450</td>
-                                <td class="px-4 py-3"><span class="badge-success">Completed</span></td>
-                            </tr>
-                            <tr>
-                                <td class="px-4 py-3 font-medium text-gray-800">#1023</td>
-                                <td class="px-4 py-3 text-gray-600">Fatima Khan</td>
-                                <td class="px-4 py-3 font-semibold text-gray-800">₨1,850</td>
-                                <td class="px-4 py-3"><span class="badge-success">Completed</span></td>
-                            </tr>
-                            <tr>
-                                <td class="px-4 py-3 font-medium text-gray-800">#1022</td>
-                                <td class="px-4 py-3 text-gray-600">Ali Muhammad</td>
-                                <td class="px-4 py-3 font-semibold text-gray-800">₨3,200</td>
-                                <td class="px-4 py-3"><span class="badge-success">Completed</span></td>
-                            </tr>
-                            <tr>
-                                <td class="px-4 py-3 font-medium text-gray-800">#1021</td>
-                                <td class="px-4 py-3 text-gray-600">Sara Ahmed</td>
-                                <td class="px-4 py-3 font-semibold text-gray-800">₨2,100</td>
-                                <td class="px-4 py-3"><span class="badge-warning">Pending</span></td>
-                            </tr>
+                            @forelse ($salesRecord as $sale)
+                                <tr>
+                                    <td class="px-4 py-3 font-medium text-gray-800">{{ $sale->voucher_no }}</td>
+                                    <td class="px-4 py-3 text-gray-600">{{ $sale->customer->name }}</td>
+                                    <td class="px-4 py-3 font-semibold text-gray-800">{{ $sale->total_amount }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4">
+                                        No Records Found
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -189,7 +177,14 @@
                     <a href="#" class="text-amber-600 font-medium text-sm hover:text-amber-700">Manage Stock</a>
                 </div>
                 <div class="space-y-3">
-                    <div class="flex items-center gap-4 p-3 bg-red-50 rounded-lg border border-red-200">
+                    @foreach ($stockAlerts as $product)
+                        <div class="flex items-center gap-4 p-3 rounded-lg border {{ $product->bg_color }}">
+                            <i class="{{ $product->icon }}"></i>
+                            <p>{{ $product->name }}</p>
+                            <p>{{ $product->message }}</p>
+                        </div>
+                    @endforeach
+                    {{-- <div class="flex items-center gap-4 p-3 bg-red-50 rounded-lg border border-red-200">
                         <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
                             <i class="fas fa-exclamation-circle text-red-600"></i>
                         </div>
@@ -219,8 +214,12 @@
                             <p class="font-medium text-gray-800">Chicken Legs</p>
                             <p class="text-sm text-gray-600">Stock level: 245 items</p>
                         </div>
-                    </div>
+                    </div> --}}
                 </div>
+            </div>
+            <div class="lg:col-span-4 stat-card">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Purchase Overview</h3>
+                <canvas id="purchaseChart"></canvas>
             </div>
         </div>
 
@@ -255,15 +254,17 @@
 
 @push('scripts')
     <script>
+        const chartLabels = {!! json_encode($chartLabels) !!};
+        const chartValues = {!! json_encode($chartValues) !!};
         // Sales Chart
         const salesCtx = document.getElementById('salesChart').getContext('2d');
         new Chart(salesCtx, {
             type: 'line',
             data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                labels: chartLabels,
                 datasets: [{
                     label: 'Sales',
-                    data: [12000, 19000, 15000, 25000, 22000, 28000, 32000],
+                    data: chartValues,
                     borderColor: '#f59e0b',
                     backgroundColor: 'rgba(245, 158, 11, 0.1)',
                     borderWidth: 2,
@@ -283,11 +284,84 @@
                     legend: {
                         display: true,
                         position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let value = context.raw;
+                                return ' Revenue: Rs. ' + new Intl.NumberFormat().format(value);
+                            }
+                        }
                     }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'Rs. ' + new Intl.NumberFormat().format(value);
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(200, 200, 200, 0.1)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+        const purchaseChartLabels = {!! json_encode($purchaseChartLabels) !!};
+        const purchaseChartValues = {!! json_encode($purchaseChartValues) !!};
+        // Purchase Chart
+        const purchaseCtx = document.getElementById('purchaseChart').getContext('2d');
+        new Chart(purchaseCtx, {
+            type: 'line',
+            data: {
+                labels: purchaseChartLabels,
+                datasets: [{
+                    label: 'Purchase',
+                    data: purchaseChartValues,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#f59e0b',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let value = context.raw;
+                                return ' Revenue: Rs. ' + new Intl.NumberFormat().format(value);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'Rs. ' + new Intl.NumberFormat().format(value);
+                            }
+                        },
                         grid: {
                             color: 'rgba(200, 200, 200, 0.1)'
                         }

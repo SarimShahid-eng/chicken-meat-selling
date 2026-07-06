@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\SupplierLedgerController;
@@ -99,7 +100,18 @@ Route::middleware('auth')->group(function () {
         });
         Route::controller(SupplierLedgerController::class)->group(function () {
             Route::get('supplier', 'supplier')->name('supplier');
-             Route::post('supplierReport', 'supplierReport')->name('supplierReport');
+            Route::post('supplierReport', 'supplierReport')->name('supplierReport');
+        });
+
+    });
+    Route::prefix('report')->name('reports.')->group(function () {
+        Route::controller(ReportController::class)->group(function () {
+            Route::get('general', 'general')->name('general');
+            Route::get('profit', 'profit')->name('profit');
+        });
+        Route::controller(SupplierLedgerController::class)->group(function () {
+            Route::get('supplier', 'supplier')->name('supplier');
+            Route::post('supplierReport', 'supplierReport')->name('supplierReport');
         });
 
     });
