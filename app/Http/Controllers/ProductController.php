@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProductStoreRequest;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $products = Product::withSum('purchases as total_purchased_weight', 'netweight')
+        $baseQuery = Product::withSum('purchases as total_purchased_weight', 'netweight')
             ->withSum('sales as total_sold_weight', 'netweight')
             ->when($request->filled('search'), function ($q) use ($request) {
                 $searchTerm = '%'.$request->input('search').'%';
@@ -19,9 +20,8 @@ class ProductController extends Controller
                     $query->where('name', 'LIKE', $searchTerm)
                         ->orWhere('description', 'LIKE', $searchTerm);
                 });
-            })
-            ->paginate(10)
-
+            });
+        $products = (clone $baseQuery)->paginate(10)
             ->through(function ($product) {
                 $purchased = $product->total_purchased_weight ?? 0;
                 $sold = $product->total_sold_weight ?? 0;
@@ -31,6 +31,22 @@ class ProductController extends Controller
 
                 return $product;
             });
+
+        if ($request->filled('export') && $request->input('export') === 'pdf') {
+            $data = (clone $baseQuery)->get()
+                ->map(function ($product) {
+                    $purchased = $product->total_purchased_weight ?? 0;
+                    $sold = $product->total_sold_weight ?? 0;
+
+                    // Append the stock calculation dynamically
+                    $product->current_stock_weight = $purchased - $sold;
+
+                    return $product;
+                });
+            $pdf = Pdf::loadView('products.exportPdf', compact('data'));
+
+            return $pdf->download('products.pdf');
+        }
 
         return view('products.index', compact('products'));
     }

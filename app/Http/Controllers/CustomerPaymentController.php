@@ -5,14 +5,15 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CustomerPaymentRequestStore;
 use App\Models\Customer;
 use App\Models\CustomerPayment;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class CustomerPaymentController extends Controller
 {
     public function index(Request $request)
     {
-        $customersPayments = CustomerPayment::query()
-        ->whereDoesntHave('sale')
+        $baseQuery = CustomerPayment::query()
+            ->whereDoesntHave('sale')
             ->when($request->filled('search'), function ($q) use ($request) {
                 $searchTerm = '%'.$request->input('search').'%';
 
@@ -30,8 +31,15 @@ class CustomerPaymentController extends Controller
             ->when($request->filled('date'), function ($q) use ($request) {
                 $date = $request->input('date');
                 $q->whereDate('date', $date);
-            })
+            });
+        $customersPayments = (clone $baseQuery)
             ->paginate(10);
+        if ($request->filled('export') && $request->input('export') === 'pdf') {
+            $data = (clone $baseQuery)->get();
+            $pdf = Pdf::loadView('customerPayment.exportPdf', compact('data'));
+
+            return $pdf->download('customerPayment.pdf');
+        }
 
         return view('customerPayment.index', compact('customersPayments'));
     }

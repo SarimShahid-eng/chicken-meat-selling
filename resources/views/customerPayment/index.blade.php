@@ -15,7 +15,7 @@
         </div>
 
         <div class="flex justify-start">
-            <div class="w-full max-w-[600px] bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+            <div class="w-full max-w-[700px] bg-white rounded-xl p-4 shadow-sm border border-gray-100">
 
                 <div class="flex items-center gap-2">
                     <form action="{{ route('customersPayment.index') }}" method="GET"
@@ -24,9 +24,8 @@
                             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                                 Search payments
                             </label>
-                            <input type="text"
-                            value="{{ filled(request()->search)?request()->search:'' }}"
-                            placeholder="Search customersPayments..." name="search"
+                            <input type="text" value="{{ filled(request()->search) ? request()->search : '' }}"
+                                placeholder="Search customersPayments..." name="search"
                                 class="w-full pl-3 pr-10 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors">
                             <div
                                 class="absolute inset-y-0 right-0 top-5 flex items-center pr-3 pointer-events-none text-gray-400">
@@ -41,7 +40,7 @@
                                 value="{{ filled(request()->date) ? request()->date : date('Y-m-d') }}"
                                 class="w-full pl-3 pr-10 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors">
                         </div>
-                        <button
+                        <button type="submit"
                             class="mt-4 btn-sm btn-primary bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
                             Search
                         </button>
@@ -49,6 +48,10 @@
                             class="mt-4 btn-sm cursor-pointer bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
                             Reset
                         </a>
+                        <button type="submit" name="export" value="pdf"
+                            class="mt-4 btn-sm btn-danger bg-red-700 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
+                            Export
+                        </button>
                     </form>
                 </div>
             </div>

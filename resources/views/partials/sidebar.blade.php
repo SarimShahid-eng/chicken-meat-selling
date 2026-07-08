@@ -300,7 +300,7 @@
                         hidden
                         @endrouteis">
                     <a href="{{ route('reports.general') ?? '#' }}"
-                        class="nav-link text-sm  @routeis(['ledger.supplier','ledger.supplierReport'])
+                        class="nav-link text-sm  @routeis(['reports.general'])
                         active
                         @endrouteis">
                         <i class="fas fa-chart-line w-4 text-center"></i>

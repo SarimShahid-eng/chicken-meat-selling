@@ -7,8 +7,7 @@
                 <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Products</h1>
                 <p class="text-gray-500 mt-1 text-sm">Manage your chicken meat products inventory and stock levels</p>
             </div>
-            <a
-            href="{{ route('products.create') }}"
+            <a href="{{ route('products.create') }}"
                 class="btn-primary cursor-pointer inline-flex items-center justify-center bg-amber-600 hover:bg-amber-700 text-white font-medium px-4 py-2.5 rounded-lg shadow-sm transition-colors text-sm">
                 <i class="fas fa-plus mr-2 text-xs"></i>
                 Add New Product
@@ -24,22 +23,25 @@
                     <form action="{{ route('products.index') }}" method="GET" class="flex items-center gap-2 w-full">
                         <div class="relative flex-1">
                             <input type="text" placeholder="Search products..." name="search"
+                            value="{{ request('search') }}"
                                 class="w-full pl-3 pr-10 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors">
                             <div
                                 class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
                                 <i class="fas fa-search text-xs"></i>
                             </div>
                         </div>
-                        <button
+                        <button type="submit"
                             class="btn-sm btn-primary bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
                             Search
                         </button>
-                        <a
-                        href="{{ route('products.index') }}"
-
+                        <a href="{{ route('products.index') }}"
                             class="btn-sm cursor-pointer bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
                             Reset
                         </a>
+                        <button type="submit" name="export" value="pdf"
+                            class="btn-sm btn-danger bg-red-700 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
+                            Export
+                        </button>
                     </form>
                 </div>
             </div>
@@ -101,7 +103,8 @@
 
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="inline-flex items-center gap-3">
-                                    <a  href="{{ route('products.edit',['product'=>$product->id]) }}" class="cursor-pointer text-gray-400 hover:text-blue-600 transition-colors"
+                                        <a href="{{ route('products.edit', ['product' => $product->id]) }}"
+                                            class="cursor-pointer text-gray-400 hover:text-blue-600 transition-colors"
                                             title="Edit Product">
                                             <i class="fas fa-edit text-base"></i>
                                         </a>

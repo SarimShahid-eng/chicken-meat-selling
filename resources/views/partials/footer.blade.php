@@ -10,10 +10,10 @@
             <a href="#" class="text-gray-600 hover:text-amber-600 transition">Documentation</a>
             <a href="#" class="text-gray-600 hover:text-amber-600 transition">Privacy Policy</a>
             <span class="text-gray-400">|</span> --}}
-            <span class="text-gray-600">
+            {{-- <span class="text-gray-600">
                 <i class="fas fa-server text-green-500 mr-1"></i>
                 System Status: <span class="font-medium text-green-600">Operational</span>
-            </span>
+            </span> --}}
         </div>
     </div>
 </footer>

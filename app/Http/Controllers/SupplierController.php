@@ -5,24 +5,49 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SupplierStoreRequest;
 use App\Models\Region;
 use App\Models\Supplier;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class SupplierController extends Controller
 {
     public function index(Request $request)
     {
-        $suppliers = Supplier::query()
+        $baseQuery = Supplier::query()
             ->with(['supplierPayments' => function ($q) {
                 $q->where('rate_finalized', true);
-            }])
+            }, 'region'])
             ->when($request->filled('search'), function ($q) use ($request) {
                 $searchTerm = '%'.$request->input('search').'%';
 
                 $q->where(function ($query) use ($searchTerm) {
                     $query->where('name', 'LIKE', $searchTerm)
-                        ->orWhere('description', 'LIKE', $searchTerm);
+                        ->orWhere('description', 'LIKE', $searchTerm)
+                        ->orWhereHas('region', function ($subQuery) use ($searchTerm) {
+                            $subQuery->where('name', 'LIKE', $searchTerm);
+                        });
+
                 });
-            })
+            });
+        if ($request->filled('export') && $request->input('export') === 'pdf') {
+            // dd('ss');
+            $data = (clone $baseQuery)->get()
+            // ->collection()
+                ->map(function ($supplier) {
+                    $credit = $supplier->supplierPayments->where('payment_type', 'credit')
+                        ->sum('amount') ?? 0;
+                    $debit = $supplier->supplierPayments->where('payment_type', 'debit')
+                        ->sum('amount') ?? 0;
+
+                    $supplier->current_balance = $supplier->opening_balance + $credit - $debit;
+
+                    return $supplier;
+                });
+            $pdf = Pdf::loadView('suppliers.exportPdf', compact('data'));
+
+            return $pdf->download('suppliers.pdf');
+        }
+        $suppliers = (clone $baseQuery)
+            // ->when($request-)
             ->paginate(10)
 
             ->through(function ($supplier) {
@@ -35,6 +60,7 @@ class SupplierController extends Controller
 
                 return $supplier;
             });
+
         return view('suppliers.index', compact('suppliers'));
     }
 

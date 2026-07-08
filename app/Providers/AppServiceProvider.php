@@ -29,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
         View::composer('*', function ($view) {
 
             // 1. Calculate Today's Sales (Sum of totals processed today)
-            $todaysSales = Sale::whereDate('date', today())->sum('total_amount');
+            $todaysSales = Sale::whereDate('date', today())->sum('total_amount')??0;
             $availableProductsCount = Product::withSum('purchases', 'netweight')
                 ->withSum('sales', 'netweight')
                 ->get()
@@ -39,7 +39,7 @@ class AppServiceProvider extends ServiceProvider
 
                     return ($purchased - $sold) > 0;
                 })
-                ->count();
+                ->count()??0;
             $view->with([
                 'globalTodaysSales' => $todaysSales,
                 'globalStockCount' => $availableProductsCount,

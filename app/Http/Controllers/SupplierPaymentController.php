@@ -5,16 +5,14 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SupplierPaymentRequestStore;
 use App\Models\Supplier;
 use App\Models\SupplierPayment;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class SupplierPaymentController extends Controller
 {
     public function index(Request $request)
     {
-        $suppliersPayments = SupplierPayment::query()
-            // ->with(['purchase' => function ($q) {
-            //     $q->whereNotNull('rate');
-            // }])
+        $baseQuery = SupplierPayment::query()
             ->whereDoesntHave('purchase')
             ->where('rate_finalized', true)
             ->when($request->filled('search'), function ($q) use ($request) {
@@ -34,8 +32,15 @@ class SupplierPaymentController extends Controller
             ->when($request->filled('date'), function ($q) use ($request) {
                 $date = $request->input('date');
                 $q->whereDate('date', $date);
-            })
+            });
+        $suppliersPayments = (clone $baseQuery)
             ->paginate(10);
+        if ($request->filled('export') && $request->input('export') === 'pdf') {
+            $data = (clone $baseQuery)->get();
+            $pdf = Pdf::loadView('suppliersPayment.exportPdf', compact('data'));
+
+            return $pdf->download('supplierPayment.pdf');
+        }
 
         return view('suppliersPayment.index', compact('suppliersPayments'));
     }

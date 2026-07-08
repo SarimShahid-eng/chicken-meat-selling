@@ -74,14 +74,18 @@
                         </div>
 
                 </div>
-                <button
+                <button type="submit"
                     class="mt-5 btn-xs btn-primary bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
                     <i class="fa fa-search text-xs mr-2"></i>Search
                 </button>
                 <a href="{{ route('sales.index') }}"
                     class="mt-5 btn-sm cursor-pointer bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
-                    <i class="text-xs fa-solid fa-arrow-rotate-left mr-2"></i>Reset
+                    <i class="text-xs fa-solid fa-arrow-rotate-left mx-2"></i>Reset
                 </a>
+                <button type="submit" name="export" value="pdf"
+                    class="mx-2 btn-sm btn-danger bg-red-700 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
+                    Export
+                </button>
                 </form>
             </div>
         </div>
@@ -200,133 +204,133 @@
     </div>
 
     @include('purchases.modal')
-        @push('scripts')
-            <script>
-                $(document).ready(function() {
-                    $('.main').select2();
-                });
+    @push('scripts')
+        <script>
+            $(document).ready(function() {
+                $('.main').select2();
+            });
 
-                (function() {
-                    // Details Modal Elements
-                    const viewModal = document.getElementById('purchaseDetailsModal');
-                    const loadingEl = document.getElementById('modalLoading');
-                    const errorEl = document.getElementById('modalError');
-                    const contentEl = document.getElementById('modalContent');
+            (function() {
+                // Details Modal Elements
+                const viewModal = document.getElementById('purchaseDetailsModal');
+                const loadingEl = document.getElementById('modalLoading');
+                const errorEl = document.getElementById('modalError');
+                const contentEl = document.getElementById('modalContent');
 
-                    // Rate Modal Elements
-                    const rateModal = document.getElementById('rateConfirmModal');
-                    const rateForm = document.getElementById('rateConfirmForm');
-                    const rateInput = document.getElementById('modalInputRate');
+                // Rate Modal Elements
+                const rateModal = document.getElementById('rateConfirmModal');
+                const rateForm = document.getElementById('rateConfirmForm');
+                const rateInput = document.getElementById('modalInputRate');
 
-                    // --- Details Modal Management ---
-                    function setViewState(state) {
-                        loadingEl.classList.toggle('hidden', state !== 'loading');
-                        errorEl.classList.toggle('hidden', state !== 'error');
-                        contentEl.classList.toggle('hidden', state !== 'content');
-                    }
+                // --- Details Modal Management ---
+                function setViewState(state) {
+                    loadingEl.classList.toggle('hidden', state !== 'loading');
+                    errorEl.classList.toggle('hidden', state !== 'error');
+                    contentEl.classList.toggle('hidden', state !== 'content');
+                }
 
-                    function populateView(data) {
-                        document.getElementById('modalVoucherNo').textContent = data.voucher_no ?? '—';
-                        document.getElementById('modalProduct').textContent = data.product?.name ?? '—';
-                        document.getElementById('modalSupplier').textContent = data.supplier?.name ?? '—';
-                        document.getElementById('modalRegion').textContent = data.supplier?.region?.name ?? '—';
-                        document.getElementById('modalVehicleNo').textContent = data.vehicle_no ?? '—';
-                        document.getElementById('modalCrateQty').textContent = data.crate_qty ?? '—';
-                        document.getElementById('modalTotalWeight').textContent = data.total_weight ?? '—';
-                        document.getElementById('modalWeightCut').textContent = data.weight_cut ?? '—';
-                        document.getElementById('modalNetWeight').textContent = data.netweight ?? '—';
-                        document.getElementById('modalRate').textContent = data.rate ?? 'Not set';
-                        document.getElementById('modalRateDate').textContent = data.rate_date_formatted ?? data.rate_date ??
-                            '—';
-                        document.getElementById('modalTotalAmount').textContent = data.total_amount ?? '—';
-                        document.getElementById('modalCreatedAt').textContent = data.created_at_formatted ?? data.created_at ??
-                            '—';
-                    }
+                function populateView(data) {
+                    document.getElementById('modalVoucherNo').textContent = data.voucher_no ?? '—';
+                    document.getElementById('modalProduct').textContent = data.product?.name ?? '—';
+                    document.getElementById('modalSupplier').textContent = data.supplier?.name ?? '—';
+                    document.getElementById('modalRegion').textContent = data.supplier?.region?.name ?? '—';
+                    document.getElementById('modalVehicleNo').textContent = data.vehicle_no ?? '—';
+                    document.getElementById('modalCrateQty').textContent = data.crate_qty ?? '—';
+                    document.getElementById('modalTotalWeight').textContent = data.total_weight ?? '—';
+                    document.getElementById('modalWeightCut').textContent = data.weight_cut ?? '—';
+                    document.getElementById('modalNetWeight').textContent = data.netweight ?? '—';
+                    document.getElementById('modalRate').textContent = data.rate ?? 'Not set';
+                    document.getElementById('modalRateDate').textContent = data.rate_date_formatted ?? data.rate_date ??
+                        '—';
+                    document.getElementById('modalTotalAmount').textContent = data.total_amount ?? '—';
+                    document.getElementById('modalCreatedAt').textContent = data.created_at_formatted ?? data.created_at ??
+                        '—';
+                }
 
-                    function openViewModal() {
-                        viewModal.classList.remove('hidden');
-                        document.body.classList.add('overflow-hidden');
-                    }
+                function openViewModal() {
+                    viewModal.classList.remove('hidden');
+                    document.body.classList.add('overflow-hidden');
+                }
 
-                    function closeViewModal() {
-                        viewModal.classList.add('hidden');
+                function closeViewModal() {
+                    viewModal.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                }
+
+                function loadAndShow(url) {
+                    openViewModal();
+                    setViewState('loading');
+
+                    fetch(url, {
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) throw new Error('Request failed');
+                            return response.json();
+                        })
+                        .then(data => {
+                            const purchase = data.purchase ?? data;
+                            populateView(purchase);
+                            setViewState('content');
+                        })
+                        .catch(() => setViewState('error'));
+                }
+
+                // --- Rate Modal Management ---
+                function openRateModal(updateUrl) {
+                    rateForm.action = updateUrl; // Dynamically binds the update URL
+                    rateInput.value = ''; // Resets the input field
+                    rateModal.classList.remove('hidden');
+                    document.body.classList.add('overflow-hidden');
+                    setTimeout(() => rateInput.focus(), 100);
+                }
+
+                function closeRateModal() {
+                    rateModal.classList.add('hidden');
+                    if (viewModal.classList.contains('hidden')) {
                         document.body.classList.remove('overflow-hidden');
                     }
+                }
 
-                    function loadAndShow(url) {
-                        openViewModal();
-                        setViewState('loading');
+                // --- Event Listeners ---
 
-                        fetch(url, {
-                                headers: {
-                                    'Accept': 'application/json'
-                                }
-                            })
-                            .then(response => {
-                                if (!response.ok) throw new Error('Request failed');
-                                return response.json();
-                            })
-                            .then(data => {
-                                const purchase = data.purchase ?? data;
-                                populateView(purchase);
-                                setViewState('content');
-                            })
-                            .catch(() => setViewState('error'));
-                    }
+                // View purchases click events
+                document.querySelectorAll('.js-view-purchase').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const url = btn.dataset.url;
+                        if (url) loadAndShow(url);
+                    });
+                });
 
-                    // --- Rate Modal Management ---
-                    function openRateModal(updateUrl) {
-                        rateForm.action = updateUrl; // Dynamically binds the update URL
-                        rateInput.value = ''; // Resets the input field
-                        rateModal.classList.remove('hidden');
-                        document.body.classList.add('overflow-hidden');
-                        setTimeout(() => rateInput.focus(), 100);
-                    }
+                document.querySelectorAll('.js-close-modal').forEach(el => {
+                    el.addEventListener('click', closeViewModal);
+                });
 
-                    function closeRateModal() {
-                        rateModal.classList.add('hidden');
-                        if (viewModal.classList.contains('hidden')) {
-                            document.body.classList.remove('overflow-hidden');
+                // Rate conversion click events
+                document.querySelectorAll('.js-rate-confirm').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const updateUrl = btn.dataset.updateUrl;
+                        if (updateUrl) openRateModal(updateUrl);
+                    });
+                });
+
+                document.querySelectorAll('.js-close-rate-modal').forEach(el => {
+                    el.addEventListener('click', closeRateModal);
+                });
+
+                // Master Escape Key Handler for both Modals
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        if (!rateModal.classList.contains('hidden')) {
+                            closeRateModal();
+                        } else if (!viewModal.classList.contains('hidden')) {
+                            closeViewModal();
                         }
                     }
-
-                    // --- Event Listeners ---
-
-                    // View purchases click events
-                    document.querySelectorAll('.js-view-purchase').forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            const url = btn.dataset.url;
-                            if (url) loadAndShow(url);
-                        });
-                    });
-
-                    document.querySelectorAll('.js-close-modal').forEach(el => {
-                        el.addEventListener('click', closeViewModal);
-                    });
-
-                    // Rate conversion click events
-                    document.querySelectorAll('.js-rate-confirm').forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            const updateUrl = btn.dataset.updateUrl;
-                            if (updateUrl) openRateModal(updateUrl);
-                        });
-                    });
-
-                    document.querySelectorAll('.js-close-rate-modal').forEach(el => {
-                        el.addEventListener('click', closeRateModal);
-                    });
-
-                    // Master Escape Key Handler for both Modals
-                    document.addEventListener('keydown', (e) => {
-                        if (e.key === 'Escape') {
-                            if (!rateModal.classList.contains('hidden')) {
-                                closeRateModal();
-                            } else if (!viewModal.classList.contains('hidden')) {
-                                closeViewModal();
-                            }
-                        }
-                    });
-                })();
-            </script>
-        @endpush
+                });
+            })();
+        </script>
+    @endpush
 @endsection

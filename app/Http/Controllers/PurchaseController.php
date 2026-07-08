@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PurchaseController extends Controller
 {
@@ -19,7 +20,7 @@ class PurchaseController extends Controller
      */
     public function index(Request $request)
     {
-        $purchases = Purchase::query()
+        $baseQuery = Purchase::query()
             ->with('supplier', 'product')
             ->when($request->filled('search'), function ($q) use ($request) {
                 $searchTerm = '%'.$request->input('search').'%';
@@ -64,8 +65,15 @@ class PurchaseController extends Controller
                 $q->where(function ($query) use ($fromDate) {
                     $query->whereDate('date', $fromDate);
                 });
-            })
-            ->paginate(10);
+            });
+        $purchases = (clone $baseQuery)->paginate(10);
+        if ($request->filled('export') && $request->input('export') === 'pdf') {
+            // dd('ss');
+            $data = (clone $baseQuery)->get();
+            $pdf = Pdf::loadView('purchases.exportPdf', compact('data'));
+
+            return $pdf->download('purchases.pdf');
+        }
         $products = Product::all(['id', 'name']);
         $suppliers = Supplier::with('region')->get();
 

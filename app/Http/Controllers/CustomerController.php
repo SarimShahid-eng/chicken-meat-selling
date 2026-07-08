@@ -5,22 +5,27 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CustomerStoreRequest;
 use App\Models\Customer;
 use App\Models\Region;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
 {
     public function index(Request $request)
     {
-        $customers = Customer::query()
+        $baseQuery = Customer::query()
             ->with('customerPayments')
             ->when($request->filled('search'), function ($q) use ($request) {
                 $searchTerm = '%'.$request->input('search').'%';
 
                 $q->where(function ($query) use ($searchTerm) {
                     $query->where('name', 'LIKE', $searchTerm)
-                        ->orWhere('description', 'LIKE', $searchTerm);
+                        ->orWhere('description', 'LIKE', $searchTerm)
+                        ->orWhereHas('region', function ($subQuery) use ($searchTerm) {
+                            $subQuery->where('name', 'LIKE', $searchTerm);
+                        });
                 });
-            })
+            });
+        $customers = (clone $baseQuery)
             ->paginate(10)
             ->through(function ($customer) {
                 $credit = $customer->customerPayments->where('payment_type', 'credit')
@@ -32,6 +37,24 @@ class CustomerController extends Controller
 
                 return $customer;
             });
+        if ($request->filled('export') && $request->input('export') === 'pdf') {
+            // dd('ss');
+            $data = (clone $baseQuery)->get()
+            // ->collection()
+                ->map(function ($customer) {
+                    $credit = $customer->customerPayments->where('payment_type', 'credit')
+                        ->sum('amount') ?? 0;
+                    $debit = $customer->customerPayments->where('payment_type', 'debit')
+                        ->sum('amount') ?? 0;
+
+                    $customer->current_balance = $customer->opening_balance + $credit - $debit;
+
+                    return $customer;
+                });
+            $pdf = Pdf::loadView('customers.exportPdf', compact('data'));
+
+            return $pdf->download('customers.pdf');
+        }
 
         return view('customers.index', compact('customers'));
     }

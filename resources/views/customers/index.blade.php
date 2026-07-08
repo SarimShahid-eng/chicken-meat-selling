@@ -23,13 +23,14 @@
                     <form action="{{ route('customers.index') }}" method="GET" class="flex items-center gap-2 w-full">
                         <div class="relative flex-1">
                             <input type="text" placeholder="Search customers..." name="search"
+                                value="{{ request('search') }}"
                                 class="w-full pl-3 pr-10 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors">
                             <div
                                 class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
                                 <i class="fas fa-search text-xs"></i>
                             </div>
                         </div>
-                        <button
+                        <button type="submit"
                             class="btn-sm btn-primary bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
                             Search
                         </button>
@@ -37,6 +38,10 @@
                             class="btn-sm cursor-pointer bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
                             Reset
                         </a>
+                        <button type="submit" name="export" value="pdf"
+                            class="btn-sm btn-danger bg-red-700 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
+                            Export
+                        </button>
                     </form>
                 </div>
             </div>

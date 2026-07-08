@@ -37,7 +37,7 @@ class ReportController extends Controller
                 'net_balance' => $netBalance,
             ];
         })->filter(fn ($c) => abs($c->net_balance) > 0.01); // Only show active balances
-
+// iGtT6+2)0)f2?@[}
         // 3. Active Accounts Payable Summary (Suppliers)
         // Formula: Opening Balance + Total Purchases (Credits) - Total Payments (Debits)
         $supplierSummaries = Supplier::all()->map(function ($supplier) {

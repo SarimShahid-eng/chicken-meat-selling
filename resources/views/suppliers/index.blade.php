@@ -7,8 +7,7 @@
                 <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Suppliers</h1>
                 <p class="text-gray-500 mt-1 text-sm">Manage your chicken meat suppliers inventory and stock levels</p>
             </div>
-            <a
-            href="{{ route('suppliers.create') }}"
+            <a href="{{ route('suppliers.create') }}"
                 class="btn-primary cursor-pointer inline-flex items-center justify-center bg-amber-600 hover:bg-amber-700 text-white font-medium px-4 py-2.5 rounded-lg shadow-sm transition-colors text-sm">
                 <i class="fas fa-plus mr-2 text-xs"></i>
                 Add New Supplier
@@ -24,22 +23,25 @@
                     <form action="{{ route('suppliers.index') }}" method="GET" class="flex items-center gap-2 w-full">
                         <div class="relative flex-1">
                             <input type="text" placeholder="Search suppliers..." name="search"
+                                value="{{ request('search') }}"
                                 class="w-full pl-3 pr-10 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors">
                             <div
                                 class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
                                 <i class="fas fa-search text-xs"></i>
                             </div>
                         </div>
-                        <button
+                        <button type="submit"
                             class="btn-sm btn-primary bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
                             Search
                         </button>
-                        <a
-                        href="{{ route('suppliers.index') }}"
-
+                        <a href="{{ route('suppliers.index') }}"
                             class="btn-sm cursor-pointer bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
                             Reset
                         </a>
+                        <button type="submit" name="export" value="pdf"
+                            class="btn-sm btn-danger bg-red-700 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
+                            Export
+                        </button>
                     </form>
                 </div>
             </div>
@@ -71,17 +73,18 @@
                                         {{ $supplier->phone_number ?? 'No phone.no available.' }}
                                     </div>
                                 </td>
-                                 <td class="px-6 py-4 font-medium text-gray-900">
+                                <td class="px-6 py-4 font-medium text-gray-900">
                                     {{ $supplier->opening_balance }}
                                 </td>
-                                 <td class="px-6 py-4 font-medium text-gray-900">
+                                <td class="px-6 py-4 font-medium text-gray-900">
                                     {{ $supplier->current_balance }}
                                 </td>
 
 
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="inline-flex items-center gap-3">
-                                    <a  href="{{ route('suppliers.edit',['supplier'=>$supplier->id]) }}" class="cursor-pointer text-gray-400 hover:text-blue-600 transition-colors"
+                                        <a href="{{ route('suppliers.edit', ['supplier' => $supplier->id]) }}"
+                                            class="cursor-pointer text-gray-400 hover:text-blue-600 transition-colors"
                                             title="Edit Supplier">
                                             <i class="fas fa-edit text-base"></i>
                                         </a>
