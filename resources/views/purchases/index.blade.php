@@ -24,6 +24,7 @@
                                 Search Inventory
                             </label>
                             <input type="text" placeholder="Search purchases..." name="search"
+                            value="{{ request('search') }}"
                                 class="w-full pl-3 pr-10 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors">
                             <div
                                 class="absolute inset-y-0 right-0 top-5 flex items-center pr-3 pointer-events-none text-gray-400">
@@ -78,7 +79,7 @@
                     class="mt-5 btn-xs btn-primary bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
                     <i class="fa fa-search text-xs mr-2"></i>Search
                 </button>
-                <a href="{{ route('sales.index') }}"
+                <a href="{{ route('purchases.index') }}"
                     class="mt-5 btn-sm cursor-pointer bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
                     <i class="text-xs fa-solid fa-arrow-rotate-left mx-2"></i>Reset
                 </a>

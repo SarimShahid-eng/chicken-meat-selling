@@ -21,13 +21,16 @@ class PurchaseController extends Controller
     public function index(Request $request)
     {
         $baseQuery = Purchase::query()
-            ->with('supplier', 'product')
+            ->with(['supplier','supplier.region', 'product'])
             ->when($request->filled('search'), function ($q) use ($request) {
                 $searchTerm = '%'.$request->input('search').'%';
 
                 $q->where(function ($query) use ($searchTerm) {
                     $query->where('voucher_no', 'LIKE', $searchTerm)
                         ->orWhereHas('supplier', function ($subQuery) use ($searchTerm) {
+                            $subQuery->where('name', 'LIKE', $searchTerm);
+                        })
+                        ->orWhereHas('supplier.region', function ($subQuery) use ($searchTerm) {
                             $subQuery->where('name', 'LIKE', $searchTerm);
                         })
                         ->orWhereHas('product', function ($subQuery) use ($searchTerm) {

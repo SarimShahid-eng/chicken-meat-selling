@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\CustomerPayment;
 use App\Models\Product;
 use App\Models\Sale;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -19,14 +20,17 @@ class SaleController extends Controller
      */
     public function index(Request $request)
     {
-        $sales = Sale::query()
-            ->with('customer', 'product')
+        $baseQuery = Sale::query()
+            ->with(['customer', 'customer.region', 'product'])
             ->when($request->filled('search'), function ($q) use ($request) {
                 $searchTerm = '%'.$request->input('search').'%';
 
                 $q->where(function ($query) use ($searchTerm) {
                     $query->where('voucher_no', 'LIKE', $searchTerm)
                         ->orWhereHas('customer', function ($subQuery) use ($searchTerm) {
+                            $subQuery->where('name', 'LIKE', $searchTerm);
+                        })
+                        ->orWhereHas('customer.region', function ($subQuery) use ($searchTerm) {
                             $subQuery->where('name', 'LIKE', $searchTerm);
                         })
                         ->orWhereHas('product', function ($subQuery) use ($searchTerm) {
@@ -64,8 +68,15 @@ class SaleController extends Controller
                         $subQuery->where('id', 'LIKE', $product);
                     });
                 });
-            })
+            });
+        $sales = (clone $baseQuery)
             ->paginate(10);
+        if ($request->filled('export') && $request->input('export') === 'pdf') {
+            $data = (clone $baseQuery)->get();
+            $pdf = Pdf::loadView('sales.exportPdf', compact('data'));
+
+            return $pdf->download('sales.pdf');
+        }
         $products = Product::all(['id', 'name']);
         $customers = Customer::with('region')->get();
 

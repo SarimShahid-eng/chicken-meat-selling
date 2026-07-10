@@ -7,7 +7,8 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Customer Statement Ledger</h1>
-                <p class="text-sm text-gray-500 mt-1">Track comprehensive sales histories, customer payments, and outstanding customer balances.</p>
+                <p class="text-sm text-gray-500 mt-1">Track comprehensive sales histories, customer payments, and outstanding
+                    customer balances.</p>
             </div>
         </div>
 
@@ -24,7 +25,8 @@
                         </span>
                         <select id="customer_id" name="customer_id" required
                             class="w-full pl-10 pr-10 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none appearance-none text-sm">
-                            <option value="" disabled {{ !request('customer_id') ? 'selected' : '' }}>Choose a customer...</option>
+                            <option value="" disabled {{ !request('customer_id') ? 'selected' : '' }}>Choose a
+                                customer...</option>
                             @foreach ($customers as $cust)
                                 <option value="{{ $cust->id }}"
                                     {{ request('customer_id') == $cust->id ? 'selected' : '' }}>{{ $cust->name }}</option>
@@ -45,10 +47,18 @@
                         class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none">
                 </div>
 
-                <div>
+                <div class="flex">
                     <button type="submit"
-                        class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium px-4 py-2 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-magnifying-glass"></i> Generate Ledger
+                        class="text-xs bg-amber-600 hover:bg-amber-700 text-white font-medium px-4 py-2 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-magnifying-glass"></i>Search
+                    </button>
+                    <a href="{{ route('ledger.customer') }}"
+                        class="text-xs ml-2  bg-amber-600 hover:bg-amber-700 text-white font-medium px-4 py-2 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-arrow-rotate-left"></i>Reset
+                    </a>
+                    <button type="submit" name="export" value="pdf"
+                        class="text-xs ml-2 btn-sm btn-danger bg-red-700 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
+                        Export
                     </button>
                 </div>
             </form>
@@ -60,7 +70,8 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-gray-50 border-b border-gray-100 text-xs font-bold text-gray-600 uppercase tracking-wider">
+                            <tr
+                                class="bg-gray-50 border-b border-gray-100 text-xs font-bold text-gray-600 uppercase tracking-wider">
                                 <th class="px-6 py-4">Date</th>
                                 <th class="px-6 py-4">Description / Reference</th>
                                 <th class="px-6 py-4 text-right">Debit (Sales / Charges)</th>
@@ -76,7 +87,8 @@
                                 <td class="px-6 py-3.5 italic">Opening Balance Carriage</td>
                                 <td class="px-6 py-3.5 text-right">-</td>
                                 <td class="px-6 py-3.5 text-right">-</td>
-                                <td class="px-6 py-3.5 text-right font-bold">Rs. {{ number_format($openingBalance, 2) }}</td>
+                                <td class="px-6 py-3.5 text-right font-bold">Rs. {{ number_format($openingBalance, 2) }}
+                                </td>
                             </tr>
 
                             @php $running = $openingBalance; @endphp
@@ -90,7 +102,8 @@
                                     <td class="px-6 py-3.5 text-gray-500">{{ date('d-M-Y', strtotime($entry->date)) }}</td>
                                     <td class="px-6 py-3.5 font-medium">
                                         {{ $entry->description }}
-                                        <span class="text-xs text-gray-400 block">Ref ID: #{{ $entry->reference_id }}</span>
+                                        <span class="text-xs text-gray-400 block">Ref ID:
+                                            #{{ $entry->reference_id }}</span>
                                     </td>
                                     <td class="px-6 py-3.5 text-right text-red-600 font-medium">
                                         {{ $entry->debit ? 'Rs. ' . number_format($entry->debit, 2) : '-' }}
@@ -118,10 +131,10 @@
     </div>
 
     @push('scripts')
-    <script>
-        $(document).ready(function(){
-            $('#customer_id').select2()
-        })
-    </script>
+        <script>
+            $(document).ready(function() {
+                $('#customer_id').select2()
+            })
+        </script>
     @endpush
 @endsection

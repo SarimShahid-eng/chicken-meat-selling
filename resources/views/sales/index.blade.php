@@ -24,6 +24,7 @@
                                 Search Inventory
                             </label>
                             <input type="text" placeholder="Search sales..." name="search"
+                                value="{{ request('search') }}"
                                 class="w-full pl-3 pr-10 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors">
                             <div
                                 class="absolute inset-y-0 right-0 top-5 flex items-center pr-3 pointer-events-none text-gray-400">
@@ -35,13 +36,14 @@
                                 From
                             </label>
                             <input type="date" placeholder="Search sales..." name="from_date"
+                            value="{{ request('from_date') }}"
                                 class="w-full pl-3 pr-10 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors">
                         </div>
                         <div class="relative flex-1">
                             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                                 To
                             </label>
-                            <input type="date"  name="to_date"
+                            <input type="date" name="to_date"
                                 class="w-full pl-3 pr-10 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors">
 
                         </div>
@@ -70,17 +72,20 @@
                                         {{ $product->name }}</option>
                                 @endforeach
                             </select>
-
                         </div>
-                    </div>
-                    <button
-                            class="mt-5 btn-xs btn-primary bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
-                            <i class="fa fa-search text-xs mr-2"></i>Search
-                        </button>
-                        <a href="{{ route('sales.index') }}"
-                            class="mt-5 btn-sm cursor-pointer bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
-                            <i class="text-xs fa-solid fa-arrow-rotate-left mr-2"></i>Reset
-                        </a>
+                </div>
+                <button type="submit"
+                    class="mt-5 btn-xs btn-primary bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
+                    <i class="fa fa-search text-xs mr-2"></i>Search
+                </button>
+                <a href="{{ route('sales.index') }}"
+                    class="mt-5 btn-sm cursor-pointer bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
+                    <i class="text-xs fa-solid fa-arrow-rotate-left mr-2"></i>Reset
+                </a>
+                <button type="submit" name="export" value="pdf"
+                    class="mx-2 btn-sm btn-danger bg-red-700 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
+                    Export
+                </button>
                 </form>
             </div>
         </div>
@@ -115,7 +120,7 @@
                                 </td>
                                 <td class="px-6 py-4 font-medium text-gray-900">
                                     <span class="text-xs">
-                                        {{ $sale->date->format('m-d-Y')}}
+                                        {{ $sale->date->format('m-d-Y') }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 font-medium text-gray-900">
@@ -191,90 +196,90 @@
     </div>
 
     @include('sales.modal')
-        @push('scripts')
-            <script>
-                $(document).ready(function() {
-                    $('.main').select2();
+    @push('scripts')
+        <script>
+            $(document).ready(function() {
+                $('.main').select2();
+            });
+
+            (function() {
+                // Details Modal Elements
+                const viewModal = document.getElementById('saleDetailsModal');
+                const loadingEl = document.getElementById('modalLoading');
+                const errorEl = document.getElementById('modalError');
+                const contentEl = document.getElementById('modalContent');
+
+
+
+                // --- Details Modal Management ---
+                function setViewState(state) {
+                    loadingEl.classList.toggle('hidden', state !== 'loading');
+                    errorEl.classList.toggle('hidden', state !== 'error');
+                    contentEl.classList.toggle('hidden', state !== 'content');
+                }
+
+                function populateView(data) {
+                    document.getElementById('modalVoucherNo').textContent = data.voucher_no ?? '—';
+                    document.getElementById('modalProduct').textContent = data.product?.name ?? '—';
+                    document.getElementById('modalCustomer').textContent = data.customer?.name ?? '—';
+                    document.getElementById('modalRegion').textContent = data.customer?.region?.name ?? '—';
+                    document.getElementById('modalCrateQty').textContent = data.crate_qty ?? '—';
+                    document.getElementById('modalTotalWeight').textContent = data.total_weight ?? '—';
+                    document.getElementById('modalWeightCut').textContent = data.weight_cut ?? '—';
+                    document.getElementById('modalNetWeight').textContent = data.netweight ?? '—';
+                    '—';
+                    document.getElementById('modalRate').textContent = data.rate ?? 'Not set';
+                    document.getElementById('modalTotalAmount').textContent = data.total_amount ?? '—';
+                    document.getElementById('modalCreatedAt').textContent = data.created_at_formatted ?? data.created_at ??
+                        '—';
+                }
+
+                function openViewModal() {
+                    viewModal.classList.remove('hidden');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                function closeViewModal() {
+                    viewModal.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                }
+
+                function loadAndShow(url) {
+                    openViewModal();
+                    setViewState('loading');
+
+                    fetch(url, {
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) throw new Error('Request failed');
+                            return response.json();
+                        })
+                        .then(data => {
+                            const sale = data.sale ?? data;
+                            populateView(sale);
+                            setViewState('content');
+                        })
+                        .catch(() => setViewState('error'));
+                }
+
+                // --- Event Listeners ---
+
+                // View sales click events
+                document.querySelectorAll('.js-view-sale').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const url = btn.dataset.url;
+                        if (url) loadAndShow(url);
+                    });
                 });
 
-                (function() {
-                    // Details Modal Elements
-                    const viewModal = document.getElementById('saleDetailsModal');
-                    const loadingEl = document.getElementById('modalLoading');
-                    const errorEl = document.getElementById('modalError');
-                    const contentEl = document.getElementById('modalContent');
+                document.querySelectorAll('.js-close-modal').forEach(el => {
+                    el.addEventListener('click', closeViewModal);
+                });
 
-
-
-                    // --- Details Modal Management ---
-                    function setViewState(state) {
-                        loadingEl.classList.toggle('hidden', state !== 'loading');
-                        errorEl.classList.toggle('hidden', state !== 'error');
-                        contentEl.classList.toggle('hidden', state !== 'content');
-                    }
-
-                    function populateView(data) {
-                        document.getElementById('modalVoucherNo').textContent = data.voucher_no ?? '—';
-                        document.getElementById('modalProduct').textContent = data.product?.name ?? '—';
-                        document.getElementById('modalCustomer').textContent = data.customer?.name ?? '—';
-                        document.getElementById('modalRegion').textContent = data.customer?.region?.name ?? '—';
-                        document.getElementById('modalCrateQty').textContent = data.crate_qty ?? '—';
-                        document.getElementById('modalTotalWeight').textContent = data.total_weight ?? '—';
-                        document.getElementById('modalWeightCut').textContent = data.weight_cut ?? '—';
-                        document.getElementById('modalNetWeight').textContent = data.netweight ?? '—';
-                        '—';
-                         document.getElementById('modalRate').textContent = data.rate ?? 'Not set';
-                        document.getElementById('modalTotalAmount').textContent = data.total_amount ?? '—';
-                        document.getElementById('modalCreatedAt').textContent = data.created_at_formatted ?? data.created_at ??
-                            '—';
-                    }
-
-                    function openViewModal() {
-                        viewModal.classList.remove('hidden');
-                        document.body.classList.add('overflow-hidden');
-                    }
-
-                    function closeViewModal() {
-                        viewModal.classList.add('hidden');
-                        document.body.classList.remove('overflow-hidden');
-                    }
-
-                    function loadAndShow(url) {
-                        openViewModal();
-                        setViewState('loading');
-
-                        fetch(url, {
-                                headers: {
-                                    'Accept': 'application/json'
-                                }
-                            })
-                            .then(response => {
-                                if (!response.ok) throw new Error('Request failed');
-                                return response.json();
-                            })
-                            .then(data => {
-                                const sale = data.sale ?? data;
-                                populateView(sale);
-                                setViewState('content');
-                            })
-                            .catch(() => setViewState('error'));
-                    }
-
-                    // --- Event Listeners ---
-
-                    // View sales click events
-                    document.querySelectorAll('.js-view-sale').forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            const url = btn.dataset.url;
-                            if (url) loadAndShow(url);
-                        });
-                    });
-
-                    document.querySelectorAll('.js-close-modal').forEach(el => {
-                        el.addEventListener('click', closeViewModal);
-                    });
-
-                })();
-            </script>
-        @endpush
+            })();
+        </script>
+    @endpush
 @endsection

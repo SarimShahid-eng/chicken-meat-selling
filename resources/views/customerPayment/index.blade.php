@@ -37,7 +37,7 @@
                                 From Date
                             </label>
                             <input type="date" name="date"
-                                value="{{ filled(request()->date) ? request()->date : date('Y-m-d') }}"
+                                value="{{ request('date') }}"
                                 class="w-full pl-3 pr-10 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors">
                         </div>
                         <button type="submit"

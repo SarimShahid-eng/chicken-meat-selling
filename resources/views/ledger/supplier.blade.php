@@ -47,10 +47,18 @@
                         class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none">
                 </div>
 
-                <div>
+               <div class="flex">
                     <button type="submit"
-                        class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium px-4 py-2 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-magnifying-glass"></i> Generate Ledger
+                        class="text-xs bg-amber-600 hover:bg-amber-700 text-white font-medium px-4 py-2 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-magnifying-glass"></i>Search
+                    </button>
+                    <a href="{{ route('ledger.supplier') }}"
+                        class="text-xs ml-2  bg-amber-600 hover:bg-amber-700 text-white font-medium px-4 py-2 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-arrow-rotate-left"></i>Reset
+                    </a>
+                    <button type="submit" name="export" value="pdf"
+                        class="text-xs ml-2 btn-sm btn-danger bg-red-700 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
+                        Export
                     </button>
                 </div>
             </form>
