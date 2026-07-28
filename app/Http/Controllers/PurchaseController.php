@@ -7,11 +7,11 @@ use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\Supplier;
 use App\Models\SupplierPayment;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class PurchaseController extends Controller
 {
@@ -21,7 +21,7 @@ class PurchaseController extends Controller
     public function index(Request $request)
     {
         $baseQuery = Purchase::query()
-            ->with(['supplier','supplier.region', 'product'])
+            ->with(['supplier', 'supplier.region', 'product'])
             ->when($request->filled('search'), function ($q) use ($request) {
                 $searchTerm = '%'.$request->input('search').'%';
 
@@ -131,6 +131,9 @@ class PurchaseController extends Controller
     {
         $validated = $request->validated();
         $isRatePresent = filled($validated['rate']) ? true : false;
+        if (is_null($validated['paid_amount'])) {
+            $validated['paid_amount'] = 0;
+        }
         try {
             DB::transaction(function () use ($validated, $isRatePresent) {
                 $purchase = Purchase::updateOrCreate(
@@ -141,7 +144,7 @@ class PurchaseController extends Controller
                     [
                         'rate_finalized' => $isRatePresent,
                         'supplier_id' => $validated['supplier_id'],
-                        'amount' => $validated['total_amount'],
+                        'amount' => $validated['paid_amount'],
                         'date' => $validated['date'],
                         'type' => 'cash',
                     ]

@@ -36,6 +36,7 @@ class PurchaseStoreRequest extends FormRequest
             'total_weight' => 'required|numeric|decimal:0,2|min:0|max:99999999.99',
             'weight_cut' => 'required|numeric|decimal:0,2|min:0|max:99999999.99',
             'netweight' => 'required|numeric|decimal:0,2|min:0|max:99999999.99',
+            'paid_amount' => 'nullable|numeric|decimal:0,2|min:0|max:99999999.99',
 
             // Made explicitly nullable as requested
             'rate' => 'nullable|numeric|decimal:0,2|min:0|max:99999999.99',

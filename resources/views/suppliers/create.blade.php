@@ -50,7 +50,7 @@
                                 <i class="fa-solid fa-phone"></i>
                             </span>
                             <input type="text" id="phone_number" name="phone_number"
-                                value="{{ old('phone_number') ?? @$supplier->phone_number }}" required
+                                value="{{ old('phone_number') ?? @$supplier->phone_number }}" 
                                 placeholder="e.g., +1 555-0199"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('phone_number') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
                         </div>

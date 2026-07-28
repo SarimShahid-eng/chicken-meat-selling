@@ -36,7 +36,7 @@
                                 From
                             </label>
                             <input type="date" placeholder="Search sales..." name="from_date"
-                            value="{{ request('from_date') }}"
+                                value="{{ request('from_date') }}"
                                 class="w-full pl-3 pr-10 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors">
                         </div>
                         <div class="relative flex-1">
@@ -165,7 +165,7 @@
                                             data-url="{{ route('sales.show', ['sale' => $sale->id]) }}">
                                             <i class="fas fa-eye text-base"></i>
                                         </button>
-                                        <a href="{{ route('sales.edit', ['sale' => $sale->id]) }}"
+                                        <a href="{{ $sale->type === 'customer' ? route('sales.edit', ['sale' => $sale->id]) : route('hotel_sales.edit', $sale) }}"
                                             class="cursor-pointer text-gray-400 hover:text-blue-600 transition-colors"
                                             title="Edit Sale">
                                             <i class="fas fa-edit text-base"></i>

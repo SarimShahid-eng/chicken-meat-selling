@@ -2,15 +2,18 @@
 
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerLedgerController;
+use App\Http\Controllers\CustomerLedgerRegionWiseController;
 use App\Http\Controllers\CustomerPaymentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\HotelSaleController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\SupplierLedgerController;
+use App\Http\Controllers\SupplierLedgerRegionWiseController;
 use App\Http\Controllers\SupplierPaymentController;
 use Illuminate\Support\Facades\Route;
 
@@ -83,7 +86,7 @@ Route::middleware('auth')->group(function () {
             Route::get('show/{purchase}', 'show')->name('show');
             Route::post('update-rate/{purchase}', 'update_rate')->name('update_rate');
         });
-    // Purchase
+    // Sale
     Route::controller(SaleController::class)->name('sales.')
         ->prefix('sales')
         ->group(function () {
@@ -93,15 +96,33 @@ Route::middleware('auth')->group(function () {
             Route::get('edit/{sale}', 'edit')->name('edit');
             Route::get('show/{sale}', 'show')->name('show');
         });
+    Route::controller(HotelSaleController::class)->name('hotel_sales.')
+        ->prefix('hotel_sales')
+        ->group(function () {
+            // Route::get('index', 'index')->name('index');
+            Route::get('create', 'create')->name('create');
+            Route::post('store', 'store')->name('store');
+            Route::get('edit/{sale}', 'edit')->name('edit');
+            Route::get('show/{hotel_sale}', 'show')->name('show');
+        });
     Route::prefix('ledger')->name('ledger.')->group(function () {
         Route::controller(CustomerLedgerController::class)->group(function () {
             Route::get('customer', 'customer')->name('customer');
             Route::post('customerReport', 'customerReport')->name('customerReport');
         });
+         Route::controller(CustomerLedgerRegionWiseController::class)->group(function () {
+            Route::get('customerRegionWise', 'index')->name('customerRegionWise');
+            Route::post('regionCustomerReport', 'regionCustomerReport')->name('regionCustomerReport');
+        });
         Route::controller(SupplierLedgerController::class)->group(function () {
             Route::get('supplier', 'supplier')->name('supplier');
             Route::post('supplierReport', 'supplierReport')->name('supplierReport');
         });
+        Route::controller(SupplierLedgerRegionWiseController::class)->group(function () {
+            Route::get('supplierRegionWise', 'index')->name('supplierRegionWise');
+            Route::post('regionSupplierReport', 'regionSupplierReport')->name('regionSupplierReport');
+        });
+
 
     });
     Route::prefix('report')->name('reports.')->group(function () {
@@ -109,10 +130,10 @@ Route::middleware('auth')->group(function () {
             Route::get('general', 'general')->name('general');
             Route::get('profit', 'profit')->name('profit');
         });
-        Route::controller(SupplierLedgerController::class)->group(function () {
-            Route::get('supplier', 'supplier')->name('supplier');
-            Route::post('supplierReport', 'supplierReport')->name('supplierReport');
-        });
+        // Route::controller(SupplierLedgerController::class)->group(function () {
+        //     Route::get('supplier', 'supplier')->name('supplier');
+        //     Route::post('supplierReport', 'supplierReport')->name('supplierReport');
+        // });
 
     });
 });

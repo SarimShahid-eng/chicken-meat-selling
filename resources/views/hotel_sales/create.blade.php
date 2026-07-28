@@ -1,13 +1,13 @@
-@extends('partials.app', ['title' => isset($sale) ? 'Edit Sale' : 'Create Sale'])
+@extends('partials.app', ['title' => isset($sale) ? 'Edit Hotel Sale' : 'Create Hotel Sale'])
 
 @section('content')
     <div class="max-w-4xl mx-auto space-y-6 animate-fade-in">
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">
-                    {{ isset($sale) ? 'Edit Sale' : 'Add New Sale' }}
+                    {{ isset($sale) ? 'Edit Hotel Sale' : 'Add New Hotel Sale' }}
                 </h1>
-                <p class="text-sm text-gray-500 mt-1">Record incoming chicken meat stock sales from your customers.</p>
+                <p class="text-sm text-gray-500 mt-1">Record direct weight-based sales for hotels and restaurants.</p>
             </div>
             <a href="{{ route('sales.index') }}"
                 class="btn-secondary flex items-center gap-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors">
@@ -16,7 +16,7 @@
         </div>
 
         <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-            <form id="saleForm" action="{{ route('sales.store') }}" method="POST" class="p-6 sm:p-8 space-y-6">
+            <form id="hotelSaleForm" action="{{ route('hotel_sales.store') }}" method="POST" class="p-6 sm:p-8 space-y-6">
                 @csrf
 
                 <input type="hidden" name="update_id" value="{{ old('update_id') ?? @$sale->id }}">
@@ -62,7 +62,6 @@
 
                                 @foreach ($products as $product)
                                     <option value="{{ $product->id }}"
-                                        data-soldcrate-wise="{{ $product->soldCrateWise ?? '' }}"
                                         {{ (string) old('product_id', @$sale->product_id) === (string) $product->id ? 'selected' : '' }}>
                                         {{ $product->name }}
                                     </option>
@@ -75,76 +74,51 @@
                         @enderror
                     </div>
 
-                    {{-- Supplier --}}
+                    {{-- Customer (Hotel/Restaurant) --}}
                     <div class="space-y-2">
                         <label for="customer_id" class="block text-sm font-semibold text-gray-700">
-                            Customer <span class="text-red-500">*</span>
+                            Customer / Hotel <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                <i class="fa-solid fa-truck-field"></i>
+                                <i class="fa-solid fa-hotel"></i>
                             </span>
                             <select id="customer_id" name="customer_id" required
                                 class="select2 w-full pl-10 pr-10 py-2.5 bg-gray-50 border @error('customer_id') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors appearance-none">
 
                                 <option value="" disabled
                                     {{ old('customer_id') === null && !isset($sale) ? 'selected' : '' }}>
-                                    Select a customer
+                                    Select a hotel customer
                                 </option>
 
                                 @foreach ($customers as $customer)
                                     <option value="{{ $customer->id }}"
                                         {{ (string) old('customer_id', @$sale->customer_id) === (string) $customer->id ? 'selected' : '' }}>
-                                        {{ $customer->name }}--{{ $customer->region->name }}
+                                        {{ $customer->name }} -- {{ $customer->region->name ?? 'N/A' }}
                                     </option>
                                 @endforeach
                             </select>
 
                         </div>
-                        <p id="regionHint" class="text-xs font-medium mt-1 hidden text-amber-600">
-                            <i class="fa-solid fa-circle-info"></i> Punjab region customer — an extra 2% of total weight
-                            will be deducted as weight cut.
-                        </p>
                         @error('customer_id')
                             <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
-
                     {{-- Date --}}
                     <div class="space-y-2">
                         <label for="date" class="block text-sm font-semibold text-gray-700">
-                            Date
+                            Date <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                            <span
-                                class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 font-medium text-sm">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 <i class="fa-solid fa-calendar"></i>
                             </span>
                             <input type="date" id="date" name="date"
                                 value="{{ old('date', isset($sale) ? date('Y-m-d', strtotime($sale->date)) : date('Y-m-d')) }}"
-                                class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('date') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
+                                class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('date') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors">
                         </div>
                         @error('date')
-                            <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    {{-- Crate Qty --}}
-                    <div class="space-y-2">
-                        <label for="crate_qty" class="block text-sm font-semibold text-gray-700">
-                            Crate Quantity <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                <i class="fa-solid fa-boxes-stacked"></i>
-                            </span>
-                            <input type="number" step="1" min="0" id="crate_qty" name="crate_qty"
-                                value="{{ old('crate_qty') ?? @$sale->crate_qty }}" required placeholder="e.g., 20"
-                                class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('crate_qty') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
-                        </div>
-                        <p class="text-xs text-gray-400">Each crate cuts 0.5 kg from the total weight automatically.</p>
-                        @error('crate_qty')
                             <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -167,55 +141,17 @@
                         @enderror
                     </div>
 
-                    {{-- Weight Cut (auto-calculated, still editable overrides allowed) --}}
-                    <div class="space-y-2">
-                        <label for="weight_cut" class="block text-sm font-semibold text-gray-700">
-                            Weight Cut (kg)
-                        </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                <i class="fa-solid fa-scissors"></i>
-                            </span>
-                            <input type="number" step="0.01" min="0" id="weight_cut" name="weight_cut"
-                                value="{{ old('weight_cut') ?? (@$sale->weight_cut ?? '0.00') }}" placeholder="0.00"
-                                class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 focus:outline-none ">
-                        </div>
-                        <p class="text-xs text-gray-400">Auto-calculated: (crates × 8kg)</p>
-                        @error('weight_cut')
-                            <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    {{-- Net Weight (auto-calculated) --}}
-                    <div class="space-y-2">
-                        <label for="netweight" class="block text-sm font-semibold text-gray-700">
-                            Net Weight (kg)
-                        </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                <i class="fa-solid fa-balance-scale"></i>
-                            </span>
-                            <input type="number" step="0.01" min="0" id="netweight" name="netweight"
-                                readonly value="{{ old('netweight') ?? (@$sale->netweight ?? '0.00') }}"
-                                placeholder="0.00"
-                                class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 focus:outline-none cursor-not-allowed">
-                        </div>
-                        @error('netweight')
-                            <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    {{-- Rate (optional — may be decided later) --}}
+                    {{-- Rate (per kg) --}}
                     <div class="space-y-2">
                         <label for="rate" class="block text-sm font-semibold text-gray-700">
-                            Rate (per kg) <span class="text-gray-400 font-normal"></span>
+                            Rate (per kg) <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 <i class="fa-solid fa-tag"></i>
                             </span>
-                            <input type="number" step="0.01" min="0" id="rate" name="rate"
-                                value="{{ old('rate') ?? @$sale->rate }}" placeholder="To be decided later"
+                            <input type="number" step="0.01" min="0" id="rate" name="rate" required
+                                value="{{ old('rate') ?? @$sale->rate }}" placeholder="0.00"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('rate') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
                         </div>
                         @error('rate')
@@ -223,14 +159,13 @@
                         @enderror
                     </div>
 
-                    {{-- Total Amount (auto-calculated) --}}
-                    <div class="space-y-2 md:col-span-2">
+                    {{-- Total Amount (auto-calculated: Total Weight × Rate) --}}
+                    <div class="space-y-2">
                         <label for="total_amount" class="block text-sm font-semibold text-gray-700">
                             Total Amount
                         </label>
                         <div class="relative">
-                            <span
-                                class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 font-medium text-sm">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 <i class="fa-solid fa-wallet"></i>
                             </span>
                             <input type="number" step="0.01" min="0" id="total_amount" name="total_amount"
@@ -238,22 +173,20 @@
                                 placeholder="0.00"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 font-semibold focus:outline-none cursor-not-allowed">
                         </div>
-                        <p class="text-xs text-gray-400">Auto-calculated: Net Weight × Rate.</p>
+                        <p class="text-xs text-gray-400">Calculated: Total Weight × Rate</p>
                         @error('total_amount')
                             <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
-
-                    {{-- Total Amount (auto-calculated) --}}
-                    <div class="space-y-2 ">
+                    {{-- Amount Received --}}
+                    <div class="space-y-2">
                         <label for="amount_received" class="block text-sm font-semibold text-gray-700">
                             Amount Received
                         </label>
                         <div class="relative">
-                            <span
-                                class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 font-medium text-sm">
-                                <i class="fa-solid fa-wallet"></i>
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                <i class="fa-solid fa-hand-holding-dollar"></i>
                             </span>
                             <input type="number" step="0.01" min="0" id="amount_received"
                                 name="amount_received"
@@ -261,29 +194,28 @@
                                 placeholder="0.00"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('amount_received') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
                         </div>
+                        <p class="text-xs text-gray-400">Enter cash or partial payment collected upfront.</p>
                         @error('amount_received')
                             <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
                         @enderror
                     </div>
-                    <div class="space-y-2 ">
-                        <label for="remaining_amount" class="block text-sm font-semibold text-gray-700">
-                            Remaining Amount
+
+                    {{-- Remaining Balance Indicator --}}
+                    <div class="space-y-2 md:col-span-2">
+                        <label for="due_amount" class="block text-sm font-semibold text-gray-700">
+                            Remaining Balance / Due Amount
                         </label>
                         <div class="relative">
-                            <span
-                                class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 font-medium text-sm">
-                                <i class="fa-solid fa-wallet"></i>
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                <i class="fa-solid fa-scale-unbalanced"></i>
                             </span>
-                            <input type="number" step="0.01" min="0" id="remaining_amount"
-                                name="remaining_amount" readonly
-                                value="{{ old('remaining_amount') ?? (@$sale->remaining_amount ?? '0.00') }}"
+                            <input type="number" step="0.01" id="due_amount" readonly value="0.00"
                                 placeholder="0.00"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 font-semibold focus:outline-none cursor-not-allowed">
                         </div>
-                        @error('remaining_amount')
-                            <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
-                        @enderror
+                        <p class="text-xs text-gray-400">Calculated: Total Amount − Amount Received</p>
                     </div>
+
                 </div>
 
                 <hr class="border-gray-100">
@@ -307,53 +239,31 @@
             $('.select2').select2();
         });
         (function() {
-            const cratesInput = document.getElementById('crate_qty');
             const totalWeightInput = document.getElementById('total_weight');
-            const weightCutInput = document.getElementById('weight_cut');
-            const netWeightInput = document.getElementById('netweight');
             const rateInput = document.getElementById('rate');
             const totalAmountInput = document.getElementById('total_amount');
             const amountReceivedInput = document.getElementById('amount_received');
-            const remainingAmountInput = document.getElementById('remaining_amount');
-            const productSelect = document.getElementById('product_id');
-            const regionHint = document.getElementById('regionHint');
-
-            const CRATE_CUT_PER_UNIT = 8; // kg cut per crate
-
-            function isSoldCreateWise() {
-                const selectedOption = productSelect.options[productSelect.selectedIndex];
-                const soldCrateWise = selectedOption ? (selectedOption.getAttribute('data-soldcrate-wise') || '') : '';
-                return soldCrateWise;
-            }
+            const dueAmountInput = document.getElementById('due_amount');
 
             function recalculate() {
-                const crateQty = parseFloat(cratesInput.value) || 0;
                 const totalWeight = parseFloat(totalWeightInput.value) || 0;
                 const rate = parseFloat(rateInput.value) || 0;
-
-                const crateCut = crateQty * CRATE_CUT_PER_UNIT;
-
                 const amountReceived = parseFloat(amountReceivedInput.value) || 0;
 
-                let weightCut = crateCut;
-                let netWeight = totalWeight - weightCut;
-                if (netWeight < 0) netWeight = 0;
-
-                const totalAmount = netWeight * rate;
-
-                weightCutInput.value = weightCut.toFixed(2);
-                netWeightInput.value = netWeight.toFixed(2);
+                // Total Amount = Total Weight * Rate
+                const totalAmount = totalWeight * rate;
                 totalAmountInput.value = totalAmount.toFixed(2);
+
+                // Due Amount = Total Amount - Amount Received
                 const dueAmount = totalAmount - amountReceived;
-                remainingAmountInput.value = dueAmount.toFixed(2);
+                dueAmountInput.value = dueAmount.toFixed(2);
             }
 
-            [cratesInput, totalWeightInput, rateInput, amountReceivedInput].forEach(el => {
+            [totalWeightInput, rateInput, amountReceivedInput].forEach(el => {
                 el.addEventListener('input', recalculate);
             });
-            // customerSelect.addEventListener('change', recalculate);
 
-            // Run once on load (handles edit mode / old() repopulation)
+            // Initial calculation on page load
             recalculate();
         })();
     </script>

@@ -26,10 +26,11 @@ class AppServiceProvider extends ServiceProvider
         Blade::if('routeis', function (string|array $expression) {
             return request()->routeIs($expression);
         });
+
         View::composer('*', function ($view) {
 
             // 1. Calculate Today's Sales (Sum of totals processed today)
-            $todaysSales = Sale::whereDate('date', today())->sum('total_amount')??0;
+            $todaysSales = Sale::whereDate('date', today())->sum('total_amount') ?? 0;
             $availableProductsCount = Product::withSum('purchases', 'netweight')
                 ->withSum('sales', 'netweight')
                 ->get()
@@ -39,7 +40,7 @@ class AppServiceProvider extends ServiceProvider
 
                     return ($purchased - $sold) > 0;
                 })
-                ->count()??0;
+                ->count() ?? 0;
             $view->with([
                 'globalTodaysSales' => $todaysSales,
                 'globalStockCount' => $availableProductsCount,

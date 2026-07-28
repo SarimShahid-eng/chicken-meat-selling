@@ -15,7 +15,7 @@
                 color: #718096;
             }
             @bottom-left {
-                content: "Customers Directory Report";
+                content: "Rajput Chicken Centre — Customers Directory Report";
                 font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
                 font-size: 8pt;
                 color: #718096;
@@ -39,15 +39,25 @@
         /* Document Header Styling */
         .header-container {
             border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 15px;
-            margin-bottom: 25px;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .company-name {
+            font-size: 22pt;
+            font-weight: 800;
+            color: #d97706; /* Amber accent matching UI theme */
+            margin: 0 0 2px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .report-title {
-            font-size: 20pt;
+            font-size: 14pt;
             font-weight: bold;
             color: #1a365d;
-            margin: 0 0 5px 0;
+            margin: 0 0 6px 0;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -135,7 +145,8 @@
 <body>
 
     <div class="header-container">
-        <h1 class="report-title">Customers Directory</h1>
+        <h1 class="company-name">Rajput Chicken Centre</h1>
+        <h2 class="report-title">Customers Directory</h2>
         <p class="report-meta">
             Generated on: {{ now()->format('Y-m-d H:i') }} | Total Records: {{ count($data) }}
         </p>

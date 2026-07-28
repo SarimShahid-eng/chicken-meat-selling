@@ -204,7 +204,7 @@
             <div class="space-y-2">
                 <button onclick="toggleSubmenu('sales-menu')"
                     class="w-full nav-link justify-between
-                    @routeis('sales.*')
+                    @routeis(['sales.*','hotel_sales.*'])
                             active
                             @else
                             hidden
@@ -216,7 +216,7 @@
                     <i class="fas fa-chevron-down text-xs"></i>
                 </button>
                 <div id="sales-menu"
-                    class=" pl-8 space-y-2 @routeis('sales.*')
+                    class=" pl-8 space-y-2 @routeis(['sales.*','hotel_sales.*'])
                         active
                         @else
                         hidden
@@ -227,6 +227,13 @@
                         @endrouteis">
                         <i class="fas fa-plus w-4 text-center"></i>
                         <span>New Sale</span>
+                    </a>
+                    <a href="{{ route('hotel_sales.create') ?? '#' }}"
+                        class="nav-link text-sm  @routeis('hotel_sales.*')
+                        active
+                        @endrouteis">
+                        <i class="fa-solid fa-hotel w-4 text-center"></i>
+                        <span>Hotel Sale</span>
                     </a>
                     <a href="{{ route('sales.index') ?? '#' }}"
                         class="nav-link text-sm
@@ -239,6 +246,7 @@
                     </a>
                 </div>
             </div>
+
             <!-- Ledger -->
             <div class="space-y-2">
                 <button onclick="toggleSubmenu('ledger-menu')"
@@ -267,6 +275,13 @@
                         <i class="fas fa-users w-4 text-center"></i>
                         <span>Supplier</span>
                     </a>
+                    <a href="{{ route('ledger.supplierRegionWise') ?? '#' }}"
+                        class="nav-link text-sm  @routeis(['ledger.regionSupplierReport','ledger.supplierRegionWise'])
+                        active
+                        @endrouteis">
+                        <i class="fa-solid fa-earth-americas w-4 text-center"></i>
+                        <span>Supplier Region</span>
+                    </a>
                     <a href="{{ route('ledger.customer') ?? '#' }}"
                         class="nav-link text-sm
                                 @routeis(['ledger.customer','ledger.customerReport'])
@@ -275,6 +290,13 @@
                                 ">
                         <i class="fas fa-user w-4 text-center"></i>
                         <span>Customer</span>
+                    </a>
+                     <a href="{{ route('ledger.customerRegionWise') ?? '#' }}"
+                        class="nav-link text-sm  @routeis(['ledger.regionCustomerReport','ledger.customerRegionWise'])
+                        active
+                        @endrouteis">
+                        <i class="fa-solid fa-earth-americas w-4 text-center"></i>
+                        <span>Customer Region</span>
                     </a>
                 </div>
             </div>

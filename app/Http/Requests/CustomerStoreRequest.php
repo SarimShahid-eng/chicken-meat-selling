@@ -34,7 +34,7 @@ class CustomerStoreRequest extends FormRequest
                 Rule::unique('customers', 'name')->ignore($updateId),
             ],
             'phone_number' => [
-                'required',
+                'nullable',
                 'string',
                 'max:50',
                 Rule::unique('customers', 'phone_number')->ignore($updateId),

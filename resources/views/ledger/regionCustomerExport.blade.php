@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Supplier Account Ledger Statement</title>
+    <title>Region-wise Customer Ledger Statement</title>
     <style>
         /* PDF Document Layout Configuration */
         @page {
-            size: A4 portrait; /* Five structural columns fit neatly in a portrait orientation */
+            size: A4 portrait;
             margin: 20mm 15mm;
             @bottom-right {
                 content: "Page " counter(page) " of " counter(pages);
@@ -15,7 +15,7 @@
                 color: #718096;
             }
             @bottom-left {
-                content: "Rajput Chicken Centre — Supplier Statement of Account";
+                content: "Rajput Chicken Centre — Region-wise Customer Ledger";
                 font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
                 font-size: 8pt;
                 color: #718096;
@@ -47,7 +47,7 @@
         .company-name {
             font-size: 22pt;
             font-weight: 800;
-            color: #d97706; /* Amber accent matching UI theme */
+            color: #d97706; /* Amber accent matching your UI theme */
             margin: 0 0 2px 0;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -84,9 +84,9 @@
         }
 
         th {
-            padding: 12px 10px;
+            padding: 10px 8px;
             font-weight: 700;
-            font-size: 8.5pt;
+            font-size: 8pt;
             color: #4b5563;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -109,8 +109,8 @@
         }
 
         td {
-            padding: 11px 10px;
-            font-size: 9pt;
+            padding: 9px 8px;
+            font-size: 8.5pt;
             color: #374151;
             border-bottom: 1px solid #e5e7eb;
             vertical-align: top;
@@ -138,12 +138,12 @@
         }
 
         .text-debit {
-            color: #dc2626; /* Crimson text indicating funds outgoing/paid out */
+            color: #dc2626; /* Crimson text indicating sales/charges added to customer balance */
             font-weight: 500;
         }
 
         .text-credit {
-            color: #16a34a; /* Distinct deep green representing received stock liability volume */
+            color: #16a34a; /* Distinct deep green representing customer payments received */
             font-weight: 500;
         }
 
@@ -152,7 +152,7 @@
         }
 
         .sub-text {
-            font-size: 8pt;
+            font-size: 7.5pt;
             color: #9ca3af;
             display: block;
             margin-top: 2px;
@@ -167,7 +167,7 @@
 
     <div class="header-container">
         <h1 class="company-name">Rajput Chicken Centre</h1>
-        <h2 class="report-title">Supplier Account Ledger Statement</h2>
+        <h2 class="report-title">Region-Wise Customer Ledger Statement</h2>
         <p class="report-meta">
             Statement Period: From {{ date('d-M-Y', strtotime($fromDate)) }} onwards | Generated: {{ now()->format('Y-m-d H:i') }}
         </p>
@@ -177,17 +177,20 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 15%;">Date</th>
-                    <th style="width: 31%;">Description / Reference</th>
-                    <th style="width: 18%; text-align: right;">Debit (Amount Paid)</th>
-                    <th style="width: 18%; text-align: right;">Credit (Purchase Vol)</th>
-                    <th style="width: 18%; text-align: right;">Running Balance</th>
+                    <th style="width: 13%;">Date</th>
+                    <th style="width: 22%;">Customer</th>
+                    <th style="width: 23%;">Description / Reference</th>
+                    <th style="width: 14%; text-align: right;">Debit (Sales)</th>
+                    <th style="width: 14%; text-align: right;">Credit (Paid)</th>
+                    <th style="width: 14%; text-align: right;">Balance</th>
                 </tr>
             </thead>
             <tbody>
 
+                <!-- Opening Balance Carriage Row -->
                 <tr class="opening-balance-row">
                     <td>{{ date('d-M-Y', strtotime($fromDate)) }}</td>
+                    <td class="font-bold">All Regional Customers</td>
                     <td class="italic">Opening Balance Carriage</td>
                     <td class="text-right">—</td>
                     <td class="text-right">—</td>
@@ -198,12 +201,15 @@
 
                 @forelse($ledgerEntries as $entry)
                     @php
-                        // Supplier Account Logic adjustment loop
-                        $running += ($entry->credit ?? 0) - ($entry->debit ?? 0);
+                        // Customer Accounting: Debits (Sales) increase balance, Credits (Payments) decrease it.
+                        $running += ($entry->debit ?? 0) - ($entry->credit ?? 0);
                     @endphp
                     <tr>
                         <td style="color: #6b7280;">
                             {{ date('d-M-Y', strtotime($entry->date)) }}
+                        </td>
+                        <td class="font-semibold" style="color: #1f2937;">
+                            {{ $entry->customer_name }}
                         </td>
                         <td class="font-medium" style="color: #111827;">
                             {{ $entry->description }}
@@ -221,9 +227,9 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-center empty-state-padding">
-                            <p class="font-medium" style="color: #6b7280; margin: 0; font-size: 11pt;">No supplier activity found</p>
-                            <p style="color: #9ca3af; margin: 4px 0 0 0; font-size: 9pt;">No ledger activity transactions logged within selected parameters.</p>
+                        <td colspan="6" class="text-center empty-state-padding">
+                            <p class="font-medium" style="color: #6b7280; margin: 0; font-size: 11pt;">No customer activity found</p>
+                            <p style="color: #9ca3af; margin: 4px 0 0 0; font-size: 9pt;">No ledger activity transactions logged for this region within selected parameters.</p>
                         </td>
                     </tr>
                 @endforelse

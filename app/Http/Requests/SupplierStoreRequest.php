@@ -33,9 +33,9 @@ class SupplierStoreRequest extends FormRequest
                 'max:255',
                 Rule::unique('suppliers', 'name')->ignore($updateId),
             ],
-
+            'amount_received' => 'nullable',
             'phone_number' => [
-                'required',
+                'nullable',
                 'string',
                 'max:50',
                 Rule::unique('suppliers', 'phone_number')->ignore($updateId),

@@ -33,7 +33,7 @@
                                 <i class="fa-solid fa-hashtag"></i>
                             </span>
                             <input type="text" id="voucher_no" name="voucher_no" readonly
-                                value="{{ old('voucher_no') ?? @$purchase->voucher_no ?? $voucher_no ?? '' }}"
+                                value="{{ old('voucher_no') ?? (@$purchase->voucher_no ?? ($voucher_no ?? '')) }}"
                                 placeholder="Auto-generated"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 font-semibold focus:outline-none cursor-not-allowed">
                         </div>
@@ -53,9 +53,10 @@
                                 <i class="fa-solid fa-drumstick-bite"></i>
                             </span>
                             <select id="product_id" name="product_id" required
-                                class="w-full pl-10 pr-10 py-2.5 bg-gray-50 border @error('product_id') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors appearance-none">
+                                class="select2 w-full pl-10 pr-10 py-2.5 bg-gray-50 border @error('product_id') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors appearance-none">
 
-                                <option value="" disabled {{ old('product_id') === null && !isset($purchase) ? 'selected' : '' }}>
+                                <option value="" disabled
+                                    {{ old('product_id') === null && !isset($purchase) ? 'selected' : '' }}>
                                     Select a product
                                 </option>
 
@@ -66,9 +67,7 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
-                                <i class="fa-solid fa-chevron-down text-xs"></i>
-                            </span>
+
                         </div>
                         @error('product_id')
                             <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
@@ -85,26 +84,25 @@
                                 <i class="fa-solid fa-truck-field"></i>
                             </span>
                             <select id="supplier_id" name="supplier_id" required
-                                class="w-full pl-10 pr-10 py-2.5 bg-gray-50 border @error('supplier_id') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors appearance-none">
+                                class="select2 w-full pl-10 pr-10 py-2.5 bg-gray-50 border @error('supplier_id') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors appearance-none">
 
-                                <option value="" disabled {{ old('supplier_id') === null && !isset($purchase) ? 'selected' : '' }}>
+                                <option value="" disabled
+                                    {{ old('supplier_id') === null && !isset($purchase) ? 'selected' : '' }}>
                                     Select a supplier
                                 </option>
 
                                 @foreach ($suppliers as $supplier)
-                                    <option value="{{ $supplier->id }}"
-                                        data-region="{{ $supplier->region->name ?? '' }}"
+                                    <option value="{{ $supplier->id }}" data-region="{{ $supplier->region->name ?? '' }}"
                                         {{ (string) old('supplier_id', @$purchase->supplier_id) === (string) $supplier->id ? 'selected' : '' }}>
-                                        {{ $supplier->name }}--{{$supplier->region->name  }}
+                                        {{ $supplier->name }}--{{ $supplier->region->name ?? '' }}
                                     </option>
                                 @endforeach
                             </select>
-                            <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
-                                <i class="fa-solid fa-chevron-down text-xs"></i>
-                            </span>
+
                         </div>
                         <p id="regionHint" class="text-xs font-medium mt-1 hidden text-amber-600">
-                            <i class="fa-solid fa-circle-info"></i> Punjab region supplier — an extra 2% of total weight will be deducted as weight cut.
+                            <i class="fa-solid fa-circle-info"></i> Punjab region supplier — an extra 2% of total weight
+                            will be deducted as weight cut.
                         </p>
                         @error('supplier_id')
                             <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
@@ -136,7 +134,8 @@
                             Date
                         </label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 font-medium text-sm">
+                            <span
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 font-medium text-sm">
                                 <i class="fa-solid fa-calendar"></i>
                             </span>
                             <input type="date" id="date" name="date"
@@ -158,8 +157,7 @@
                                 <i class="fa-solid fa-boxes-stacked"></i>
                             </span>
                             <input type="number" step="1" min="0" id="crate_qty" name="crate_qty"
-                                value="{{ old('crate_qty') ?? @$purchase->crate_qty }}" required
-                                placeholder="e.g., 20"
+                                value="{{ old('crate_qty') ?? @$purchase->crate_qty }}" required placeholder="e.g., 20"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('crate_qty') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
                         </div>
                         <p class="text-xs text-gray-400">Each crate cuts 0.5 kg from the total weight automatically.</p>
@@ -178,8 +176,7 @@
                                 <i class="fa-solid fa-weight-scale"></i>
                             </span>
                             <input type="number" step="0.01" min="0" id="total_weight" name="total_weight"
-                                value="{{ old('total_weight') ?? @$purchase->total_weight }}" required
-                                placeholder="0.00"
+                                value="{{ old('total_weight') ?? @$purchase->total_weight }}" required placeholder="0.00"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('total_weight') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
                         </div>
                         @error('total_weight')
@@ -187,7 +184,7 @@
                         @enderror
                     </div>
 
-                    {{-- Weight Cut (auto-calculated, still editable overrides allowed) --}}
+                    {{-- Weight Cut (auto-calculated) --}}
                     <div class="space-y-2">
                         <label for="weight_cut" class="block text-sm font-semibold text-gray-700">
                             Weight Cut (kg)
@@ -196,12 +193,13 @@
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 <i class="fa-solid fa-scissors"></i>
                             </span>
-                            <input type="number" step="0.01" min="0" id="weight_cut" name="weight_cut" readonly
-                                value="{{ old('weight_cut') ?? @$purchase->weight_cut ?? '0.00' }}"
+                            <input type="number" step="0.01" min="0" id="weight_cut" name="weight_cut"
+                                readonly value="{{ old('weight_cut') ?? (@$purchase->weight_cut ?? '0.00') }}"
                                 placeholder="0.00"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 focus:outline-none cursor-not-allowed">
                         </div>
-                        <p class="text-xs text-gray-400">Auto-calculated: (crates × 0.5kg) + 2% of total weight if supplier region is Punjab.</p>
+                        <p class="text-xs text-gray-400">Auto-calculated: (crates × 0.5kg) + 2% of total weight if supplier
+                            region is Punjab.</p>
                         @error('weight_cut')
                             <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
                         @enderror
@@ -216,8 +214,8 @@
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 <i class="fa-solid fa-balance-scale"></i>
                             </span>
-                            <input type="number" step="0.01" min="0" id="netweight" name="netweight" readonly
-                                value="{{ old('netweight') ?? @$purchase->netweight ?? '0.00' }}"
+                            <input type="number" step="0.01" min="0" id="netweight" name="netweight"
+                                readonly value="{{ old('netweight') ?? (@$purchase->netweight ?? '0.00') }}"
                                 placeholder="0.00"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 focus:outline-none cursor-not-allowed">
                         </div>
@@ -226,7 +224,7 @@
                         @enderror
                     </div>
 
-                    {{-- Rate (optional — may be decided later) --}}
+                    {{-- Rate --}}
                     <div class="space-y-2">
                         <label for="rate" class="block text-sm font-semibold text-gray-700">
                             Rate (per kg) <span class="text-gray-400 font-normal">(optional)</span>
@@ -236,27 +234,28 @@
                                 <i class="fa-solid fa-tag"></i>
                             </span>
                             <input type="number" step="0.01" min="0" id="rate" name="rate"
-                                value="{{ old('rate') ?? @$purchase->rate }}"
-                                placeholder="To be decided later"
+                                value="{{ old('rate') ?? @$purchase->rate }}" placeholder="To be decided later"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('rate') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
                         </div>
-                        <p class="text-xs text-gray-400">Leave blank if the rate hasn't been decided yet — it will be saved as empty and can be updated later.</p>
+                        <p class="text-xs text-gray-400">Leave blank if the rate hasn't been decided yet — it will be saved
+                            as empty and can be updated later.</p>
                         @error('rate')
                             <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
                     {{-- Total Amount (auto-calculated) --}}
-                    <div class="space-y-2 md:col-span-2">
+                    <div class="space-y-2">
                         <label for="total_amount" class="block text-sm font-semibold text-gray-700">
                             Total Amount
                         </label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 font-medium text-sm">
+                            <span
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 font-medium text-sm">
                                 <i class="fa-solid fa-wallet"></i>
                             </span>
-                            <input type="number" step="0.01" min="0" id="total_amount" name="total_amount" readonly
-                                value="{{ old('total_amount') ?? @$purchase->total_amount ?? '0.00' }}"
+                            <input type="number" step="0.01" min="0" id="total_amount" name="total_amount"
+                                readonly value="{{ old('total_amount') ?? (@$purchase->total_amount ?? '0.00') }}"
                                 placeholder="0.00"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 font-semibold focus:outline-none cursor-not-allowed">
                         </div>
@@ -265,6 +264,47 @@
                             <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
                         @enderror
                     </div>
+
+                    {{-- Paid Amount --}}
+                    <div class="space-y-2">
+                        <label for="paid_amount" class="block text-sm font-semibold text-gray-700">
+                            Paid Amount
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                <i class="fa-solid fa-money-bill-wave"></i>
+                            </span>
+                            <input type="number" step="0.01" min="0" id="paid_amount" name="paid_amount"
+                                value="{{ old('paid_amount') ?? @$purchase->supplierPayment->amount }}" placeholder="0.00"
+                                class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('paid_amount') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
+                        </div>
+                        @error('paid_amount')
+                            <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Remaining Amount (auto-calculated) --}}
+                    <div class="space-y-2">
+                        <label for="remaining_amount" class="block text-sm font-semibold text-gray-700">
+                            Remaining Balance
+                        </label>
+                        <div class="relative">
+                            <span
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 font-medium text-sm">
+                                <i class="fa-solid fa-scale-unbalanced"></i>
+                            </span>
+                            <input type="number" step="0.01" min="0" id="remaining_amount"
+                                name="remaining_amount" readonly
+                                value="{{ old('remaining_amount') ?? (@$purchase->remaining_amount ?? '0.00') }}"
+                                placeholder="0.00"
+                                class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 font-semibold focus:outline-none cursor-not-allowed">
+                        </div>
+                        <p class="text-xs text-gray-400">Auto-calculated: Total Amount - Paid Amount.</p>
+                        @error('remaining_amount')
+                            <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                 </div>
 
                 <hr class="border-gray-100">
@@ -284,18 +324,23 @@
     </div>
 
     <script>
-        (function () {
+           $(document).ready(function() {
+                $('.select2').select2();
+            });
+        (function() {
             const cratesInput = document.getElementById('crate_qty');
             const totalWeightInput = document.getElementById('total_weight');
             const weightCutInput = document.getElementById('weight_cut');
             const netWeightInput = document.getElementById('netweight');
             const rateInput = document.getElementById('rate');
             const totalAmountInput = document.getElementById('total_amount');
+            const paidAmountInput = document.getElementById('paid_amount');
+            const remainingAmountInput = document.getElementById('remaining_amount');
             const supplierSelect = document.getElementById('supplier_id');
             const regionHint = document.getElementById('regionHint');
 
-            const CRATE_CUT_PER_UNIT = 0.5;   // kg cut per crate
-            const PUNJAB_CUT_PERCENT = 0.02;  // 2% of total weight for Punjab suppliers
+            const CRATE_CUT_PER_UNIT = 0.5; // kg cut per crate
+            const PUNJAB_CUT_PERCENT = 0.02; // 2% of total weight for Punjab suppliers
 
             function isPunjabSupplier() {
                 const selectedOption = supplierSelect.options[supplierSelect.selectedIndex];
@@ -307,6 +352,7 @@
                 const crateQty = parseFloat(cratesInput.value) || 0;
                 const totalWeight = parseFloat(totalWeightInput.value) || 0;
                 const rate = parseFloat(rateInput.value) || 0;
+                const paidAmount = parseFloat(paidAmountInput.value) || 0;
 
                 const crateCut = crateQty * CRATE_CUT_PER_UNIT;
                 const punjab = isPunjabSupplier();
@@ -319,13 +365,16 @@
                 if (netWeight < 0) netWeight = 0;
 
                 const totalAmount = netWeight * rate;
+                let remainingAmount = totalAmount - paidAmount;
+                if (remainingAmount < 0) remainingAmount = 0;
 
                 weightCutInput.value = weightCut.toFixed(2);
                 netWeightInput.value = netWeight.toFixed(2);
                 totalAmountInput.value = totalAmount.toFixed(2);
+                remainingAmountInput.value = remainingAmount.toFixed(2);
             }
 
-            [cratesInput, totalWeightInput, rateInput].forEach(el => {
+            [cratesInput, totalWeightInput, rateInput, paidAmountInput].forEach(el => {
                 el.addEventListener('input', recalculate);
             });
             supplierSelect.addEventListener('change', recalculate);
