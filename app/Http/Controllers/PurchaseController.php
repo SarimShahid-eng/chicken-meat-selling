@@ -134,6 +134,9 @@ class PurchaseController extends Controller
         if (is_null($validated['paid_amount'])) {
             $validated['paid_amount'] = 0;
         }
+        if ($isRatePresent) {
+            $validated['rate_date'] = $validated['date'];
+        }
         try {
             DB::transaction(function () use ($validated, $isRatePresent) {
                 $purchase = Purchase::updateOrCreate(

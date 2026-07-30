@@ -7,14 +7,14 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Customer Statement Ledger</h1>
-                <p class="text-sm text-gray-500 mt-1">Track comprehensive sales histories, customer payments, and outstanding
-                    customer balances.</p>
+                <p class="text-sm text-gray-500 mt-1">Track comprehensive sales histories (Regular & Hotel), customer
+                    payments, and outstanding balances.</p>
             </div>
         </div>
 
         <!-- Filter Configuration Control Card -->
         <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6">
-            <form method="POST" action="{{ route('ledger.customerReport') }}"
+            <form id="ledgerFilterForm" method="POST" action="{{ route('ledger.customerReport') }}"
                 class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                 @csrf
                 <div class="space-y-2">
@@ -29,7 +29,9 @@
                                 customer...</option>
                             @foreach ($customers as $cust)
                                 <option value="{{ $cust->id }}"
-                                    {{ request('customer_id') == $cust->id ? 'selected' : '' }}>{{ $cust->name }}</option>
+                                    {{ request('customer_id') == $cust->id ? 'selected' : '' }}>
+                                    {{ $cust->name }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
@@ -47,18 +49,26 @@
                         class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none">
                 </div>
 
-                <div class="flex">
+                <div class="flex flex-wrap gap-2 items-center">
                     <button type="submit"
-                        class="text-xs bg-amber-600 hover:bg-amber-700 text-white font-medium px-4 py-2 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                        class="text-xs bg-amber-600 hover:bg-amber-700 text-white font-medium px-3 py-2 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-magnifying-glass"></i>Search
                     </button>
+
                     <a href="{{ route('ledger.customer') }}"
-                        class="text-xs ml-2  bg-amber-600 hover:bg-amber-700 text-white font-medium px-4 py-2 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                        class="text-xs bg-gray-500 hover:bg-gray-600 text-white font-medium px-3 py-2 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-arrow-rotate-left"></i>Reset
                     </a>
+
                     <button type="submit" name="export" value="pdf"
-                        class="text-xs ml-2 btn-sm btn-danger bg-red-700 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
-                        Export
+                        class="text-xs bg-red-700 hover:bg-red-600 text-white font-medium px-3 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-file-pdf"></i>Export
+                    </button>
+
+                    {{-- NEW INVOICE BUTTON --}}
+                    <button type="button" onclick="submitInvoiceRoute()"
+                        class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-3 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-file-invoice"></i>Invoice
                     </button>
                 </div>
             </form>
@@ -95,15 +105,52 @@
 
                             @forelse($ledgerEntries as $entry)
                                 @php
-                                    // Customer Accounting Formula: Debits (Sales) increase balance, Credits (Payments) decrease it.
                                     $running += ($entry->debit ?? 0) - ($entry->credit ?? 0);
                                 @endphp
                                 <tr class="hover:bg-gray-50/70 transition-colors">
                                     <td class="px-6 py-3.5 text-gray-500">{{ date('d-M-Y', strtotime($entry->date)) }}</td>
                                     <td class="px-6 py-3.5 font-medium">
-                                        {{ $entry->description }}
-                                        <span class="text-xs text-gray-400 block">Ref ID:
-                                            #{{ $entry->reference_id }}</span>
+                                        <div class="flex items-center gap-2">
+                                            {{-- 1. Regular Sale Badge --}}
+                                            @if ($entry->type === 'sale')
+                                                <span
+                                                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                    Regular Sale
+                                                </span>
+                                                <span>Ref: #{{ $entry->reference_id }}</span>
+
+                                                {{-- 2. Hotel Sale Badge --}}
+                                            @elseif($entry->type === 'hotel_sale')
+                                                <span
+                                                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                                                    Hotel Sale
+                                                </span>
+                                                <span>Ref: #{{ $entry->reference_id }}</span>
+
+                                                {{-- 3. Payments Logic --}}
+                                            @elseif($entry->type === 'payment')
+                                                @if (!empty($entry->sale_id))
+                                                    {{-- Payment linked to a sale --}}
+                                                    @if ($entry->reference === 'hotel_sale')
+                                                        <span
+                                                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                                                            Hotel Sale Payment
+                                                        </span>
+                                                    @else
+                                                        <span
+                                                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                            Sale Payment
+                                                        </span>
+                                                    @endif
+                                                    <span>Ref: #{{ $entry->reference_id }}</span>
+                                                @else
+                                                    {{-- Payment made separately (No sale_id present) --}}
+                                                    <span class="text-gray-700">Payment</span>
+                                                    <span class="text-xs text-gray-400">(Ref:
+                                                        #{{ $entry->reference_id }})</span>
+                                                @endif
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="px-6 py-3.5 text-right text-red-600 font-medium">
                                         {{ $entry->debit ? 'Rs. ' . number_format($entry->debit, 2) : '-' }}
@@ -133,8 +180,34 @@
     @push('scripts')
         <script>
             $(document).ready(function() {
-                $('#customer_id').select2()
-            })
+                $('#customer_id').select2();
+            });
+
+            function submitInvoiceRoute() {
+                const customerId = $('#customer_id').val();
+                const fromDate = $('#from_date').val();
+
+                if (!customerId) {
+                    alert('Please select a customer first.');
+                    return;
+                }
+
+                if (!fromDate) {
+                    alert('Please select a "From Date" first.');
+                    return;
+                }
+
+                // 1. Generate base URL using Laravel's named route with placeholders
+                let invoiceUrl =
+                    "{{ route('ledger.customerInvoice', ['customer' => ':cust_id', 'date' => ':f_date']) }}";
+
+                // 2. Replace placeholders with actual JavaScript values
+                invoiceUrl = invoiceUrl.replace(':cust_id', encodeURIComponent(customerId))
+                    .replace(':f_date', encodeURIComponent(fromDate));
+
+                // 3. Redirect / Download PDF
+                window.open(invoiceUrl, '_blank');
+            }
         </script>
-    @endpush
-@endsection
+        @endpush
+    @endsection

@@ -23,16 +23,16 @@ class HotelSaleStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'update_id' => 'nullable|exists:sales,id',
+            'update_id' => 'nullable|exists:hotel_sales,id',
             'voucher_no' => 'required|string|max:50',
-            'product_id' => 'required|integer|exists:products,id',
             'customer_id' => 'required|integer|exists:customers,id',
             'date' => 'required|date|before_or_equal:today',
-            'total_weight' => 'required|numeric|decimal:0,2|min:0|max:99999999.99',
+            'items.*'=>'required|array|min:1',
+            'items.*.product_id'=>'required|exists:products,id|distinct',
+            'items.*.weight'=>'required|numeric|decimal:0,2|min:0|max:99999999.99',
+            'items.*.rate'=>'required|numeric|decimal:0,2|min:0|max:99999999.99',
+            'items.*.amount'=>'required|numeric|decimal:0,2|min:0|max:99999999.99',
             'amount_received'=>'nullable',
-
-            'rate' => 'required|numeric|decimal:0,2|min:0|max:99999999.99',
-
             'total_amount' => 'required|required_with:rate|numeric|min:0',
         ];
     }

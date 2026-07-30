@@ -204,7 +204,7 @@
             <div class="space-y-2">
                 <button onclick="toggleSubmenu('sales-menu')"
                     class="w-full nav-link justify-between
-                    @routeis(['sales.*','hotel_sales.*'])
+                    @routeis(['sales.*'])
                             active
                             @else
                             hidden
@@ -216,7 +216,7 @@
                     <i class="fas fa-chevron-down text-xs"></i>
                 </button>
                 <div id="sales-menu"
-                    class=" pl-8 space-y-2 @routeis(['sales.*','hotel_sales.*'])
+                    class=" pl-8 space-y-2 @routeis(['sales.*'])
                         active
                         @else
                         hidden
@@ -228,13 +228,6 @@
                         <i class="fas fa-plus w-4 text-center"></i>
                         <span>New Sale</span>
                     </a>
-                    <a href="{{ route('hotel_sales.create') ?? '#' }}"
-                        class="nav-link text-sm  @routeis('hotel_sales.*')
-                        active
-                        @endrouteis">
-                        <i class="fa-solid fa-hotel w-4 text-center"></i>
-                        <span>Hotel Sale</span>
-                    </a>
                     <a href="{{ route('sales.index') ?? '#' }}"
                         class="nav-link text-sm
                                 @routeis('sales.index')
@@ -243,6 +236,45 @@
                                 ">
                         <i class="fas fa-list w-4 text-center"></i>
                         <span>All Sales</span>
+                    </a>
+                </div>
+            </div>
+            <!-- Hotel Sale -->
+            <div class="space-y-2">
+                <button onclick="toggleSubmenu('hotel-sales-menu')"
+                    class="w-full nav-link justify-between
+                    @routeis(['hotel_sales.*'])
+                            active
+                            @else
+                            hidden
+                            @endrouteis">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-hotel w-4"></i>
+                        <span>Hotel Sale</span>
+                    </div>
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </button>
+                <div id="hotel-sales-menu"
+                    class=" pl-8 space-y-2 @routeis(['hotel_sales.*'])
+                        active
+                        @else
+                        hidden
+                        @endrouteis">
+                    <a href="{{ route('hotel_sales.create') ?? '#' }}"
+                        class="nav-link text-sm  @routeis('hotel_sales.create')
+                        active
+                        @endrouteis">
+                        <i class="fa-solid fa-hotel w-4 text-center"></i>
+                        <span>New Hotel Sale</span>
+                    </a>
+                    <a href="{{ route('hotel_sales.index') ?? '#' }}"
+                        class="nav-link text-sm
+                                @routeis('hotel_sales.index')
+                                        active
+                                        @endrouteis
+                                ">
+                        <i class="fas fa-list w-4 text-center"></i>
+                        <span>All Hotel Sales</span>
                     </a>
                 </div>
             </div>

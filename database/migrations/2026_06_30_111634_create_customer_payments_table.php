@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('customer_payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sale_id')->nullable();
+            $table->unsignedBigInteger('sale_id')->nullable();
             $table->foreignId('customer_id');
             $table->integer('amount')->nullable();
             $table->longText('description')->nullable();
+            $table->enum('reference', ['hotel_sale', 'sale']);
             $table->enum('type', ['bank', 'cash']);
             $table->enum('payment_type', ['credit', 'debit'])->default('credit');
             $table->date('date');

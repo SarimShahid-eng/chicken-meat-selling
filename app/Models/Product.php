@@ -44,4 +44,8 @@ class Product extends Model
     {
         return $this->hasMany(Sale::class);
     }
+    public function hotelSales(): HasMany
+    {
+        return $this->hasMany(HotelSaleItem::class);
+    }
 }

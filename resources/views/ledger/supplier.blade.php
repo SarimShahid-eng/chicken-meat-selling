@@ -11,17 +11,16 @@
                     party ledger balances.</p>
             </div>
         </div>
-
         <!-- Filter Configuration Control Card -->
         <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6">
-            <form method="POST" action="{{ route('ledger.supplierReport') }}"
+            <form id="ledgerFilterForm" method="POST" action="{{ route('ledger.supplierReport') }}"
                 class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                 @csrf
                 <div class="space-y-2">
                     <label for="supplier_id" class="block text-sm font-semibold text-gray-700">Select Supplier</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                            <i class="fa-solid fa-truck-field"></i>
+                            <i class="fa-solid fa-user-tie"></i>
                         </span>
                         <select id="supplier_id" name="supplier_id" required
                             class="w-full pl-10 pr-10 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none appearance-none text-sm">
@@ -47,22 +46,31 @@
                         class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none">
                 </div>
 
-               <div class="flex">
+                <div class="flex flex-wrap gap-2 items-center">
                     <button type="submit"
-                        class="text-xs bg-amber-600 hover:bg-amber-700 text-white font-medium px-4 py-2 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                        class="text-xs bg-amber-600 hover:bg-amber-700 text-white font-medium px-3 py-2 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-magnifying-glass"></i>Search
                     </button>
+
                     <a href="{{ route('ledger.supplier') }}"
-                        class="text-xs ml-2  bg-amber-600 hover:bg-amber-700 text-white font-medium px-4 py-2 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                        class="text-xs bg-gray-500 hover:bg-gray-600 text-white font-medium px-3 py-2 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-arrow-rotate-left"></i>Reset
                     </a>
+
                     <button type="submit" name="export" value="pdf"
-                        class="text-xs ml-2 btn-sm btn-danger bg-red-700 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
-                        Export
+                        class="text-xs bg-red-700 hover:bg-red-600 text-white font-medium px-3 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-file-pdf"></i>Export
+                    </button>
+
+                    {{-- NEW INVOICE BUTTON --}}
+                    <button type="button" onclick="submitInvoiceRoute()"
+                        class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-3 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-file-invoice"></i>Invoice
                     </button>
                 </div>
             </form>
         </div>
+
 
         @if (request('supplier_id'))
             <!-- Statement Output View -->
@@ -134,6 +142,32 @@
             $(document).ready(function() {
                 $('#supplier_id').select2()
             })
+
+            function submitInvoiceRoute() {
+                const supplierId = $('#supplier_id').val();
+                const fromDate = $('#from_date').val();
+
+                if (!supplierId) {
+                    alert('Please select a supplier first.');
+                    return;
+                }
+
+                if (!fromDate) {
+                    alert('Please select a "From Date" first.');
+                    return;
+                }
+
+                // 1. Generate base URL using Laravel's named route with placeholders
+                let invoiceUrl =
+                    "{{ route('ledger.supplierInvoice', ['supplier' => ':cust_id', 'date' => ':f_date']) }}";
+
+                // 2. Replace placeholders with actual JavaScript values
+                invoiceUrl = invoiceUrl.replace(':cust_id', encodeURIComponent(supplierId))
+                    .replace(':f_date', encodeURIComponent(fromDate));
+
+                // 3. Redirect / Download PDF
+                window.open(invoiceUrl, '_blank');
+            }
         </script>
     @endpush
 @endsection

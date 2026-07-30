@@ -67,7 +67,7 @@
                     </a>
                     <button type="submit" name="export" value="pdf"
                         class="text-xs ml-2 btn-sm btn-danger bg-red-700 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors shadow-sm whitespace-nowrap">
-                         PDF
+                        PDF
                     </button>
                 </div>
             </form>
@@ -113,10 +113,47 @@
                                     <td class="px-6 py-3.5 text-gray-500">{{ date('d-M-Y', strtotime($entry->date)) }}</td>
                                     <td class="px-6 py-3.5 font-semibold text-gray-800">{{ $entry->customer_name }}</td>
                                     <td class="px-6 py-3.5 font-medium">
-                                        {{ $entry->description }}
-                                        <span class="text-xs text-gray-400 block">
-                                            Ref ID: #{{ $entry->reference_id }}
-                                        </span>
+                                        <div class="flex items-center gap-2">
+                                            {{-- 1. Regular Sale Badge --}}
+                                            @if ($entry->type === 'sale')
+                                                <span
+                                                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                    Regular Sale
+                                                </span>
+                                                <span>Ref: #{{ $entry->reference_id }}</span>
+
+                                                {{-- 2. Hotel Sale Badge --}}
+                                            @elseif($entry->type === 'hotel_sale')
+                                                <span
+                                                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                                                    Hotel Sale
+                                                </span>
+                                                <span>Ref: #{{ $entry->reference_id }}</span>
+
+                                                {{-- 3. Payments Logic --}}
+                                            @elseif($entry->type === 'payment')
+                                                @if (!empty($entry->sale_id))
+                                                    {{-- Payment linked to a sale --}}
+                                                    @if ($entry->reference === 'hotel_sale')
+                                                        <span
+                                                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                                                            Hotel Sale Payment
+                                                        </span>
+                                                    @else
+                                                        <span
+                                                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                            Sale Payment
+                                                        </span>
+                                                    @endif
+                                                    <span>Ref: #{{ $entry->reference_id }}</span>
+                                                @else
+                                                    {{-- Payment made separately (No sale_id present) --}}
+                                                    <span class="text-gray-700">Payment</span>
+                                                    <span class="text-xs text-gray-400">(Ref:
+                                                        #{{ $entry->reference_id }})</span>
+                                                @endif
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="px-6 py-3.5 text-right text-red-600 font-medium">
                                         {{ $entry->debit ? 'Rs. ' . number_format($entry->debit, 2) : '-' }}
@@ -150,4 +187,5 @@
             $('#region_id').select2();
         });
     </script>
-@endpush
+    @endpush
+

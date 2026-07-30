@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('product_id');
             $table->foreignId('customer_id');
-            $table->enum('type',['hotel','customer']);
             $table->integer('voucher_no')->unique();
             $table->decimal('crate_qty', 10, 2)->nullable();
             $table->decimal('total_weight', 10, 2);

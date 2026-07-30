@@ -49,6 +49,10 @@ class Customer extends Model
     {
         return $this->hasMany(Sale::class);
     }
+    public function hotelSales(): HasMany
+    {
+        return $this->hasMany(HotelSale::class);
+    }
 
     public function customerPayments(): HasMany
     {

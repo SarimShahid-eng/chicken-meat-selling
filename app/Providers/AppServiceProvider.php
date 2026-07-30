@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\HotelSale;
 use App\Models\Product;
 use App\Models\Sale;
 use Illuminate\Support\Facades\Blade;
@@ -30,13 +31,14 @@ class AppServiceProvider extends ServiceProvider
         View::composer('*', function ($view) {
 
             // 1. Calculate Today's Sales (Sum of totals processed today)
-            $todaysSales = Sale::whereDate('date', today())->sum('total_amount') ?? 0;
+            $todaysSales = Sale::whereDate('date', today())->sum('total_amount') + HotelSale::sum('total_amount') ?? 0;
             $availableProductsCount = Product::withSum('purchases', 'netweight')
                 ->withSum('sales', 'netweight')
+                ->withSum('hotelSales', 'weight')
                 ->get()
                 ->filter(function ($product) {        // withSum automatically names the attributes: {relation}_sum_{column}
                     $purchased = $product->purchases_sum_netweight ?? 0;
-                    $sold = $product->sales_sum_netweight ?? 0;
+                    $sold = $product->sales_sum_netweight - $product->hotel_sales_weight ?? 0;
 
                     return ($purchased - $sold) > 0;
                 })

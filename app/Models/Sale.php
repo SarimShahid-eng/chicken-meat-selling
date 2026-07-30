@@ -23,7 +23,6 @@ class Sale extends Model
         'crate_qty',
         'total_weight',
         'weight_cut',
-        'type',
         'netweight',
         'date',
         'rate',

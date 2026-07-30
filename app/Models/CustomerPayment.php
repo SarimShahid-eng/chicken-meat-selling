@@ -22,6 +22,7 @@ class CustomerPayment extends Model
         'description',
         'type',
         'date',
+        'reference',
         'payment_type'
     ];
 

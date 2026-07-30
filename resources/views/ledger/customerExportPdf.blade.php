@@ -6,8 +6,8 @@
     <style>
         /* PDF Document Layout Configuration */
         @page {
-            size: A4 portrait; /* Portrait handles 5-column financial statements perfectly */
-            margin: 20mm 15mm;
+            size: A4 portrait;
+            margin: 15mm 10mm;
             @bottom-right {
                 content: "Page " counter(page) " of " counter(pages);
                 font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -32,43 +32,43 @@
             padding: 0;
             color: #2d3748;
             background-color: #ffffff;
-            font-size: 9.5pt;
-            line-height: 1.4;
+            font-size: 8.5pt;
+            line-height: 1.3;
         }
 
         /* Document Header Styling */
         .header-container {
             border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 12px;
-            margin-bottom: 20px;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
             text-align: center;
         }
 
         .company-name {
-            font-size: 22pt;
+            font-size: 20pt;
             font-weight: 800;
-            color: #d97706; /* Amber accent matching UI theme */
+            color: #d97706; /* Amber accent */
             margin: 0 0 2px 0;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
         .report-title {
-            font-size: 14pt;
+            font-size: 12pt;
             font-weight: bold;
             color: #1a365d;
-            margin: 0 0 6px 0;
+            margin: 0 0 4px 0;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .report-meta {
-            font-size: 9pt;
+            font-size: 8.5pt;
             color: #4a5568;
             margin: 0;
         }
 
-        /* Print-Safe Structural Table Styles */
+        /* Structural Table Styles */
         .table-container {
             width: 100%;
         }
@@ -84,12 +84,12 @@
         }
 
         th {
-            padding: 12px 10px;
+            padding: 8px 6px;
             font-weight: 700;
-            font-size: 8.5pt;
+            font-size: 8pt;
             color: #4b5563;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
             border-bottom: 2px solid #e5e7eb;
         }
 
@@ -97,9 +97,8 @@
             page-break-inside: avoid;
         }
 
-        /* Specific style for highlighting the opening balance row */
         .opening-balance-row {
-            background-color: #fef3c7 !important; /* Soft gold accent */
+            background-color: #fef3c7 !important;
             font-weight: 500;
             color: #78350f;
         }
@@ -109,57 +108,54 @@
         }
 
         td {
-            padding: 10px;
-            font-size: 9pt;
+            padding: 8px 6px;
+            font-size: 8.5pt;
             color: #374151;
             border-bottom: 1px solid #e5e7eb;
-            vertical-align: top;
+            vertical-align: middle;
         }
 
-        /* Typography & Financial Metric Indicators */
-        .font-medium {
-            font-weight: 500;
+        /* Inline Badges Optimized for Dompdf */
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            font-size: 7.5pt;
+            font-weight: 600;
+            border-radius: 4px;
+            text-transform: uppercase;
+            margin-right: 4px;
         }
 
-        .font-semibold {
+        .badge-sale {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-hotel {
+            background-color: #f3e8ff;
+            color: #6b21a8;
+        }
+
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+
+        .text-debit {
+            color: #dc2626;
             font-weight: 600;
         }
 
-        .font-bold {
-            font-weight: 700;
-        }
-
-        .text-right {
-            text-align: right;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        .text-debit {
-            color: #b91c1c; /* Crisp crimson for visibility */
-            font-weight: 500;
-        }
-
         .text-credit {
-            color: #15803d; /* Clear statement green */
-            font-weight: 500;
+            color: #16a34a;
+            font-weight: 600;
         }
 
-        .empty-state-padding {
-            padding: 50px 0;
-        }
+        .font-bold { font-weight: 700; }
+        .font-semibold { font-weight: 600; }
+        .italic { font-style: italic; }
 
         .sub-text {
-            font-size: 8pt;
-            color: #9ca3af;
-            display: block;
-            margin-top: 2px;
-        }
-
-        .italic {
-            font-style: italic;
+            font-size: 7.5pt;
+            color: #6b7280;
         }
     </style>
 </head>
@@ -169,7 +165,7 @@
         <h1 class="company-name">Rajput Chicken Centre</h1>
         <h2 class="report-title">Customer Account Ledger Statement</h2>
         <p class="report-meta">
-            Statement Period: {{ date('d-M-Y', strtotime($fromDate)) }} onwards | Generated: {{ now()->format('Y-m-d H:i') }}
+            Statement Period: {{ date('d-M-Y', strtotime($fromDate)) }} to {{ date('d-M-Y', strtotime($toDate)) }} | Generated: {{ now()->format('d-M-Y H:i') }}
         </p>
     </div>
 
@@ -177,11 +173,14 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 15%;">Date</th>
-                    <th style="width: 31%;">Description / Reference</th>
-                    <th style="width: 18%; text-align: right;">Debit (Sales)</th>
-                    <th style="width: 18%; text-align: right;">Credit (Payments)</th>
-                    <th style="width: 18%; text-align: right;">Balance</th>
+                    <th style="width: 12%;">Date</th>
+                    @if(isset($entry->customer_name) || isset($ledgerEntries->first()->customer_name))
+                        <th style="width: 18%;">Customer</th>
+                    @endif
+                    <th style="width: 32%;">Description / Reference</th>
+                    <th style="width: 13%; text-align: right;">Debit (Sales)</th>
+                    <th style="width: 13%; text-align: right;">Credit (Payments)</th>
+                    <th style="width: 12%; text-align: right;">Balance</th>
                 </tr>
             </thead>
             <tbody>
@@ -189,6 +188,9 @@
                 <!-- Opening Balance Row Entry -->
                 <tr class="opening-balance-row">
                     <td>{{ date('d-M-Y', strtotime($fromDate)) }}</td>
+                    @if(isset($entry->customer_name) || isset($ledgerEntries->first()->customer_name))
+                        <td class="font-bold">All Customers</td>
+                    @endif
                     <td class="italic">Opening Balance Carriage</td>
                     <td class="text-right">—</td>
                     <td class="text-right">—</td>
@@ -199,17 +201,47 @@
 
                 @forelse($ledgerEntries as $entry)
                     @php
-                        // Customer Accounting Formula evaluation loop
                         $running += ($entry->debit ?? 0) - ($entry->credit ?? 0);
                     @endphp
                     <tr>
                         <td style="color: #6b7280;">
                             {{ date('d-M-Y', strtotime($entry->date)) }}
                         </td>
-                        <td class="font-medium" style="color: #111827;">
-                            {{ $entry->description }}
-                            <span class="sub-text">Ref ID: #{{ $entry->reference_id }}</span>
+
+                        {{-- Customer Name column if region export --}}
+                        @if(isset($entry->customer_name))
+                            <td class="font-semibold" style="color: #1f2937;">
+                                {{ $entry->customer_name }}
+                            </td>
+                        @endif
+
+                        <td>
+                            {{-- 1. Regular Sale Badge --}}
+                            @if($entry->type === 'sale')
+                                <span class="badge badge-sale">Regular Sale</span>
+                                <span class="sub-text">Ref: #{{ $entry->reference_id }}</span>
+
+                            {{-- 2. Hotel Sale Badge --}}
+                            @elseif($entry->type === 'hotel_sale')
+                                <span class="badge badge-hotel">Hotel Sale</span>
+                                <span class="sub-text">Ref: #{{ $entry->reference_id }}</span>
+
+                            {{-- 3. Payments Logic --}}
+                            @elseif($entry->type === 'payment')
+                                @if(!empty($entry->sale_id))
+                                    @if($entry->reference === 'hotel_sale')
+                                        <span class="badge badge-hotel">Hotel Sale Payment</span>
+                                    @else
+                                        <span class="badge badge-sale">Sale Payment</span>
+                                    @endif
+                                    <span class="sub-text">Ref: #{{ $entry->reference_id }}</span>
+                                @else
+                                    <span style="color: #374151; font-weight: 500;">Payment</span>
+                                    <span class="sub-text">(Ref: #{{ $entry->reference_id }})</span>
+                                @endif
+                            @endif
                         </td>
+
                         <td class="text-right text-debit">
                             {{ $entry->debit ? 'Rs. ' . number_format($entry->debit, 2) : '—' }}
                         </td>
@@ -222,9 +254,9 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-center empty-state-padding">
-                            <p class="font-medium" style="color: #6b7280; margin: 0; font-size: 11pt;">No ledger records found</p>
-                            <p style="color: #9ca3af; margin: 5px 0 0 0; font-size: 9pt;">No ledger activity transactions logged within selected parameters.</p>
+                        <td colspan="{{ isset($ledgerEntries->first()->customer_name) ? 6 : 5 }}" class="text-center" style="padding: 40px 0;">
+                            <p style="color: #6b7280; font-weight: 500; font-size: 10pt; margin: 0;">No ledger records found</p>
+                            <p style="color: #9ca3af; font-size: 8.5pt; margin: 4px 0 0 0;">No transactions logged within the selected date range.</p>
                         </td>
                     </tr>
                 @endforelse

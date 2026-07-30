@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\HotelSale;
 use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\Sale;
@@ -13,7 +14,9 @@ class DashboardController extends Controller
 {
     public function dashboard()
     {
-        $totalSales = Sale::sum('total_amount');
+        $hotelSales = HotelSale::sum('total_amount');
+        $totalSales = Sale::sum('total_amount') + $hotelSales;
+        // dd(Sale::sum('total_amount'));
         // 2. Define your critical stock alert threshold in kilograms
         $lowStockThreshold = 5.0;
 

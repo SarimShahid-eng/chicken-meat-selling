@@ -90,7 +90,7 @@ class SaleController extends Controller
     {
         $voucher_no = Sale::max('voucher_no') + 1;
         $products = Product::all();
-        $customers = Customer::with('region')->where('category', 'customer')->get();
+        $customers = Customer::with('region')->get();
 
         return view('sales.create', compact('products', 'customers', 'voucher_no'));
         //
@@ -128,7 +128,6 @@ class SaleController extends Controller
     public function store(SaleStoreRequest $request)
     {
         $validated = $request->validated();
-        $validated['type'] = 'customer';
         if (is_null($validated['amount_received'])) {
             $validated['amount_received'] = 0;
         }
@@ -140,10 +139,12 @@ class SaleController extends Controller
 
                 CustomerPayment::updateOrCreate([
                     'sale_id' => $sale->id,
+                    'reference' => 'sale'
                 ], [
                     'sale_id' => $sale->id,
                     'customer_id' => $validated['customer_id'],
                     'amount' => $validated['amount_received'],
+                    'reference'=>'sale',
                     'date' => $validated['date'],
                     'payment_type' => 'debit',
                     'type' => 'cash',
@@ -169,7 +170,7 @@ class SaleController extends Controller
     public function edit(Sale $sale)
     {
         $products = Product::all(['id', 'name']);
-        $customers = Customer::with('region')->where('category', 'customer')->get();
+        $customers = Customer::with('region')->get();
 
         return view('sales.create', compact('sale', 'products', 'customers'));
     }
