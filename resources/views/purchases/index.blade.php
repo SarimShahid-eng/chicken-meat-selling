@@ -243,6 +243,8 @@
                     document.getElementById('modalRate').textContent = data.rate ?? 'Not set';
                     document.getElementById('modalRateDate').textContent = data.rate_date_formatted ?? data.rate_date ??
                         '—';
+                    document.getElementById('modalPurchaseAmount').textContent = data.purchase_amount ?? 'Not Set';
+                    document.getElementById('modalPaidAmount').textContent = data.paid_amount ?? 'Not Set';
                     document.getElementById('modalTotalAmount').textContent = data.total_amount ?? '—';
                     document.getElementById('modalCreatedAt').textContent = data.created_at_formatted ?? data.created_at ??
                         '—';

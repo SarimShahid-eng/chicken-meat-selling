@@ -98,7 +98,10 @@ class SaleController extends Controller
 
     public function show(Sale $sale)
     {
-        $sale->load(['product', 'customer.region']);
+        $sale->load(['product', 'customer.region', 'customerPayment']);
+        $receivedAmount = $sale->customerPayment->amount;
+        $saleAmount=$sale->total_amount;
+        $totalAmount = $saleAmount - $receivedAmount;
         $data = [
             'product' => [
                 'name' => $sale->product->name,
@@ -109,13 +112,15 @@ class SaleController extends Controller
                     'name' => $sale->customer->region->name,
                 ],
             ],
+            'sale_amount' => $saleAmount,
+            'amount_received' => $receivedAmount,
             'voucher_no' => $sale->voucher_no,
             'crate_qty' => $sale->crate_qty,
             'total_weight' => $sale->total_weight,
             'weight_cut' => $sale->weight_cut,
             'netweight' => $sale->netweight,
             'rate' => $sale->rate,
-            'total_amount' => $sale->total_amount,
+            'total_amount' => $totalAmount,
             'created_at' => $sale->created_at->format('d-m-Y'),
         ];
 
@@ -139,12 +144,12 @@ class SaleController extends Controller
 
                 CustomerPayment::updateOrCreate([
                     'sale_id' => $sale->id,
-                    'reference' => 'sale'
+                    'reference' => 'sale',
                 ], [
                     'sale_id' => $sale->id,
                     'customer_id' => $validated['customer_id'],
                     'amount' => $validated['amount_received'],
-                    'reference'=>'sale',
+                    'reference' => 'sale',
                     'date' => $validated['date'],
                     'payment_type' => 'debit',
                     'type' => 'cash',

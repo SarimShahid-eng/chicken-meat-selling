@@ -99,7 +99,7 @@ class SupplierLedgerController extends Controller
                 ->get();
 
             if ($request->filled('export') && $request->input('export') === 'pdf') {
-                $pdf = Pdf::loadView('ledger.supplierExportPdf', compact('suppliers', 'ledgerEntries', 'openingBalance', 'fromDate', 'toDate'));
+                $pdf = Pdf::loadView('ledger.supplierExportPdf', compact('supplier', 'ledgerEntries', 'openingBalance', 'fromDate', 'toDate'));
 
                 return $pdf->download('suppliersLedger.pdf');
             }

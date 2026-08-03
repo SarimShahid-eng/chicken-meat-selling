@@ -147,9 +147,9 @@ class CustomerLedgerController extends Controller
                 ->orderBy('sort_order', 'asc') // 3. Forces Sale (1) BEFORE Payment (2)
                 ->orderBy('created_at', 'asc') // 4. Fallback creation time
                 ->get();
-
+// dd($ledgerEntries);
             if ($request->filled('export') && $request->input('export') === 'pdf') {
-                $pdf = Pdf::loadView('ledger.customerExportPdf', compact('customers', 'ledgerEntries', 'openingBalance', 'fromDate', 'toDate'));
+                $pdf = Pdf::loadView('ledger.customerExportPdf', compact('customer', 'ledgerEntries', 'openingBalance', 'fromDate', 'toDate'));
 
                 return $pdf->download('customer_ledger.pdf');
             }

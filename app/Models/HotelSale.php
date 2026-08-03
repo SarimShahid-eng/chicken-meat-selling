@@ -17,6 +17,13 @@ class HotelSale extends Model
         'total_amount',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'date' => 'date',
+        ];
+    }
+
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
@@ -29,6 +36,6 @@ class HotelSale extends Model
 
     public function customerPayment(): HasOne
     {
-        return $this->hasOne(CustomerPayment::class, 'sale_id')->where('reference', 'hotel_sale');
+        return $this->hasOne(CustomerPayment::class, 'sale_id','id');
     }
 }

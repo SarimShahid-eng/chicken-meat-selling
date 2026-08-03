@@ -148,7 +148,10 @@ class HotelSaleController extends Controller
 
     public function show(HotelSale $hotelSale)
     {
-        $hotelSale = $hotelSale->load(['customer:id,name,region_id','customer.region:id,name', 'items:id,hotel_sale_id,product_id,amount,rate,weight', 'items.product:id,name']);
+        $hotelSale = $hotelSale->load(['customer:id,name,region_id',
+        'customerPayment',
+        'customer.region:id,name', 'items:id,hotel_sale_id,product_id,amount,rate,weight', 'items.product:id,name']);
+    //    dd($hotelSale);
         $data = [
             'hotel_sale' => $hotelSale,
         ];

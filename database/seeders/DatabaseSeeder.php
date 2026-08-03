@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
         $regions = [
             ['name' => 'Sindh', 'category' => 'purchase'],
             ['name' => 'Punjab', 'category' => 'purchase'],
-            ['name' => 'Tando Allahyar', 'category' => 'sale'],
+            ['name' => 'Tando Jam', 'category' => 'sale'],
             ['name' => 'Hyderabad', 'category' => 'sale'],
         ];
 

@@ -229,6 +229,8 @@
                     document.getElementById('modalNetWeight').textContent = data.netweight ?? '—';
                     '—';
                     document.getElementById('modalRate').textContent = data.rate ?? 'Not set';
+                    document.getElementById('modalSaleAmount').textContent = data.sale_amount ?? 'Not set';
+                    document.getElementById('modalAmountRecived').textContent = data.amount_received ?? 'Not set';
                     document.getElementById('modalTotalAmount').textContent = data.total_amount ?? '—';
                     document.getElementById('modalCreatedAt').textContent = data.created_at_formatted ?? data.created_at ??
                         '—';

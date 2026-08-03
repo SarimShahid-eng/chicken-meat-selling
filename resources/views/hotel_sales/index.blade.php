@@ -106,7 +106,7 @@
                             <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Date</th>
                             <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Items Count</th>
                             <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Total Amount</th>
-                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Amount Paid</th>
+                            <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Amount Received</th>
                             {{-- <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Balance</th> --}}
                             <th scope="col" class="px-6 py-4 font-semibold text-gray-700 text-right">Actions</th>
                         </tr>
@@ -212,7 +212,7 @@
 
                     // Payment Summaries
                     const totalAmt = parseFloat(data.total_amount ?? 0);
-                    const paidAmt = parseFloat(data.paid_amount ?? data.amount_paid ?? 0);
+                    const paidAmt = parseFloat(data.customer_payment.amount  ?? 0);
                     const balance = totalAmt - paidAmt;
 
                     document.getElementById('modalTotalAmount').textContent = totalAmt.toFixed(2);

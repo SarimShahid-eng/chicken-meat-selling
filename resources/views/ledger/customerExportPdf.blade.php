@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Customer Account Ledger Statement</title>
@@ -8,12 +9,14 @@
         @page {
             size: A4 portrait;
             margin: 15mm 10mm;
+
             @bottom-right {
                 content: "Page " counter(page) " of " counter(pages);
                 font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
                 font-size: 8pt;
                 color: #718096;
             }
+
             @bottom-left {
                 content: "Rajput Chicken Centre — Customer Statement of Account";
                 font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -22,7 +25,9 @@
             }
         }
 
-        *, *::before, *::after {
+        *,
+        *::before,
+        *::after {
             box-sizing: border-box;
         }
 
@@ -47,7 +52,8 @@
         .company-name {
             font-size: 20pt;
             font-weight: 800;
-            color: #d97706; /* Amber accent */
+            color: #d97706;
+            /* Amber accent */
             margin: 0 0 2px 0;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -136,8 +142,13 @@
             color: #6b21a8;
         }
 
-        .text-right { text-align: right; }
-        .text-center { text-align: center; }
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
 
         .text-debit {
             color: #dc2626;
@@ -149,9 +160,17 @@
             font-weight: 600;
         }
 
-        .font-bold { font-weight: 700; }
-        .font-semibold { font-weight: 600; }
-        .italic { font-style: italic; }
+        .font-bold {
+            font-weight: 700;
+        }
+
+        .font-semibold {
+            font-weight: 600;
+        }
+
+        .italic {
+            font-style: italic;
+        }
 
         .sub-text {
             font-size: 7.5pt;
@@ -159,13 +178,18 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="header-container">
         <h1 class="company-name">Rajput Chicken Centre</h1>
         <h2 class="report-title">Customer Account Ledger Statement</h2>
+        <div style="font-size: 10.5pt; font-weight: 700; color: #2563eb; margin-bottom: 4px;">
+            Customer: {{ $customer->name ?? ($customer->name ?? 'All Account Holders') }}
+        </div>
         <p class="report-meta">
-            Statement Period: {{ date('d-M-Y', strtotime($fromDate)) }} to {{ date('d-M-Y', strtotime($toDate)) }} | Generated: {{ now()->format('d-M-Y H:i') }}
+            Statement Period: {{ date('d-M-Y', strtotime($fromDate)) }} to {{ date('d-M-Y', strtotime($toDate)) }} |
+            Generated: {{ now()->format('d-M-Y H:i') }}
         </p>
     </div>
 
@@ -174,9 +198,6 @@
             <thead>
                 <tr>
                     <th style="width: 12%;">Date</th>
-                    @if(isset($entry->customer_name) || isset($ledgerEntries->first()->customer_name))
-                        <th style="width: 18%;">Customer</th>
-                    @endif
                     <th style="width: 32%;">Description / Reference</th>
                     <th style="width: 13%; text-align: right;">Debit (Sales)</th>
                     <th style="width: 13%; text-align: right;">Credit (Payments)</th>
@@ -188,9 +209,6 @@
                 <!-- Opening Balance Row Entry -->
                 <tr class="opening-balance-row">
                     <td>{{ date('d-M-Y', strtotime($fromDate)) }}</td>
-                    @if(isset($entry->customer_name) || isset($ledgerEntries->first()->customer_name))
-                        <td class="font-bold">All Customers</td>
-                    @endif
                     <td class="italic">Opening Balance Carriage</td>
                     <td class="text-right">—</td>
                     <td class="text-right">—</td>
@@ -209,7 +227,7 @@
                         </td>
 
                         {{-- Customer Name column if region export --}}
-                        @if(isset($entry->customer_name))
+                        @if (isset($entry->customer_name))
                             <td class="font-semibold" style="color: #1f2937;">
                                 {{ $entry->customer_name }}
                             </td>
@@ -217,19 +235,19 @@
 
                         <td>
                             {{-- 1. Regular Sale Badge --}}
-                            @if($entry->type === 'sale')
+                            @if ($entry->type === 'sale')
                                 <span class="badge badge-sale">Regular Sale</span>
                                 <span class="sub-text">Ref: #{{ $entry->reference_id }}</span>
 
-                            {{-- 2. Hotel Sale Badge --}}
+                                {{-- 2. Hotel Sale Badge --}}
                             @elseif($entry->type === 'hotel_sale')
                                 <span class="badge badge-hotel">Hotel Sale</span>
                                 <span class="sub-text">Ref: #{{ $entry->reference_id }}</span>
 
-                            {{-- 3. Payments Logic --}}
+                                {{-- 3. Payments Logic --}}
                             @elseif($entry->type === 'payment')
-                                @if(!empty($entry->sale_id))
-                                    @if($entry->reference === 'hotel_sale')
+                                @if (!empty($entry->sale_id))
+                                    @if ($entry->reference === 'hotel_sale')
                                         <span class="badge badge-hotel">Hotel Sale Payment</span>
                                     @else
                                         <span class="badge badge-sale">Sale Payment</span>
@@ -254,9 +272,12 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="{{ isset($ledgerEntries->first()->customer_name) ? 6 : 5 }}" class="text-center" style="padding: 40px 0;">
-                            <p style="color: #6b7280; font-weight: 500; font-size: 10pt; margin: 0;">No ledger records found</p>
-                            <p style="color: #9ca3af; font-size: 8.5pt; margin: 4px 0 0 0;">No transactions logged within the selected date range.</p>
+                        <td colspan="{{ isset($ledgerEntries->first()->customer_name) ? 6 : 5 }}" class="text-center"
+                            style="padding: 40px 0;">
+                            <p style="color: #6b7280; font-weight: 500; font-size: 10pt; margin: 0;">No ledger records
+                                found</p>
+                            <p style="color: #9ca3af; font-size: 8.5pt; margin: 4px 0 0 0;">No transactions logged
+                                within the selected date range.</p>
                         </td>
                     </tr>
                 @endforelse
@@ -265,4 +286,5 @@
     </div>
 
 </body>
+
 </html>

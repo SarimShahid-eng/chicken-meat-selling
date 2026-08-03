@@ -98,7 +98,10 @@ class PurchaseController extends Controller
 
     public function show(Purchase $purchase)
     {
-        $purchase->load(['product', 'supplier.region']);
+        $purchase->load(['product', 'supplier.region', 'supplierPayment']);
+        $paidAmount = $purchase->supplierPayment->amount;
+        $totalPurchaseAmount = $purchase->total_amount;
+        $totalAmount = $totalPurchaseAmount - $paidAmount;
         $data = [
             'product' => [
                 'name' => $purchase->product->name,
@@ -116,7 +119,9 @@ class PurchaseController extends Controller
             'weight_cut' => $purchase->weight_cut,
             'netweight' => $purchase->netweight,
             'rate' => $purchase->rate,
-            'total_amount' => $purchase->total_amount,
+            'purchase_amount' => $totalPurchaseAmount,
+            'paid_amount' => $paidAmount,
+            'total_amount' => $totalAmount,
             'created_at' => $purchase->created_at->format('d-m-Y'),
             'rate_date' => $purchase->rate_date ? $purchase->rate_date->format('Y-m-d') : 'rate not finalized',
         ];

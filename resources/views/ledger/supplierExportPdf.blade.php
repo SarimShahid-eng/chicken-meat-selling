@@ -168,6 +168,9 @@
     <div class="header-container">
         <h1 class="company-name">Rajput Chicken Centre</h1>
         <h2 class="report-title">Supplier Account Ledger Statement</h2>
+          <div style="font-size: 10.5pt; font-weight: 700; color: #2563eb; margin-bottom: 4px;">
+            Supplier: {{ $supplier->name ?? ($supplier->name ?? 'All Account Holders') }}
+        </div>
         <p class="report-meta">
             Statement Period: From {{ date('d-M-Y', strtotime($fromDate)) }} onwards | Generated: {{ now()->format('Y-m-d H:i') }}
         </p>

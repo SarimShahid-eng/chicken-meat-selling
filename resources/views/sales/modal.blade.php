@@ -75,6 +75,14 @@
                               <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Rate</p>
                               <p id="modalRate" class="text-sm font-medium text-gray-900 mt-0.5">—</p>
                           </div>
+                          <div>
+                              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Sale Amount</p>
+                              <p id="modalSaleAmount" class="text-sm font-medium text-gray-900 mt-0.5">—</p>
+                          </div>
+                          <div>
+                              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Amount Received</p>
+                              <p id="modalAmountRecived" class="text-sm font-medium text-gray-900 mt-0.5">—</p>
+                          </div>
                           <div class="col-span-2 bg-amber-50 border border-amber-100 rounded-lg px-4 py-3">
                               <p class="text-xs font-semibold text-amber-600 uppercase tracking-wider">Total Amount</p>
                               <p id="modalTotalAmount" class="text-lg font-bold text-amber-700 mt-0.5">—</p>
