@@ -204,11 +204,12 @@
                 }
 
                 function populateView(data) {
+                    console.log(data)
                     // Basic Information
                     document.getElementById('modalVoucherNo').textContent = data.voucher_no ?? '—';
                     document.getElementById('modalCustomer').textContent = data.customer?.name ?? '—';
                     document.getElementById('modalRegion').textContent = data.customer?.region?.name ?? '—';
-                    document.getElementById('modalCreatedAt').textContent = data.created_at_formatted ?? data.date ?? '—';
+                    document.getElementById('modalCreatedAt').textContent = data.formatted_date ?? data.formatted_date  ?? '—';
 
                     // Payment Summaries
                     const totalAmt = parseFloat(data.total_amount ?? 0);

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Purchase extends Model
@@ -20,7 +21,7 @@ class Purchase extends Model
         'voucher_no',
         'product_id',
         'supplier_id',
-        'vehicle_no',
+        // 'vehicle_no',
         'crate_qty',
         'total_weight',
         'weight_cut',
@@ -28,7 +29,7 @@ class Purchase extends Model
         'rate',
         'rate_date',
         'total_amount',
-        'date'
+        'date',
     ];
 
     /**
@@ -43,7 +44,7 @@ class Purchase extends Model
             'product_id' => 'integer',
             'supplier_id' => 'integer',
             'rate_date' => 'date',
-            'date'=>'date'
+            'date' => 'date',
         ];
     }
 
@@ -56,8 +57,14 @@ class Purchase extends Model
     {
         return $this->belongsTo(Supplier::class);
     }
+
     public function supplierPayment(): HasOne
     {
         return $this->hasOne(SupplierPayment::class);
+    }
+
+    public function purchaseVehicles(): HasMany
+    {
+        return $this->hasMany(PurchaseVehicle::class);
     }
 }

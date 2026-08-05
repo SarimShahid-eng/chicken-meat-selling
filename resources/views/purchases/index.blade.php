@@ -24,7 +24,7 @@
                                 Search Inventory
                             </label>
                             <input type="text" placeholder="Search purchases..." name="search"
-                            value="{{ request('search') }}"
+                                value="{{ request('search') }}"
                                 class="w-full pl-3 pr-10 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors">
                             <div
                                 class="absolute inset-y-0 right-0 top-5 flex items-center pr-3 pointer-events-none text-gray-400">
@@ -235,7 +235,6 @@
                     document.getElementById('modalProduct').textContent = data.product?.name ?? '—';
                     document.getElementById('modalSupplier').textContent = data.supplier?.name ?? '—';
                     document.getElementById('modalRegion').textContent = data.supplier?.region?.name ?? '—';
-                    document.getElementById('modalVehicleNo').textContent = data.vehicle_no ?? '—';
                     document.getElementById('modalCrateQty').textContent = data.crate_qty ?? '—';
                     document.getElementById('modalTotalWeight').textContent = data.total_weight ?? '—';
                     document.getElementById('modalWeightCut').textContent = data.weight_cut ?? '—';
@@ -248,6 +247,34 @@
                     document.getElementById('modalTotalAmount').textContent = data.total_amount ?? '—';
                     document.getElementById('modalCreatedAt').textContent = data.created_at_formatted ?? data.created_at ??
                         '—';
+
+                    const tbody = document.getElementById('modalVehiclesTableBody');
+                    tbody.innerHTML = ''; // Clear previous rows
+
+                    // Handles either related purchase_vehicles array or array of vehicles
+                    const vehicles = data.purchase_vehicles || [];
+                    console.log(vehicles)
+
+                    if (vehicles.length > 0) {
+                        vehicles.forEach((vehicle, index) => {
+                            const vehicleName = typeof vehicle === 'object' ? vehicle.name : vehicle;
+                            const row = `
+                                        <tr>
+                                            <td class="px-3 py-2 text-center text-xs font-medium text-gray-400">${index + 1}</td>
+                                            <td class="px-3 py-2 font-medium text-gray-900 flex items-center gap-2">
+                                                <i class="fa-solid fa-truck text-xs text-gray-400"></i> ${vehicleName}
+                                            </td>
+                                        </tr>
+                                    `;
+                                                        tbody.insertAdjacentHTML('beforeend', row);
+                                                    });
+                                                } else {
+                                                    tbody.innerHTML = `
+                                    <tr>
+                                        <td colspan="2" class="px-3 py-2 text-center text-xs text-gray-400">No vehicles attached.</td>
+                                    </tr>
+                                `;
+                    }
                 }
 
                 function openViewModal() {

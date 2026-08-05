@@ -98,7 +98,7 @@ class PurchaseController extends Controller
 
     public function show(Purchase $purchase)
     {
-        $purchase->load(['product', 'supplier.region', 'supplierPayment']);
+        $purchase->load(['product', 'supplier.region', 'supplierPayment', 'purchaseVehicles']);
         $paidAmount = $purchase->supplierPayment->amount;
         $totalPurchaseAmount = $purchase->total_amount;
         $totalAmount = $totalPurchaseAmount - $paidAmount;
@@ -112,6 +112,7 @@ class PurchaseController extends Controller
                     'name' => $purchase->supplier->region->name,
                 ],
             ],
+            'purchase_vehicles' => $purchase->purchaseVehicles,
             'voucher_no' => $purchase->voucher_no,
             'vehicle_no' => $purchase->vehicle_no,
             'crate_qty' => $purchase->crate_qty,
@@ -157,6 +158,8 @@ class PurchaseController extends Controller
                         'type' => 'cash',
                     ]
                 );
+                $purchase->purchaseVehicles()->delete();
+                $purchase->purchaseVehicles()->createMany($validated['vehicles']);
             });
             $message = filled($validated['update_id']) ? 'updated' : 'created';
 
@@ -164,6 +167,8 @@ class PurchaseController extends Controller
                 ->route('purchases.index')
                 ->with('toast_success', 'Purchase has been '.$message.' successfully!');
         } catch (Exception $e) {
+            dd($e->getMessage());
+
             return redirect()
                 ->route('purchases.index')
                 ->with('toast_error', $e->getMessage());

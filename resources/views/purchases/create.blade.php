@@ -1,8 +1,18 @@
 @extends('partials.app', ['title' => isset($purchase) ? 'Edit Purchase' : 'Create Purchase'])
 
 @section('content')
+
     <div class="max-w-4xl mx-auto space-y-6 animate-fade-in">
         <div class="flex items-center justify-between">
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">
                     {{ isset($purchase) ? 'Edit Purchase' : 'Add New Purchase' }}
@@ -109,26 +119,36 @@
                         @enderror
                     </div>
 
-                    {{-- Vehicle No --}}
-                    <div class="space-y-2">
-                        <label for="vehicle_no" class="block text-sm font-semibold text-gray-700">
-                            Vehicle No <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                <i class="fa-solid fa-truck"></i>
-                            </span>
-                            <input type="text" id="vehicle_no" name="vehicle_no"
-                                value="{{ old('vehicle_no') ?? @$purchase->vehicle_no }}" required
-                                placeholder="e.g., LEA-4521"
-                                class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('vehicle_no') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
+                    {{-- Vehicles (Multiple) --}}
+                    <div class="space-y-2 md:col-span-2">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-sm font-semibold text-gray-700">
+                                Vehicles <span class="text-red-500">*</span>
+                            </label>
+                            <button type="button" id="addVehicleBtn"
+                                class="inline-flex items-center gap-1 text-xs font-medium text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg transition-colors">
+                                <i class="fa-solid fa-plus"></i> Add Vehicle
+                            </button>
                         </div>
-                        @error('vehicle_no')
+
+                        <div id="vehiclesContainer" class="space-y-3">
+                            {{-- Vehicle entries will be generated here --}}
+                        </div>
+
+                        <p class="text-xs text-gray-400">Add one or more vehicle numbers for this purchase.</p>
+                        @error('vehicles')
                             <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
                         @enderror
+                        @if ($errors->has('vehicles.*'))
+                            @foreach ($errors->get('vehicles.*') as $messages)
+                                @foreach ($messages as $message)
+                                    <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
+                                @endforeach
+                            @endforeach
+                        @endif
                     </div>
 
-                    {{-- Rate Date --}}
+                    {{-- Date --}}
                     <div class="space-y-2">
                         <label for="date" class="block text-sm font-semibold text-gray-700">
                             Date
@@ -275,7 +295,8 @@
                                 <i class="fa-solid fa-money-bill-wave"></i>
                             </span>
                             <input type="number" step="0.01" min="0" id="paid_amount" name="paid_amount"
-                                value="{{ old('paid_amount') ?? @$purchase->supplierPayment->amount }}" placeholder="0.00"
+                                value="{{ old('paid_amount') ?? @$purchase->supplierPayment->amount }}"
+                                placeholder="0.00"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('paid_amount') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
                         </div>
                         @error('paid_amount')
@@ -302,85 +323,193 @@
                         <p class="text-xs text-gray-400">Auto-calculated: Total Amount - Paid Amount.</p>
                         @error('remaining_amount')
                             <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
-                        @enderror
+                            @enderror{{-- Vehicle Template (hidden) --}}
+                            <template id="vehicleTemplate">
+                                <div class="vehicle-entry flex gap-3 items-end">
+                                    <div class="flex-1 space-y-1">
+                                        <div class="relative">
+                                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                                <i class="fa-solid fa-truck"></i>
+                                            </span>
+                                            <input type="text" name="vehicles[INDEX][name]" placeholder="e.g., LEA-4521"
+                                                class="vehicle-input w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400"
+                                                required>
+                                        </div>
+                                    </div>
+                                    <button type="button"
+                                        class="remove-vehicle-btn flex items-center justify-center w-10 h-10 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 transition-colors mb-0 flex-shrink-0"
+                                        title="Remove this vehicle">
+                                        <i class="fa-solid fa-trash-can text-sm"></i>
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+
                     </div>
 
-                </div>
+                    <hr class="border-gray-100">
 
-                <hr class="border-gray-100">
-
-                <div class="flex items-center justify-end gap-3 pt-2">
-                    <button type="reset"
-                        class="px-5 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors">
-                        Reset Form
-                    </button>
-                    <button type="submit"
-                        class="btn-primary inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-medium px-5 py-2.5 rounded-lg text-sm shadow-md hover:shadow-amber-500/20 transition-all">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> Save Purchase
-                    </button>
-                </div>
-            </form>
+                    <div class="flex items-center justify-end gap-3 pt-2">
+                        <button type="reset"
+                            class="px-5 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors">
+                            Reset Form
+                        </button>
+                        <button type="submit"
+                            class="btn-primary inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-medium px-5 py-2.5 rounded-lg text-sm shadow-md hover:shadow-amber-500/20 transition-all">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Save Purchase
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
 
-    <script>
-           $(document).ready(function() {
+        {{-- Vehicle Template (hidden) --}}
+        <template id="vehicleTemplate">
+            <div class="vehicle-entry flex gap-3 items-end">
+                <div class="flex-1 space-y-1">
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                            <i class="fa-solid fa-truck"></i>
+                        </span>
+                        <input type="text" name="vehicles[INDEX][name]" placeholder="e.g., LEA-4521"
+                            class="vehicle-input w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400"
+                            required>
+                    </div>
+                </div>
+                <button type="button"
+                    class="remove-vehicle-btn flex items-center justify-center w-10 h-10 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 transition-colors mb-0 flex-shrink-0"
+                    title="Remove this vehicle">
+                    <i class="fa-solid fa-trash-can text-sm"></i>
+                </button>
+            </div>
+        </template>
+
+        <script>
+            $(document).ready(function() {
                 $('.select2').select2();
             });
-        (function() {
-            const cratesInput = document.getElementById('crate_qty');
-            const totalWeightInput = document.getElementById('total_weight');
-            const weightCutInput = document.getElementById('weight_cut');
-            const netWeightInput = document.getElementById('netweight');
-            const rateInput = document.getElementById('rate');
-            const totalAmountInput = document.getElementById('total_amount');
-            const paidAmountInput = document.getElementById('paid_amount');
-            const remainingAmountInput = document.getElementById('remaining_amount');
-            const supplierSelect = document.getElementById('supplier_id');
-            const regionHint = document.getElementById('regionHint');
 
-            const CRATE_CUT_PER_UNIT = 0.5; // kg cut per crate
-            const PUNJAB_CUT_PERCENT = 0.02; // 2% of total weight for Punjab suppliers
+            // Vehicle Management
+            (function() {
+                const vehiclesContainer = document.getElementById('vehiclesContainer');
+                const addVehicleBtn = document.getElementById('addVehicleBtn');
+                const vehicleTemplate = document.getElementById('vehicleTemplate');
+                let vehicleCount = 0;
 
-            function isPunjabSupplier() {
-                const selectedOption = supplierSelect.options[supplierSelect.selectedIndex];
-                const region = selectedOption ? (selectedOption.getAttribute('data-region') || '') : '';
-                return region.trim().toLowerCase() === 'punjab';
-            }
+                function createVehicleEntry(value = '') {
+                    const clone = vehicleTemplate.content.cloneNode(true);
+                    const input = clone.querySelector('.vehicle-input');
+                    const removeBtn = clone.querySelector('.remove-vehicle-btn');
 
-            function recalculate() {
-                const crateQty = parseFloat(cratesInput.value) || 0;
-                const totalWeight = parseFloat(totalWeightInput.value) || 0;
-                const rate = parseFloat(rateInput.value) || 0;
-                const paidAmount = parseFloat(paidAmountInput.value) || 0;
+                    // Replace INDEX with actual count
+                    input.name = `vehicles[${vehicleCount}][name]`;
+                    vehicleCount++;
 
-                const crateCut = crateQty * CRATE_CUT_PER_UNIT;
-                const punjab = isPunjabSupplier();
-                const regionCut = punjab ? (totalWeight * PUNJAB_CUT_PERCENT) : 0;
+                    if (value) {
+                        input.value = value;
+                    }
 
-                regionHint.classList.toggle('hidden', !punjab);
+                    removeBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const entry = input.closest('.vehicle-entry');
+                        if (vehiclesContainer.querySelectorAll('.vehicle-entry').length > 1) {
+                            entry.remove();
+                        } else {
+                            alert('At least one vehicle is required.');
+                        }
+                    });
 
-                let weightCut = crateCut + regionCut;
-                let netWeight = totalWeight - weightCut;
-                if (netWeight < 0) netWeight = 0;
+                    return clone;
+                }
 
-                const totalAmount = netWeight * rate;
-                let remainingAmount = totalAmount - paidAmount;
-                if (remainingAmount < 0) remainingAmount = 0;
+                function initializeVehicles() {
+                    const rawVehicles = @json(old('vehicles')
+                            ? old('vehicles')
+                            : (isset($purchase) && $purchase->purchaseVehicles
+                                ? $purchase->purchaseVehicles->pluck('name')->toArray()
+                                : []));
 
-                weightCutInput.value = weightCut.toFixed(2);
-                netWeightInput.value = netWeight.toFixed(2);
-                totalAmountInput.value = totalAmount.toFixed(2);
-                remainingAmountInput.value = remainingAmount.toFixed(2);
-            }
+                    // Normalize input data: extract string whether it's an object/array or direct string
+                    const existingVehicles = rawVehicles.map(item => {
+                        if (typeof item === 'object' && item !== null) {
+                            return item.name || '';
+                        }
+                        return item;
+                    });
 
-            [cratesInput, totalWeightInput, rateInput, paidAmountInput].forEach(el => {
-                el.addEventListener('input', recalculate);
-            });
-            supplierSelect.addEventListener('change', recalculate);
+                    if (existingVehicles.length > 0) {
+                        existingVehicles.forEach(vehicleName => {
+                            vehiclesContainer.appendChild(createVehicleEntry(vehicleName));
+                        });
+                    } else {
+                        vehiclesContainer.appendChild(createVehicleEntry());
+                    }
+                }
 
-            // Run once on load (handles edit mode / old() repopulation)
-            recalculate();
-        })();
-    </script>
-@endsection
+                addVehicleBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    vehiclesContainer.appendChild(createVehicleEntry());
+                });
+
+                // Initialize on page load
+                initializeVehicles();
+            })();
+
+            // Calculation Logic
+            (function() {
+                const cratesInput = document.getElementById('crate_qty');
+                const totalWeightInput = document.getElementById('total_weight');
+                const weightCutInput = document.getElementById('weight_cut');
+                const netWeightInput = document.getElementById('netweight');
+                const rateInput = document.getElementById('rate');
+                const totalAmountInput = document.getElementById('total_amount');
+                const paidAmountInput = document.getElementById('paid_amount');
+                const remainingAmountInput = document.getElementById('remaining_amount');
+                const supplierSelect = document.getElementById('supplier_id');
+                const regionHint = document.getElementById('regionHint');
+
+                const CRATE_CUT_PER_UNIT = 0.5; // kg cut per crate
+                const PUNJAB_CUT_PERCENT = 0.02; // 2% of total weight for Punjab suppliers
+
+                function isPunjabSupplier() {
+                    const selectedOption = supplierSelect.options[supplierSelect.selectedIndex];
+                    const region = selectedOption ? (selectedOption.getAttribute('data-region') || '') : '';
+                    return region.trim().toLowerCase() === 'punjab';
+                }
+
+                function recalculate() {
+                    const crateQty = parseFloat(cratesInput.value) || 0;
+                    const totalWeight = parseFloat(totalWeightInput.value) || 0;
+                    const rate = parseFloat(rateInput.value) || 0;
+                    const paidAmount = parseFloat(paidAmountInput.value) || 0;
+
+                    const crateCut = crateQty * CRATE_CUT_PER_UNIT;
+                    const punjab = isPunjabSupplier();
+                    const regionCut = punjab ? (totalWeight * PUNJAB_CUT_PERCENT) : 0;
+
+                    regionHint.classList.toggle('hidden', !punjab);
+
+                    let weightCut = crateCut + regionCut;
+                    let netWeight = totalWeight - weightCut;
+                    if (netWeight < 0) netWeight = 0;
+
+                    const totalAmount = netWeight * rate;
+                    let remainingAmount = totalAmount - paidAmount;
+                    if (remainingAmount < 0) remainingAmount = 0;
+
+                    weightCutInput.value = weightCut.toFixed(2);
+                    netWeightInput.value = netWeight.toFixed(2);
+                    totalAmountInput.value = totalAmount.toFixed(2);
+                    remainingAmountInput.value = remainingAmount.toFixed(2);
+                }
+
+                [cratesInput, totalWeightInput, rateInput, paidAmountInput].forEach(el => {
+                    el.addEventListener('input', recalculate);
+                });
+                supplierSelect.addEventListener('change', recalculate);
+
+                // Run once on load (handles edit mode / old() repopulation)
+                recalculate();
+            })();
+        </script>
+    @endsection
