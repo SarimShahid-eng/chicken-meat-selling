@@ -42,6 +42,10 @@
                                     <tr>
                                         <th scope="col" class="px-3 py-2 w-12 text-center">#</th>
                                         <th scope="col" class="px-3 py-2">Vehicle No</th>
+                                        <th scope="col" class="px-3 py-2">Crate</th>
+                                        <th scope="col" class="px-3 py-2"> weight</th>
+                                        <th scope="col" class="px-3 py-2">weight cut</th>
+                                        <th scope="col" class="px-3 py-2">Net weight</th>
                                     </tr>
                                 </thead>
                                 <tbody id="modalVehiclesTableBody" class="divide-y divide-gray-100 text-gray-800">

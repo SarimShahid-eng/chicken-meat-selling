@@ -257,19 +257,30 @@
 
                     if (vehicles.length > 0) {
                         vehicles.forEach((vehicle, index) => {
-                            const vehicleName = typeof vehicle === 'object' ? vehicle.name : vehicle;
+                            const vehicleName = typeof vehicle === 'object' ? (vehicle.name || '-') : vehicle;
+                            const crate = typeof vehicle === 'object' ? (vehicle.crate_qty ?? 0) : 0;
+                            const totalWeight = typeof vehicle === 'object' ? (vehicle.total_weight ?? 0) : 0;
+                            const weightCut = typeof vehicle === 'object' ? (vehicle.weight_cut ?? 0) : 0;
+                            const netWeight = typeof vehicle === 'object' ? (vehicle.netweight ?? 0) : 0;
                             const row = `
-                                        <tr>
-                                            <td class="px-3 py-2 text-center text-xs font-medium text-gray-400">${index + 1}</td>
-                                            <td class="px-3 py-2 font-medium text-gray-900 flex items-center gap-2">
-                                                <i class="fa-solid fa-truck text-xs text-gray-400"></i> ${vehicleName}
-                                            </td>
-                                        </tr>
-                                    `;
-                                                        tbody.insertAdjacentHTML('beforeend', row);
-                                                    });
-                                                } else {
-                                                    tbody.innerHTML = `
+            <tr class="hover:bg-gray-50/50 text-xs">
+                <td class="px-3 py-2 text-center font-medium text-gray-400">${index + 1}</td>
+                <td class="px-3 py-2 font-medium text-gray-900">
+                    <span class="inline-flex items-center gap-1.5">
+                        <i class="fa-solid fa-truck text-xs text-gray-400"></i>
+                        ${vehicleName}
+                    </span>
+                </td>
+                <td class="px-3 py-2 text-right font-medium text-gray-700">${crate}</td>
+                <td class="px-3 py-2 text-right font-medium text-gray-700">${totalWeight}</td>
+                <td class="px-3 py-2 text-right font-medium text-gray-700">${weightCut}</td>
+                <td class="px-3 py-2 text-right font-semibold text-gray-900">${netWeight}</td>
+            </tr>
+        `;
+                            tbody.insertAdjacentHTML('beforeend', row);
+                        });
+                    } else {
+                        tbody.innerHTML = `
                                     <tr>
                                         <td colspan="2" class="px-3 py-2 text-center text-xs text-gray-400">No vehicles attached.</td>
                                     </tr>

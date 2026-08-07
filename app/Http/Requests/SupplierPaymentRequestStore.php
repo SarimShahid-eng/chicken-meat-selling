@@ -31,6 +31,7 @@ class SupplierPaymentRequestStore extends FormRequest
             'date' => 'required|date|before_or_equal:today',
             'amount' => 'required|numeric|min:0',
             'description' => 'nullable|string|max:1000',
+            'payment_type'=>'required'
         ];
     }
 }

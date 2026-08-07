@@ -2,17 +2,19 @@
 
 @section('content')
 
-    <div class="max-w-4xl mx-auto space-y-6 animate-fade-in">
+    <div class="max-w-5xl mx-auto space-y-6 animate-fade-in">
+
+        @if ($errors->any())
+            <div class="alert alert-danger bg-red-50 border border-red-200 text-red-700 rounded-lg p-4">
+                <ul class="list-disc list-inside text-sm space-y-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <div class="flex items-center justify-between">
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">
                     {{ isset($purchase) ? 'Edit Purchase' : 'Add New Purchase' }}
@@ -59,9 +61,9 @@
                             Product <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                            {{-- <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 z-10">
                                 <i class="fa-solid fa-drumstick-bite"></i>
-                            </span>
+                            </span> --}}
                             <select id="product_id" name="product_id" required
                                 class="select2 w-full pl-10 pr-10 py-2.5 bg-gray-50 border @error('product_id') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors appearance-none">
 
@@ -77,7 +79,6 @@
                                     </option>
                                 @endforeach
                             </select>
-
                         </div>
                         @error('product_id')
                             <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
@@ -90,9 +91,9 @@
                             Supplier <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                            {{-- <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 z-10">
                                 <i class="fa-solid fa-truck-field"></i>
-                            </span>
+                            </span> --}}
                             <select id="supplier_id" name="supplier_id" required
                                 class="select2 w-full pl-10 pr-10 py-2.5 bg-gray-50 border @error('supplier_id') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors appearance-none">
 
@@ -108,19 +109,36 @@
                                     </option>
                                 @endforeach
                             </select>
-
                         </div>
                         <p id="regionHint" class="text-xs font-medium mt-1 hidden text-amber-600">
-                            <i class="fa-solid fa-circle-info"></i> Punjab region supplier — an extra 2% of total weight
-                            will be deducted as weight cut.
+                            <i class="fa-solid fa-circle-info"></i> Punjab region supplier — an extra 2% is deducted from
+                            each vehicle's weight.
                         </p>
                         @error('supplier_id')
                             <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    {{-- Vehicles (Multiple) --}}
+                    {{-- Date --}}
                     <div class="space-y-2 md:col-span-2">
+                        <label for="date" class="block text-sm font-semibold text-gray-700">
+                            Date
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 font-medium text-sm">
+                                <i class="fa-solid fa-calendar"></i>
+                            </span>
+                            <input type="date" id="date" name="date"
+                                value="{{ old('date', isset($purchase) ? date('Y-m-d', strtotime($purchase->date)) : date('Y-m-d')) }}"
+                                class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('date') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
+                        </div>
+                        @error('date')
+                            <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Vehicles (Multiple) --}}
+                    <div class="space-y-3 md:col-span-2">
                         <div class="flex items-center justify-between">
                             <label class="block text-sm font-semibold text-gray-700">
                                 Vehicles <span class="text-red-500">*</span>
@@ -132,10 +150,14 @@
                         </div>
 
                         <div id="vehiclesContainer" class="space-y-3">
-                            {{-- Vehicle entries will be generated here --}}
+                            {{-- Vehicle entries are generated here --}}
                         </div>
 
-                        <p class="text-xs text-gray-400">Add one or more vehicle numbers for this purchase.</p>
+                        <p class="text-xs text-gray-400">
+                            Enter crates and weight per vehicle. Weight cut and net weight are calculated for each vehicle,
+                            then totalled below.
+                        </p>
+
                         @error('vehicles')
                             <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
                         @enderror
@@ -148,100 +170,93 @@
                         @endif
                     </div>
 
-                    {{-- Date --}}
-                    <div class="space-y-2">
-                        <label for="date" class="block text-sm font-semibold text-gray-700">
-                            Date
-                        </label>
-                        <div class="relative">
-                            <span
-                                class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 font-medium text-sm">
-                                <i class="fa-solid fa-calendar"></i>
-                            </span>
-                            <input type="date" id="date" name="date"
-                                value="{{ old('date', isset($purchase) ? date('Y-m-d', strtotime($purchase->date)) : date('Y-m-d')) }}"
-                                class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('date') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
-                        </div>
-                        @error('date')
-                            <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    {{-- Totals summary --}}
+                    <div class="md:col-span-2">
+                        <div class="rounded-xl border border-amber-100 bg-amber-50/50 p-4 sm:p-5 space-y-4">
+                            <h2 class="text-sm font-semibold text-amber-700 flex items-center gap-2">
+                                <i class="fa-solid fa-calculator"></i> Purchase Totals
+                            </h2>
 
-                    {{-- Crate Qty --}}
-                    <div class="space-y-2">
-                        <label for="crate_qty" class="block text-sm font-semibold text-gray-700">
-                            Crate Quantity <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                <i class="fa-solid fa-boxes-stacked"></i>
-                            </span>
-                            <input type="number" step="1" min="0" id="crate_qty" name="crate_qty"
-                                value="{{ old('crate_qty') ?? @$purchase->crate_qty }}" required placeholder="e.g., 20"
-                                class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('crate_qty') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
-                        </div>
-                        <p class="text-xs text-gray-400">Each crate cuts 0.5 kg from the total weight automatically.</p>
-                        @error('crate_qty')
-                            <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-                    {{-- Total Weight --}}
-                    <div class="space-y-2">
-                        <label for="total_weight" class="block text-sm font-semibold text-gray-700">
-                            Total Weight (kg) <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                <i class="fa-solid fa-weight-scale"></i>
-                            </span>
-                            <input type="number" step="0.01" min="0" id="total_weight" name="total_weight"
-                                value="{{ old('total_weight') ?? @$purchase->total_weight }}" required placeholder="0.00"
-                                class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('total_weight') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
-                        </div>
-                        @error('total_weight')
-                            <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+                                {{-- Crate Qty (total) --}}
+                                <div class="space-y-2">
+                                    <label for="crate_qty" class="block text-xs font-semibold text-gray-600">
+                                        Total Crates
+                                    </label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                            <i class="fa-solid fa-boxes-stacked"></i>
+                                        </span>
+                                        <input type="number" step="1" min="0" id="crate_qty" name="crate_qty" readonly
+                                            value="{{ old('crate_qty') ?? (@$purchase->crate_qty ?? 0) }}"
+                                            class="w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-700 font-semibold focus:outline-none cursor-not-allowed">
+                                    </div>
+                                    <p class="text-[11px] text-gray-400">Each crate cuts 0.5 kg.</p>
+                                    @error('crate_qty')
+                                        <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
 
-                    {{-- Weight Cut (auto-calculated) --}}
-                    <div class="space-y-2">
-                        <label for="weight_cut" class="block text-sm font-semibold text-gray-700">
-                            Weight Cut (kg)
-                        </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                <i class="fa-solid fa-scissors"></i>
-                            </span>
-                            <input type="number" step="0.01" min="0" id="weight_cut" name="weight_cut"
-                                readonly value="{{ old('weight_cut') ?? (@$purchase->weight_cut ?? '0.00') }}"
-                                placeholder="0.00"
-                                class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 focus:outline-none cursor-not-allowed">
-                        </div>
-                        <p class="text-xs text-gray-400">Auto-calculated: (crates × 0.5kg) + 2% of total weight if supplier
-                            region is Punjab.</p>
-                        @error('weight_cut')
-                            <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+                                {{-- Total Weight --}}
+                                <div class="space-y-2">
+                                    <label for="total_weight" class="block text-xs font-semibold text-gray-600">
+                                        Total Weight (kg)
+                                    </label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                            <i class="fa-solid fa-weight-scale"></i>
+                                        </span>
+                                        <input type="number" step="0.01" min="0" id="total_weight" name="total_weight"
+                                            readonly value="{{ old('total_weight') ?? (@$purchase->total_weight ?? '0.00') }}"
+                                            class="w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-700 font-semibold focus:outline-none cursor-not-allowed">
+                                    </div>
+                                    <p class="text-[11px] text-gray-400">Sum of all vehicle weights.</p>
+                                    @error('total_weight')
+                                        <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
 
-                    {{-- Net Weight (auto-calculated) --}}
-                    <div class="space-y-2">
-                        <label for="netweight" class="block text-sm font-semibold text-gray-700">
-                            Net Weight (kg)
-                        </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                <i class="fa-solid fa-balance-scale"></i>
-                            </span>
-                            <input type="number" step="0.01" min="0" id="netweight" name="netweight"
-                                readonly value="{{ old('netweight') ?? (@$purchase->netweight ?? '0.00') }}"
-                                placeholder="0.00"
-                                class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 focus:outline-none cursor-not-allowed">
+                                {{-- Weight Cut --}}
+                                <div class="space-y-2">
+                                    <label for="weight_cut" class="block text-xs font-semibold text-gray-600">
+                                        Weight Cut (kg)
+                                    </label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                            <i class="fa-solid fa-scissors"></i>
+                                        </span>
+                                        <input type="number" step="0.01" min="0" id="weight_cut" name="weight_cut"
+                                            readonly value="{{ old('weight_cut') ?? (@$purchase->weight_cut ?? '0.00') }}"
+                                            class="w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-700 font-semibold focus:outline-none cursor-not-allowed">
+                                    </div>
+                                    <p class="text-[11px] text-gray-400">(crates × 0.5) + 2% if Punjab.</p>
+                                    @error('weight_cut')
+                                        <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                {{-- Net Weight --}}
+                                <div class="space-y-2">
+                                    <label for="netweight" class="block text-xs font-semibold text-gray-600">
+                                        Net Weight (kg)
+                                    </label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                            <i class="fa-solid fa-balance-scale"></i>
+                                        </span>
+                                        <input type="number" step="0.01" min="0" id="netweight" name="netweight"
+                                            readonly value="{{ old('netweight') ?? (@$purchase->netweight ?? '0.00') }}"
+                                            class="w-full pl-10 pr-3 py-2.5 bg-white border border-amber-200 rounded-lg text-amber-700 font-bold focus:outline-none cursor-not-allowed">
+                                    </div>
+                                    <p class="text-[11px] text-gray-400">Total weight − weight cut.</p>
+                                    @error('netweight')
+                                        <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                            </div>
                         </div>
-                        @error('netweight')
-                            <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
-                        @enderror
                     </div>
 
                     {{-- Rate --}}
@@ -257,25 +272,24 @@
                                 value="{{ old('rate') ?? @$purchase->rate }}" placeholder="To be decided later"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('rate') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
                         </div>
-                        <p class="text-xs text-gray-400">Leave blank if the rate hasn't been decided yet — it will be saved
-                            as empty and can be updated later.</p>
+                        <p class="text-xs text-gray-400">Leave blank if the rate hasn't been decided yet — it can be updated
+                            later.</p>
                         @error('rate')
                             <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    {{-- Total Amount (auto-calculated) --}}
+                    {{-- Total Amount --}}
                     <div class="space-y-2">
                         <label for="total_amount" class="block text-sm font-semibold text-gray-700">
                             Total Amount
                         </label>
                         <div class="relative">
-                            <span
-                                class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 font-medium text-sm">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 font-medium text-sm">
                                 <i class="fa-solid fa-wallet"></i>
                             </span>
-                            <input type="number" step="0.01" min="0" id="total_amount" name="total_amount"
-                                readonly value="{{ old('total_amount') ?? (@$purchase->total_amount ?? '0.00') }}"
+                            <input type="number" step="0.01" min="0" id="total_amount" name="total_amount" readonly
+                                value="{{ old('total_amount') ?? (@$purchase->total_amount ?? '0.00') }}"
                                 placeholder="0.00"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 font-semibold focus:outline-none cursor-not-allowed">
                         </div>
@@ -295,8 +309,7 @@
                                 <i class="fa-solid fa-money-bill-wave"></i>
                             </span>
                             <input type="number" step="0.01" min="0" id="paid_amount" name="paid_amount"
-                                value="{{ old('paid_amount') ?? @$purchase->supplierPayment->amount }}"
-                                placeholder="0.00"
+                                value="{{ old('paid_amount') ?? @$purchase->supplierPayment->amount }}" placeholder="0.00"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('paid_amount') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
                         </div>
                         @error('paid_amount')
@@ -304,212 +317,272 @@
                         @enderror
                     </div>
 
-                    {{-- Remaining Amount (auto-calculated) --}}
+                    {{-- Remaining Amount --}}
                     <div class="space-y-2">
                         <label for="remaining_amount" class="block text-sm font-semibold text-gray-700">
                             Remaining Balance
                         </label>
                         <div class="relative">
-                            <span
-                                class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 font-medium text-sm">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 font-medium text-sm">
                                 <i class="fa-solid fa-scale-unbalanced"></i>
                             </span>
-                            <input type="number" step="0.01" min="0" id="remaining_amount"
-                                name="remaining_amount" readonly
-                                value="{{ old('remaining_amount') ?? (@$purchase->remaining_amount ?? '0.00') }}"
+                            <input type="number" step="0.01" min="0" id="remaining_amount" name="remaining_amount"
+                                readonly value="{{ old('remaining_amount') ?? (@$purchase->remaining_amount ?? '0.00') }}"
                                 placeholder="0.00"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 font-semibold focus:outline-none cursor-not-allowed">
                         </div>
-                        <p class="text-xs text-gray-400">Auto-calculated: Total Amount - Paid Amount.</p>
+                        <p class="text-xs text-gray-400">Auto-calculated: Total Amount − Paid Amount.</p>
                         @error('remaining_amount')
                             <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
-                            @enderror{{-- Vehicle Template (hidden) --}}
-                            <template id="vehicleTemplate">
-                                <div class="vehicle-entry flex gap-3 items-end">
-                                    <div class="flex-1 space-y-1">
-                                        <div class="relative">
-                                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                                <i class="fa-solid fa-truck"></i>
-                                            </span>
-                                            <input type="text" name="vehicles[INDEX][name]" placeholder="e.g., LEA-4521"
-                                                class="vehicle-input w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400"
-                                                required>
-                                        </div>
-                                    </div>
-                                    <button type="button"
-                                        class="remove-vehicle-btn flex items-center justify-center w-10 h-10 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 transition-colors mb-0 flex-shrink-0"
-                                        title="Remove this vehicle">
-                                        <i class="fa-solid fa-trash-can text-sm"></i>
-                                    </button>
-                                </div>
-                            </template>
-                        </div>
-
+                        @enderror
                     </div>
 
-                    <hr class="border-gray-100">
+                </div>
 
-                    <div class="flex items-center justify-end gap-3 pt-2">
-                        <button type="reset"
-                            class="px-5 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors">
-                            Reset Form
-                        </button>
-                        <button type="submit"
-                            class="btn-primary inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-medium px-5 py-2.5 rounded-lg text-sm shadow-md hover:shadow-amber-500/20 transition-all">
-                            <i class="fa-solid fa-cloud-arrow-up"></i> Save Purchase
-                        </button>
-                    </div>
-                </form>
-            </div>
+                <hr class="border-gray-100">
+
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <button type="reset"
+                        class="px-5 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors">
+                        Reset Form
+                    </button>
+                    <button type="submit"
+                        class="btn-primary inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-medium px-5 py-2.5 rounded-lg text-sm shadow-md hover:shadow-amber-500/20 transition-all">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Save Purchase
+                    </button>
+                </div>
+            </form>
         </div>
+    </div>
 
-        {{-- Vehicle Template (hidden) --}}
-        <template id="vehicleTemplate">
-            <div class="vehicle-entry flex gap-3 items-end">
-                <div class="flex-1 space-y-1">
+    {{-- Vehicle Template (hidden) --}}
+    <template id="vehicleTemplate">
+        <div class="vehicle-entry rounded-lg border border-gray-200 bg-gray-50/70 p-3">
+            <div class="grid grid-cols-2 sm:grid-cols-12 gap-3 items-end">
+
+                <div class="col-span-2 sm:col-span-3 space-y-1">
+                    <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Vehicle No</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                            <i class="fa-solid fa-truck"></i>
+                            <i class="fa-solid fa-truck text-xs"></i>
                         </span>
-                        <input type="text" name="vehicles[INDEX][name]" placeholder="e.g., LEA-4521"
-                            class="vehicle-input w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400"
-                            required>
+                        <input type="text" data-field="name" name="vehicles[INDEX][name]" placeholder="e.g., LEA-4521"
+                            required
+                            class="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 rounded-lg text-sm text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
                     </div>
                 </div>
-                <button type="button"
-                    class="remove-vehicle-btn flex items-center justify-center w-10 h-10 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 transition-colors mb-0 flex-shrink-0"
-                    title="Remove this vehicle">
-                    <i class="fa-solid fa-trash-can text-sm"></i>
-                </button>
-            </div>
-        </template>
 
-        <script>
-            $(document).ready(function() {
-                $('.select2').select2();
+                <div class="col-span-1 sm:col-span-2 space-y-1">
+                    <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Crates</label>
+                    <input type="number" step="1" min="0" data-field="crate_qty" name="vehicles[INDEX][crate_qty]"
+                        value="0" placeholder="0"
+                        class="w-full px-3 py-2 bg-white border border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 rounded-lg text-sm text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
+                </div>
+
+                <div class="col-span-1 sm:col-span-2 space-y-1">
+                    <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Weight</label>
+                    <input type="number" step="0.01" min="0" data-field="total_weight"
+                        name="vehicles[INDEX][total_weight]" value="" placeholder="0.00" required
+                        class="w-full px-3 py-2 bg-white border border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 rounded-lg text-sm text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
+                </div>
+
+                <div class="col-span-1 sm:col-span-2 space-y-1">
+                    <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Cut</label>
+                    <input type="number" step="0.01" min="0" data-field="weight_cut" name="vehicles[INDEX][weight_cut]"
+                        value="0.00" readonly
+                        class="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none cursor-not-allowed">
+                </div>
+
+                <div class="col-span-1 sm:col-span-2 space-y-1">
+                    <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Net Weight</label>
+                    <input type="number" step="0.01" min="0" data-field="netweight" name="vehicles[INDEX][netweight]"
+                        value="0.00" readonly
+                        class="w-full px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700 font-semibold focus:outline-none cursor-not-allowed">
+                </div>
+
+                <div class="col-span-2 sm:col-span-1 flex sm:justify-end">
+                    <button type="button"
+                        class="remove-vehicle-btn flex items-center justify-center w-10 h-10 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 transition-colors flex-shrink-0"
+                        title="Remove this vehicle">
+                        <i class="fa-solid fa-trash-can text-sm"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </template>
+
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2();
+        });
+
+        (function() {
+            const CRATE_CUT_PER_UNIT = 0.5; // kg cut per crate
+            const PUNJAB_CUT_PERCENT = 0.02; // 2% of vehicle weight for Punjab suppliers
+
+            const vehiclesContainer = document.getElementById('vehiclesContainer');
+            const addVehicleBtn = document.getElementById('addVehicleBtn');
+            const vehicleTemplate = document.getElementById('vehicleTemplate');
+
+            const crateQtyInput = document.getElementById('crate_qty');
+            const totalWeightInput = document.getElementById('total_weight');
+            const weightCutInput = document.getElementById('weight_cut');
+            const netWeightInput = document.getElementById('netweight');
+            const rateInput = document.getElementById('rate');
+            const totalAmountInput = document.getElementById('total_amount');
+            const paidAmountInput = document.getElementById('paid_amount');
+            const remainingAmountInput = document.getElementById('remaining_amount');
+            const supplierSelect = document.getElementById('supplier_id');
+            const regionHint = document.getElementById('regionHint');
+
+            /* ---------- Vehicle rows ---------- */
+
+            function createVehicleEntry(data = {}) {
+                const clone = vehicleTemplate.content.cloneNode(true);
+                const row = clone.querySelector('.vehicle-entry');
+
+                if (data.name) row.querySelector('[data-field="name"]').value = data.name;
+                if (data.crate_qty !== undefined && data.crate_qty !== null && data.crate_qty !== '') {
+                    row.querySelector('[data-field="crate_qty"]').value = data.crate_qty;
+                }
+                if (data.total_weight !== undefined && data.total_weight !== null && data.total_weight !== '') {
+                    row.querySelector('[data-field="total_weight"]').value = data.total_weight;
+                }
+
+                row.querySelector('.remove-vehicle-btn').addEventListener('click', function() {
+                    if (vehiclesContainer.querySelectorAll('.vehicle-entry').length > 1) {
+                        row.remove();
+                        reindexVehicles();
+                        recalculate();
+                    } else {
+                        alert('At least one vehicle is required.');
+                    }
+                });
+
+                return clone;
+            }
+
+            function reindexVehicles() {
+                vehiclesContainer.querySelectorAll('.vehicle-entry').forEach((row, i) => {
+                    row.querySelectorAll('[data-field]').forEach(input => {
+                        input.name = `vehicles[${i}][${input.dataset.field}]`;
+                    });
+                });
+            }
+
+            function addVehicle(data) {
+                vehiclesContainer.appendChild(createVehicleEntry(data));
+                reindexVehicles();
+            }
+
+            function initializeVehicles() {
+                const rawVehicles = @json(old('vehicles', isset($purchase) ? $purchase->purchaseVehicles : []));
+
+                const existing = (rawVehicles || []).map(item => {
+                    if (item && typeof item === 'object') {
+                        return {
+                            name: item.name || '',
+                            crate_qty: item.crate_qty ?? 0,
+                            total_weight: item.total_weight ?? ''
+                        };
+                    }
+                    return {
+                        name: item || '',
+                        crate_qty: 0,
+                        total_weight: ''
+                    };
+                });
+
+                if (existing.length > 0) {
+                    existing.forEach(v => addVehicle(v));
+                } else {
+                    addVehicle();
+                }
+            }
+
+            /* ---------- Calculations ---------- */
+
+            function isPunjabSupplier() {
+                const opt = supplierSelect.options[supplierSelect.selectedIndex];
+                const region = opt ? (opt.getAttribute('data-region') || '') : '';
+                return region.trim().toLowerCase() === 'punjab';
+            }
+
+            function recalculate() {
+                const punjab = isPunjabSupplier();
+                regionHint.classList.toggle('hidden', !punjab);
+
+                let totalCrates = 0,
+                    totalWeight = 0,
+                    totalCut = 0,
+                    totalNet = 0;
+
+                vehiclesContainer.querySelectorAll('.vehicle-entry').forEach(row => {
+                    const crates = parseFloat(row.querySelector('[data-field="crate_qty"]').value) || 0;
+                    const weight = parseFloat(row.querySelector('[data-field="total_weight"]').value) || 0;
+
+                    const crateCut = crates * CRATE_CUT_PER_UNIT;
+                    const regionCut = punjab ? weight * PUNJAB_CUT_PERCENT : 0;
+
+                    let cut = crateCut + regionCut;
+                    if (cut > weight) cut = weight; // never cut more than the vehicle carries
+
+                    const net = weight - cut;
+
+                    row.querySelector('[data-field="weight_cut"]').value = cut.toFixed(2);
+                    row.querySelector('[data-field="netweight"]').value = net.toFixed(2);
+
+                    totalCrates += crates;
+                    totalWeight += weight;
+                    totalCut += cut;
+                    totalNet += net;
+                });
+
+                crateQtyInput.value = totalCrates;
+                totalWeightInput.value = totalWeight.toFixed(2);
+                weightCutInput.value = totalCut.toFixed(2);
+                netWeightInput.value = totalNet.toFixed(2);
+
+                const rate = parseFloat(rateInput.value) || 0;
+                const paidAmount = parseFloat(paidAmountInput.value) || 0;
+                const totalAmount = totalNet * rate;
+                let remainingAmount = totalAmount - paidAmount;
+                if (remainingAmount < 0) remainingAmount = 0;
+
+                totalAmountInput.value = totalAmount.toFixed(2);
+                remainingAmountInput.value = remainingAmount.toFixed(2);
+            }
+
+            /* ---------- Events ---------- */
+
+            addVehicleBtn.addEventListener('click', function() {
+                addVehicle();
+                recalculate();
             });
 
-            // Vehicle Management
-            (function() {
-                const vehiclesContainer = document.getElementById('vehiclesContainer');
-                const addVehicleBtn = document.getElementById('addVehicleBtn');
-                const vehicleTemplate = document.getElementById('vehicleTemplate');
-                let vehicleCount = 0;
-
-                function createVehicleEntry(value = '') {
-                    const clone = vehicleTemplate.content.cloneNode(true);
-                    const input = clone.querySelector('.vehicle-input');
-                    const removeBtn = clone.querySelector('.remove-vehicle-btn');
-
-                    // Replace INDEX with actual count
-                    input.name = `vehicles[${vehicleCount}][name]`;
-                    vehicleCount++;
-
-                    if (value) {
-                        input.value = value;
-                    }
-
-                    removeBtn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const entry = input.closest('.vehicle-entry');
-                        if (vehiclesContainer.querySelectorAll('.vehicle-entry').length > 1) {
-                            entry.remove();
-                        } else {
-                            alert('At least one vehicle is required.');
-                        }
-                    });
-
-                    return clone;
+            // Delegated so newly added rows work too
+            vehiclesContainer.addEventListener('input', function(e) {
+                if (e.target.matches('[data-field="crate_qty"], [data-field="total_weight"]')) {
+                    recalculate();
                 }
+            });
 
-                function initializeVehicles() {
-                    const rawVehicles = @json(old('vehicles')
-                            ? old('vehicles')
-                            : (isset($purchase) && $purchase->purchaseVehicles
-                                ? $purchase->purchaseVehicles->pluck('name')->toArray()
-                                : []));
+            [rateInput, paidAmountInput].forEach(el => el.addEventListener('input', recalculate));
 
-                    // Normalize input data: extract string whether it's an object/array or direct string
-                    const existingVehicles = rawVehicles.map(item => {
-                        if (typeof item === 'object' && item !== null) {
-                            return item.name || '';
-                        }
-                        return item;
-                    });
+            // jQuery binding: select2 fires change through jQuery, which native listeners miss
+            $('#supplier_id').on('change', recalculate);
 
-                    if (existingVehicles.length > 0) {
-                        existingVehicles.forEach(vehicleName => {
-                            vehiclesContainer.appendChild(createVehicleEntry(vehicleName));
-                        });
-                    } else {
-                        vehiclesContainer.appendChild(createVehicleEntry());
-                    }
-                }
+            document.getElementById('purchaseForm').addEventListener('reset', function() {
+                setTimeout(function() {
+                    vehiclesContainer.innerHTML = '';
+                    addVehicle();
+                    recalculate();
+                }, 0);
+            });
 
-                addVehicleBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    vehiclesContainer.appendChild(createVehicleEntry());
-                });
-
-                // Initialize on page load
-                initializeVehicles();
-            })();
-
-            // Calculation Logic
-            (function() {
-                const cratesInput = document.getElementById('crate_qty');
-                const totalWeightInput = document.getElementById('total_weight');
-                const weightCutInput = document.getElementById('weight_cut');
-                const netWeightInput = document.getElementById('netweight');
-                const rateInput = document.getElementById('rate');
-                const totalAmountInput = document.getElementById('total_amount');
-                const paidAmountInput = document.getElementById('paid_amount');
-                const remainingAmountInput = document.getElementById('remaining_amount');
-                const supplierSelect = document.getElementById('supplier_id');
-                const regionHint = document.getElementById('regionHint');
-
-                const CRATE_CUT_PER_UNIT = 0.5; // kg cut per crate
-                const PUNJAB_CUT_PERCENT = 0.02; // 2% of total weight for Punjab suppliers
-
-                function isPunjabSupplier() {
-                    const selectedOption = supplierSelect.options[supplierSelect.selectedIndex];
-                    const region = selectedOption ? (selectedOption.getAttribute('data-region') || '') : '';
-                    return region.trim().toLowerCase() === 'punjab';
-                }
-
-                function recalculate() {
-                    const crateQty = parseFloat(cratesInput.value) || 0;
-                    const totalWeight = parseFloat(totalWeightInput.value) || 0;
-                    const rate = parseFloat(rateInput.value) || 0;
-                    const paidAmount = parseFloat(paidAmountInput.value) || 0;
-
-                    const crateCut = crateQty * CRATE_CUT_PER_UNIT;
-                    const punjab = isPunjabSupplier();
-                    const regionCut = punjab ? (totalWeight * PUNJAB_CUT_PERCENT) : 0;
-
-                    regionHint.classList.toggle('hidden', !punjab);
-
-                    let weightCut = crateCut + regionCut;
-                    let netWeight = totalWeight - weightCut;
-                    if (netWeight < 0) netWeight = 0;
-
-                    const totalAmount = netWeight * rate;
-                    let remainingAmount = totalAmount - paidAmount;
-                    if (remainingAmount < 0) remainingAmount = 0;
-
-                    weightCutInput.value = weightCut.toFixed(2);
-                    netWeightInput.value = netWeight.toFixed(2);
-                    totalAmountInput.value = totalAmount.toFixed(2);
-                    remainingAmountInput.value = remainingAmount.toFixed(2);
-                }
-
-                [cratesInput, totalWeightInput, rateInput, paidAmountInput].forEach(el => {
-                    el.addEventListener('input', recalculate);
-                });
-                supplierSelect.addEventListener('change', recalculate);
-
-                // Run once on load (handles edit mode / old() repopulation)
-                recalculate();
-            })();
-        </script>
-    @endsection
+            initializeVehicles();
+            recalculate();
+        })();
+    </script>
+@endsection

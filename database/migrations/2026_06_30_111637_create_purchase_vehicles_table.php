@@ -15,6 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('purchase_id');
             $table->string('name');
+            $table->decimal('crate_qty', 10, 2);
+            $table->decimal('total_weight', 10, 2);
+            $table->decimal('weight_cut', 10, 2)->nullable();
+            $table->decimal('netweight', 10, 2);
             $table->timestamps();
         });
     }

@@ -53,18 +53,18 @@ class SupplierLedgerController extends Controller
             }
 
             // Calculate opening balance before $fromDate
+            // Calculate opening balance before $fromDate
             $priorPaymentsDebit = SupplierPayment::where('supplier_id', $supplierId)
-                ->where('payment_type', 'debit')
+                ->where('payment_type', 'debit') // Change to 'type' if your DB column is named 'type'
                 ->whereDate('date', '<', $fromDate)
                 ->sum('amount');
 
             $priorPaymentsCredit = SupplierPayment::where('supplier_id', $supplierId)
-                ->where('payment_type', 'credit')
+                ->where('payment_type', 'credit') // Change to 'type' if your DB column is named 'type'
                 ->whereDate('date', '<', $fromDate)
                 ->sum('amount');
 
             $openingBalance = $supplier->opening_balance + $priorPaymentsCredit - $priorPaymentsDebit;
-
             // 1. Fetch Purchases Query (Set sort_order = 1 so Purchases come FIRST)
             $purchases = DB::table('purchases')
                 ->select(
@@ -84,18 +84,19 @@ class SupplierLedgerController extends Controller
                 ->select(
                     'date',
                     DB::raw('CONCAT("Payment (", type, ")") as description'),
-                    'amount as debit',
-                    DB::raw('NULL as credit'),
+                    // Dynamic mapping based on payment_type
+                    DB::raw('CASE WHEN payment_type = "debit" THEN amount ELSE NULL END as debit'),
+                    DB::raw('CASE WHEN payment_type = "credit" THEN amount ELSE NULL END as credit'),
                     'id as reference_id',
                     'created_at',
-                    DB::raw('2 as sort_order') // Lower Priority (Second)
+                    DB::raw('2 as sort_order')
                 )
                 ->where('supplier_id', $supplierId)
                 ->whereBetween('date', [$fromDate, $toDate])
                 ->union($purchases)
-                ->orderBy('date', 'asc')       // Primary sort: Transaction Date
-                ->orderBy('sort_order', 'asc') // Secondary sort: Purchase before Payment
-                ->orderBy('created_at', 'asc') // Tertiary sort: Time created
+                ->orderBy('date', 'asc')
+                ->orderBy('sort_order', 'asc')
+                ->orderBy('created_at', 'asc')
                 ->get();
 
             if ($request->filled('export') && $request->input('export') === 'pdf') {
@@ -109,51 +110,52 @@ class SupplierLedgerController extends Controller
 
         return view('ledger.supplier', compact('suppliers', 'ledgerEntries', 'openingBalance'));
     }
+
     public function supplierInvoice(Supplier $supplier, $from_date)
-{
-    // 1. Fetch Supplier
-    // $supplier = Supplier::findOrFail($supplier_id);
-    $supplier_id=$supplier->id;
-    // $from_date=
+    {
+        // 1. Fetch Supplier
+        // $supplier = Supplier::findOrFail($supplier_id);
+        $supplier_id = $supplier->id;
+        // $from_date=
 
-    // 2. Get Purchases for this specific date
-    $purchases = Purchase::with('product')
-        ->where('supplier_id', $supplier_id)
-        ->whereDate('date', $from_date)
-        ->get();
+        // 2. Get Purchases for this specific date
+        $purchases = Purchase::with('product')
+            ->where('supplier_id', $supplier_id)
+            ->whereDate('date', $from_date)
+            ->get();
 
-    // 3. Current Purchases Total
-    $currentPurchaseTotal = $purchases->sum('total_amount');
+        // 3. Current Purchases Total
+        $currentPurchaseTotal = $purchases->sum('total_amount');
 
-    // 4. Calculate Previous Balance (Purchases minus Payments made to Supplier before $from_date)
-    $prevPurchases = Purchase::where('supplier_id', $supplier_id)
-        ->whereDate('date', '<', $from_date)
-        ->sum('total_amount');
+        // 4. Calculate Previous Balance (Purchases minus Payments made to Supplier before $from_date)
+        $prevPurchases = Purchase::where('supplier_id', $supplier_id)
+            ->whereDate('date', '<', $from_date)
+            ->sum('total_amount');
 
-    $prevPayments = SupplierPayment::where('supplier_id', $supplier_id)
-        ->whereDate('date', '<', $from_date)
-        ->sum('amount');
+        $prevPayments = SupplierPayment::where('supplier_id', $supplier_id)
+            ->whereDate('date', '<', $from_date)
+            ->sum('amount');
 
-    $previousBalance = ($supplier->opening_balance ?? 0) + $prevPurchases - $prevPayments;
+        $previousBalance = ($supplier->opening_balance ?? 0) + $prevPurchases - $prevPayments;
 
-    // 5. Payments made to Supplier on current date
-    $paidToday = SupplierPayment::where('supplier_id', $supplier_id)
-        ->whereDate('date', $from_date)
-        ->sum('amount');
+        // 5. Payments made to Supplier on current date
+        $paidToday = SupplierPayment::where('supplier_id', $supplier_id)
+            ->whereDate('date', $from_date)
+            ->sum('amount');
 
-    $subtotal = $currentPurchaseTotal + $previousBalance;
-    $remainingBalance = $subtotal - $paidToday;
+        $subtotal = $currentPurchaseTotal + $previousBalance;
+        $remainingBalance = $subtotal - $paidToday;
 
-    // Return view directly (or load via DomPDF if exporting directly)
-    return view('suppliers.invoice', compact(
-        'supplier',
-        'purchases',
-        'from_date',
-        'currentPurchaseTotal',
-        'previousBalance',
-        'subtotal',
-        'paidToday',
-        'remainingBalance'
-    ));
-}
+        // Return view directly (or load via DomPDF if exporting directly)
+        return view('suppliers.invoice', compact(
+            'supplier',
+            'purchases',
+            'from_date',
+            'currentPurchaseTotal',
+            'previousBalance',
+            'subtotal',
+            'paidToday',
+            'remainingBalance'
+        ));
+    }
 }

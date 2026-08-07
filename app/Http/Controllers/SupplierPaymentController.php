@@ -55,7 +55,8 @@ class SupplierPaymentController extends Controller
     public function store(SupplierPaymentRequestStore $request)
     {
         $validated = $request->validated();
-        $validated['payment_type'] = 'debit';
+        // $validated['payment_type'] = 'debit';
+        // dd($validated);
         SupplierPayment::updateOrCreate(
             ['id' => $validated['update_id']],
             $validated);

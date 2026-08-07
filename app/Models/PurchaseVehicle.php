@@ -10,6 +10,10 @@ class PurchaseVehicle extends Model
     protected $fillable = [
         'purchase_id',
         'name',
+        'crate_qty',
+        'total_weight',
+        'weight_cut',
+        'netweight'
     ];
 
     public function purchase(): BelongsTo
