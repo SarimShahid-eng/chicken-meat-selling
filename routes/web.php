@@ -125,7 +125,6 @@ Route::middleware('auth')->group(function () {
             Route::get('supplierRegionWise', 'index')->name('supplierRegionWise');
             Route::post('regionSupplierReport', 'regionSupplierReport')->name('regionSupplierReport');
         });
-
     });
     Route::prefix('report')->name('reports.')->group(function () {
         Route::controller(ReportController::class)->group(function () {

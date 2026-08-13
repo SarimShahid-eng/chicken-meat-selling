@@ -61,8 +61,7 @@
                         class="text-xs bg-amber-600 hover:bg-amber-700 text-white font-medium px-4 py-2 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
                         <i class="fa-solid fa-magnifying-glass"></i>Search
                     </button>
-                    <a href="{{ route('ledger.supplierRegionWise') }}"
-                    <a href="{{ route('ledger.supplierRegionWise') }}"
+                    <a href="{{ route('ledger.supplierRegionWise') }}" <a href="{{ route('ledger.supplierRegionWise') }}"
                         class="text-xs ml-2 bg-amber-600 hover:bg-amber-700 text-white font-medium px-4 py-2 rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
                         <i class="fa-solid fa-arrow-rotate-left"></i>Reset
                     </a>
@@ -103,11 +102,21 @@
                                 </td>
                             </tr>
 
-                            @php $running = $openingBalance; @endphp
+                            @php
+                                $running = $openingBalance;
+                                $debitSum = 0;
+                                $creditSum = 0;
+
+                            @endphp
 
                             @forelse($ledgerEntries as $entry)
                                 @php
-                                    $running += ($entry->credit ?? 0) - ($entry->debit ?? 0);
+                                    $debitVal = $entry->debit ?? 0;
+                                    $creditVal = $entry->credit ?? 0;
+
+                                    $debitSum += $debitVal;
+                                    $creditSum += $creditVal;
+                                    $running += $creditVal - $debitVal;
                                 @endphp
                                 <tr class="hover:bg-gray-50/70 transition-colors">
                                     <td class="px-6 py-3.5 text-gray-500">{{ date('d-M-Y', strtotime($entry->date)) }}</td>
@@ -142,6 +151,42 @@
                 </div>
             </div>
         @endif
+    </div>
+    <!-- Statement Summary Card -->
+    <div class="bg-white rounded-xl shadow-md border border-gray-100 p-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
+
+            <!-- Label Section -->
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-lg">
+                    <i class="fa-solid fa-calculator"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Statement Summary</span>
+                    <span class="text-sm font-bold text-gray-800">Regional Overview</span>
+                </div>
+            </div>
+
+            <!-- Total Debit Sum -->
+            <div class="bg-gray-50/80 rounded-lg p-3 border border-gray-100 text-right">
+                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide block">Total Sales (Debit)</span>
+                <span class="text-base font-bold text-red-600">Rs. {{ number_format($debitSum, 2) }}</span>
+            </div>
+
+            <!-- Total Credit Sum -->
+            <div class="bg-gray-50/80 rounded-lg p-3 border border-gray-100 text-right">
+                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide block">Total Paid (Credit)</span>
+                <span class="text-base font-bold text-green-600">Rs. {{ number_format($creditSum, 2) }}</span>
+            </div>
+
+            <!-- Closing Balance -->
+            <div class="bg-slate-900 rounded-lg p-3 text-right">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide block">Closing Balance</span>
+                <span class="text-base font-bold text-gray-500">Rs. {{ number_format($running, 2) }}</span>
+            </div>
+
+        </div>
     </div>
 @endsection
 

@@ -19,9 +19,9 @@ class HotelSaleController extends Controller
     public function index(Request $request)
     {
         $baseQuery = HotelSale::query()
-            ->with(['customer','customerPayment', 'customer.region', 'items', 'items.product'])
+            ->with(['customer', 'customerPayment', 'customer.region', 'items', 'items.product'])
             ->when($request->filled('search'), function ($q) use ($request) {
-                $searchTerm = '%'.$request->input('search').'%';
+                $searchTerm = '%' . $request->input('search') . '%';
 
                 $q->where(function ($query) use ($searchTerm) {
                     $query->where('voucher_no', 'LIKE', $searchTerm)
@@ -79,12 +79,11 @@ class HotelSaleController extends Controller
         $customers = Customer::with('region')->get();
 
         return view('hotel_sales.index', compact('sales', 'products', 'customers'));
-
     }
 
     public function create()
     {
-        $voucher_no = Sale::max('voucher_no') + 1;
+        $voucher_no = HotelSale::max('voucher_no') + 1;
         $products = Product::all(['id', 'name']);
         $customers = Customer::with('region')->where('category', 'hotel')->get();
 
@@ -106,7 +105,8 @@ class HotelSaleController extends Controller
             DB::transaction(function () use ($validated, $isUpdating) {
                 $sale = HotelSale::updateOrCreate(
                     ['id' => $validated['update_id']],
-                    $validated);
+                    $validated
+                );
                 if ($isUpdating) {
                     $sale->items()->delete();
                 }
@@ -116,7 +116,7 @@ class HotelSaleController extends Controller
                     'reference' => 'hotel_sale'
                 ], [
                     'sale_id' => $sale->id,
-                    'reference'=>'hotel_sale',
+                    'reference' => 'hotel_sale',
                     'customer_id' => $validated['customer_id'],
                     'amount' => $validated['amount_received'],
                     'date' => $validated['date'],
@@ -128,7 +128,7 @@ class HotelSaleController extends Controller
 
             return redirect()
                 ->route('hotel_sales.index')
-                ->with('toast_success', 'Sale has been '.$message.' successfully!');
+                ->with('toast_success', 'Sale has been ' . $message . ' successfully!');
         } catch (Exception $e) {
             dd($e->getMessage());
             return redirect()
@@ -139,7 +139,7 @@ class HotelSaleController extends Controller
 
     public function edit(HotelSale $hotel_sale)
     {
-        $sale=$hotel_sale;
+        $sale = $hotel_sale;
         $products = Product::all(['id', 'name']);
         $customers = Customer::with('region')->where('category', 'hotel')->get();
 
@@ -148,15 +148,18 @@ class HotelSaleController extends Controller
 
     public function show(HotelSale $hotelSale)
     {
-        $hotelSale = $hotelSale->load(['customer:id,name,region_id',
-        'customerPayment',
-        'customer.region:id,name', 'items:id,hotel_sale_id,product_id,amount,rate,weight', 'items.product:id,name']);
-    //    dd($hotelSale);
+        $hotelSale = $hotelSale->load([
+            'customer:id,name,region_id',
+            'customerPayment',
+            'customer.region:id,name',
+            'items:id,hotel_sale_id,product_id,amount,rate,weight',
+            'items.product:id,name'
+        ]);
+        //    dd($hotelSale);
         $data = [
             'hotel_sale' => $hotelSale,
         ];
 
         return response()->json($data);
-
     }
 }

@@ -5,10 +5,45 @@
     <meta charset="UTF-8">
     <title>Customer Account Ledger Statement</title>
     <style>
+        .summary-container {
+            width: 100%;
+            margin-top: 15px;
+            page-break-inside: avoid;
+        }
+
+        .summary-card-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #f8fafc;
+            border: 2px solid #1e293b;
+            border-radius: 4px;
+        }
+
+        .summary-card-table td {
+            padding: 12px 15px;
+            vertical-align: middle;
+            border: none;
+        }
+
+        .summary-label {
+            font-size: 10pt;
+            font-weight: 700;
+            color: #0f172a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-value {
+            font-size: 10pt;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
         /* PDF Document Layout Configuration */
         @page {
             size: A4 portrait;
-            margin: 15mm 10mm;
+            margin: 15mm 10mm 20mm 10mm;
+            /* Added bottom margin space for page footer */
 
             @bottom-right {
                 content: "Page " counter(page) " of " counter(pages);
@@ -121,6 +156,13 @@
             vertical-align: middle;
         }
 
+        tfoot tr td {
+            border-top: 2px solid #1e293b;
+            border-bottom: 2px solid #1e293b;
+            background-color: #f8fafc;
+            padding: 10px 6px;
+        }
+
         /* Inline Badges Optimized for Dompdf */
         .badge {
             display: inline-block;
@@ -176,6 +218,71 @@
             font-size: 7.5pt;
             color: #6b7280;
         }
+
+        .details-text {
+            font-size: 7pt;
+            color: #6b7280;
+            display: block;
+            margin-top: 2px;
+        }
+
+        /* Statement Summary Footer Styles */
+        .summary-wrapper {
+            margin-top: 20px;
+            page-break-inside: avoid;
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 10px 0;
+            margin-bottom: 25px;
+        }
+
+        .summary-card {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px 12px;
+            text-align: center;
+        }
+
+        .summary-card-title {
+            font-size: 7.5pt;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-card-value {
+            font-size: 11pt;
+            font-weight: 700;
+        }
+
+        /* Footer Signatures */
+        .signature-table {
+            width: 100%;
+            margin-top: 40px;
+        }
+
+        .signature-cell {
+            width: 33.33%;
+            text-align: center;
+            vertical-align: bottom;
+            padding: 0 15px;
+        }
+
+        .signature-line {
+            border-top: 1px solid #94a3b8;
+            margin-top: 45px;
+            padding-top: 5px;
+            font-size: 8pt;
+            font-weight: 600;
+            color: #475569;
+            text-transform: uppercase;
+        }
     </style>
 </head>
 
@@ -185,7 +292,7 @@
         <h1 class="company-name">Rajput Chicken Centre</h1>
         <h2 class="report-title">Customer Account Ledger Statement</h2>
         <div style="font-size: 10.5pt; font-weight: 700; color: #2563eb; margin-bottom: 4px;">
-            Customer: {{ $customer->name ?? ($customer->name ?? 'All Account Holders') }}
+            Customer: {{ $customer->name ?? 'All Account Holders' }}
         </div>
         <p class="report-meta">
             Statement Period: {{ date('d-M-Y', strtotime($fromDate)) }} to {{ date('d-M-Y', strtotime($toDate)) }} |
@@ -198,10 +305,15 @@
             <thead>
                 <tr>
                     <th style="width: 12%;">Date</th>
-                    <th style="width: 32%;">Description / Reference</th>
-                    <th style="width: 13%; text-align: right;">Debit (Sales)</th>
-                    <th style="width: 13%; text-align: right;">Credit (Payments)</th>
-                    <th style="width: 12%; text-align: right;">Balance</th>
+                    @if (isset($ledgerEntries) && $ledgerEntries->first() && isset($ledgerEntries->first()->customer_name))
+                        <th style="width: 18%;">Customer</th>
+                        <th style="width: 24%;">Description / Reference</th>
+                    @else
+                        <th style="width: 42%;">Description / Reference</th>
+                    @endif
+                    <th style="width: 15%; text-align: right;">Debit (Sales)</th>
+                    <th style="width: 15%; text-align: right;">Credit (Payments)</th>
+                    <th style="width: 16%; text-align: right;">Balance</th>
                 </tr>
             </thead>
             <tbody>
@@ -209,24 +321,37 @@
                 <!-- Opening Balance Row Entry -->
                 <tr class="opening-balance-row">
                     <td>{{ date('d-M-Y', strtotime($fromDate)) }}</td>
+                    @if (isset($ledgerEntries) && $ledgerEntries->first() && isset($ledgerEntries->first()->customer_name))
+                        <td>—</td>
+                    @endif
                     <td class="italic">Opening Balance Carriage</td>
                     <td class="text-right">—</td>
                     <td class="text-right">—</td>
                     <td class="text-right font-bold">Rs. {{ number_format($openingBalance, 2) }}</td>
                 </tr>
 
-                @php $running = $openingBalance; @endphp
+                @php
+                    $running = $openingBalance;
+                    $debitSum = 0;
+                    $creditSum = 0;
+                @endphp
 
                 @forelse($ledgerEntries as $entry)
                     @php
-                        $running += ($entry->debit ?? 0) - ($entry->credit ?? 0);
+                        $debitVal = $entry->debit ?? 0;
+                        $creditVal = $entry->credit ?? 0;
+
+                        $debitSum += $debitVal;
+                        $creditSum += $creditVal;
+
+                        $running += $debitVal - $creditVal;
+                        $hasItems = $entry->type === 'hotel_sale' && isset($entry->items) && count($entry->items) > 0;
                     @endphp
                     <tr>
                         <td style="color: #6b7280;">
                             {{ date('d-M-Y', strtotime($entry->date)) }}
                         </td>
 
-                        {{-- Customer Name column if region export --}}
                         @if (isset($entry->customer_name))
                             <td class="font-semibold" style="color: #1f2937;">
                                 {{ $entry->customer_name }}
@@ -234,17 +359,26 @@
                         @endif
 
                         <td>
-                            {{-- 1. Regular Sale Badge --}}
                             @if ($entry->type === 'sale')
                                 <span class="badge badge-sale">Regular Sale</span>
                                 <span class="sub-text">Ref: #{{ $entry->reference_id }}</span>
-
-                                {{-- 2. Hotel Sale Badge --}}
+                                @if ($entry->product_name)
+                                    <span class="product-text">{{ $entry->product_name }}</span>
+                                @endif
+                                <span class="details-text">
+                                    Crates: {{ $entry->sale_crate_qty ?? 0 }}
+                                    &nbsp;|&nbsp; Weight: {{ number_format($entry->sale_total_weight ?? 0, 2) }} kg
+                                    &nbsp;|&nbsp; Cut: {{ number_format($entry->sale_weight_cut ?? 0, 2) }} kg
+                                    &nbsp;|&nbsp; Net: {{ number_format($entry->sale_netweight ?? 0, 2) }} kg
+                                    &nbsp;|&nbsp; Rate:
+                                    {{ $entry->sale_rate ? 'Rs. ' . number_format($entry->sale_rate, 2) : '—' }}
+                                </span>
                             @elseif($entry->type === 'hotel_sale')
                                 <span class="badge badge-hotel">Hotel Sale</span>
                                 <span class="sub-text">Ref: #{{ $entry->reference_id }}</span>
-
-                                {{-- 3. Payments Logic --}}
+                                @if ($hasItems)
+                                    <span class="product-text">{{ count($entry->items) }} item(s)</span>
+                                @endif
                             @elseif($entry->type === 'payment')
                                 @if (!empty($entry->sale_id))
                                     @if ($entry->reference === 'hotel_sale')
@@ -270,6 +404,36 @@
                             Rs. {{ number_format($running, 2) }}
                         </td>
                     </tr>
+
+                    @if ($hasItems)
+                        <tr class="items-subrow">
+                            <td colspan="{{ isset($entry->customer_name) ? 6 : 5 }}">
+                                <span class="items-label">Items Sold</span>
+                                <table class="items-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 40%;">Product</th>
+                                            <th style="width: 20%; text-align: right;">Weight</th>
+                                            <th style="width: 20%; text-align: right;">Rate</th>
+                                            <th style="width: 20%; text-align: right;">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($entry->items as $item)
+                                            <tr>
+                                                <td class="font-semibold">{{ $item->product->name ?? '—' }}</td>
+                                                <td class="text-right">{{ number_format($item->weight, 2) }}</td>
+                                                <td class="text-right">
+                                                    {{ $item->rate ? number_format($item->rate, 2) : '—' }}</td>
+                                                <td class="text-right font-semibold">Rs.
+                                                    {{ number_format($item->amount, 2) }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    @endif
                 @empty
                     <tr>
                         <td colspan="{{ isset($ledgerEntries->first()->customer_name) ? 6 : 5 }}" class="text-center"
@@ -282,8 +446,34 @@
                     </tr>
                 @endforelse
             </tbody>
+
         </table>
     </div>
+    <div class="summary-container">
+        <table class="summary-card-table">
+            <tr>
+                <td style="width: 25%;" class="summary-label">
+                    Statement Summary
+                </td>
+                <td style="width: 25%; text-align: right;">
+                    <span style="font-size: 7.5pt; color: #64748b; display: block; text-transform: uppercase;">Total
+                        Paid (Debit)</span>
+                    <span class="summary-value text-debit">Rs. {{ number_format($debitSum, 2) }}</span>
+                </td>
+                <td style="width: 25%; text-align: right;">
+                    <span style="font-size: 7.5pt; color: #64748b; display: block; text-transform: uppercase;">Total
+                        Purchases (Credit)</span>
+                    <span class="summary-value text-credit">Rs. {{ number_format($creditSum, 2) }}</span>
+                </td>
+                <td style="width: 25%; text-align: right;">
+                    <span style="font-size: 7.5pt; color: #64748b; display: block; text-transform: uppercase;">Closing
+                        Balance</span>
+                    <span class="summary-value" style="color: #0f172a;">Rs. {{ number_format($running, 2) }}</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+
 
 </body>
 

@@ -30,7 +30,6 @@ class CustomerLedgerController extends Controller
 
         $customerId = $validated['customer_id'];
 
-        // Fetch customers with any sales, hotel sales, or payment activity
         $customers = Customer::orderBy('name')
             ->where(function ($query) {
                 $query->whereHas('customerPayments')
@@ -45,7 +44,6 @@ class CustomerLedgerController extends Controller
         if ($customerId) {
             $customer = Customer::findOrFail($customerId);
 
-            // Determine date bounds
             if ($request->filled('from_date')) {
                 $fromDate = Carbon::parse($validated['from_date'])->format('Y-m-d');
             } else {
@@ -61,7 +59,6 @@ class CustomerLedgerController extends Controller
                 ? Carbon::parse($validated['to_date'])->format('Y-m-d')
                 : now()->format('Y-m-d');
 
-            // 1. Calculate prior baseline amounts before 'from_date'
             $priorSales = DB::table('sales')
                 ->where('customer_id', $customerId)
                 ->whereDate('date', '<', $fromDate)
@@ -76,16 +73,15 @@ class CustomerLedgerController extends Controller
                 ->whereDate('date', '<', $fromDate)
                 ->sum('amount');
 
-            // Opening balance calculation
             $openingBalance = $customer->opening_balance
                 + $priorSales
                 + $priorHotelSales
                 - $priorPayments;
 
-            // 2. Build UNION queries with group_id and sort_order
-
             $sales = DB::table('sales')
                 ->select(
+                    'id as source_id',
+                    'product_id',
                     'date',
                     DB::raw('"Regular Sale" as description'),
                     'total_amount as debit',
@@ -96,14 +92,21 @@ class CustomerLedgerController extends Controller
                     DB::raw('NULL as sale_id'),
                     DB::raw('NULL as reference'),
                     DB::raw('1 as sort_order'),
-                    DB::raw('CONCAT("sale_", id) as group_key') // e.g. sale_1
+                    DB::raw('CONCAT("sale_", id) as group_key'),
+                    'crate_qty as sale_crate_qty',
+                    'total_weight as sale_total_weight',
+                    'weight_cut as sale_weight_cut',
+                    'netweight as sale_netweight',
+                    'rate as sale_rate'
                 )
                 ->where('customer_id', $customerId)
                 ->whereBetween('date', [$fromDate, $toDate]);
 
-            // Hotel Sales (group_key = 'hotel_sale_{id}')
+            // Hotel Sales — pad with matching NULLs
             $hotelSales = DB::table('hotel_sales')
                 ->select(
+                    'id as source_id',
+                    DB::raw('NULL as product_id'),
                     'date',
                     DB::raw('"Hotel Sale" as description'),
                     'total_amount as debit',
@@ -114,14 +117,21 @@ class CustomerLedgerController extends Controller
                     DB::raw('NULL as sale_id'),
                     DB::raw('NULL as reference'),
                     DB::raw('1 as sort_order'),
-                    DB::raw('CONCAT("hotel_sale_", id) as group_key') // e.g. hotel_sale_1
+                    DB::raw('CONCAT("hotel_sale_", id) as group_key'),
+                    DB::raw('NULL as sale_crate_qty'),
+                    DB::raw('NULL as sale_total_weight'),
+                    DB::raw('NULL as sale_weight_cut'),
+                    DB::raw('NULL as sale_netweight'),
+                    DB::raw('NULL as sale_rate')
                 )
                 ->where('customer_id', $customerId)
                 ->whereBetween('date', [$fromDate, $toDate]);
 
-            // Customer Payments (group_key matches linked sale OR uses payment id)
+            // Payments — pad with matching NULLs
             $ledgerEntries = DB::table('customer_payments')
                 ->select(
+                    DB::raw('NULL as source_id'),
+                    DB::raw('NULL as product_id'),
                     'date',
                     DB::raw('"Payment Received" as description'),
                     DB::raw('NULL as debit'),
@@ -133,114 +143,54 @@ class CustomerLedgerController extends Controller
                     'reference',
                     DB::raw('2 as sort_order'),
                     DB::raw('CASE
-            WHEN sale_id IS NOT NULL AND reference = "hotel_sale" THEN CONCAT("hotel_sale_", sale_id)
-            WHEN sale_id IS NOT NULL THEN CONCAT("sale_", sale_id)
-            ELSE CONCAT("payment_", id)
-        END as group_key')
+                                WHEN sale_id IS NOT NULL AND reference = "hotel_sale" THEN CONCAT("hotel_sale_", sale_id)
+                                WHEN sale_id IS NOT NULL THEN CONCAT("sale_", sale_id)
+                                ELSE CONCAT("payment_", id)
+                            END as group_key'),
+                    DB::raw('NULL as sale_crate_qty'),
+                    DB::raw('NULL as sale_total_weight'),
+                    DB::raw('NULL as sale_weight_cut'),
+                    DB::raw('NULL as sale_netweight'),
+                    DB::raw('NULL as sale_rate')
                 )
                 ->where('customer_id', $customerId)
                 ->whereBetween('date', [$fromDate, $toDate])
                 ->union($sales)
                 ->union($hotelSales)
-                ->orderBy('date', 'asc')       // 1. Transaction Date
-                ->orderBy('group_key', 'asc')  // 2. Groups specific Sale + its specific Linked Payment together
-                ->orderBy('sort_order', 'asc') // 3. Forces Sale (1) BEFORE Payment (2)
-                ->orderBy('created_at', 'asc') // 4. Fallback creation time
+                ->orderBy('date', 'asc')
+                ->orderBy('group_key', 'asc')
+                ->orderBy('sort_order', 'asc')
+                ->orderBy('created_at', 'asc')
                 ->get();
-// dd($ledgerEntries);
+
+            // Eager-load products for regular sales, items+products for hotel sales
+            $saleIds = $ledgerEntries->where('type', 'sale')->pluck('source_id')->filter()->unique()->values();
+            $hotelSaleIds = $ledgerEntries->where('type', 'hotel_sale')->pluck('source_id')->filter()->unique()->values();
+
+            $salesWithProduct = Sale::with('product')->whereIn('id', $saleIds)->get()->keyBy('id');
+            $hotelSalesWithItems = HotelSale::with('items.product')->whereIn('id', $hotelSaleIds)->get()->keyBy('id');
+
+            $ledgerEntries = $ledgerEntries->map(function ($entry) use ($salesWithProduct, $hotelSalesWithItems) {
+                $entry->product_name = null;
+                $entry->items = collect();
+
+                if ($entry->type === 'sale' && $entry->source_id && $salesWithProduct->has($entry->source_id)) {
+                    $entry->product_name = $salesWithProduct->get($entry->source_id)->product->name ?? null;
+                }
+
+                if ($entry->type === 'hotel_sale' && $entry->source_id && $hotelSalesWithItems->has($entry->source_id)) {
+                    $entry->items = $hotelSalesWithItems->get($entry->source_id)->items;
+                }
+
+                return $entry;
+            });
+
             if ($request->filled('export') && $request->input('export') === 'pdf') {
                 $pdf = Pdf::loadView('ledger.customerExportPdf', compact('customer', 'ledgerEntries', 'openingBalance', 'fromDate', 'toDate'));
-
                 return $pdf->download('customer_ledger.pdf');
             }
         }
 
         return view('ledger.customer', compact('customers', 'ledgerEntries', 'openingBalance', 'fromDate', 'toDate'));
-    }
-
-    public function customerInvoice(Customer $customer, $date)
-    {
-        // 1. Fetch Customer Info
-        // $customer = Customer::findOrFail($customer_id);
-        $customer_id = $customer->id;
-        $from_date = $date;
-        // 1. Fetch Customer
-
-        // 2. Single-item Sales for this date (directly has fields like product, quantity, rate, price, total_amount)
-        $sales = Sale::with('product')
-            ->where('customer_id', $customer_id)
-            ->whereDate('date', $from_date)
-            ->get();
-
-        // 3. Multi-item Hotel Sales for this date (has nested items relation)
-        $hotelSales = HotelSale::with('items.product')
-            ->where('customer_id', $customer_id)
-            ->whereDate('date', $from_date)
-            ->get();
-
-        // Calculate current date sales totals
-        $currentSalesTotal = $sales->sum('total_amount');
-
-        foreach ($hotelSales as $hSale) {
-            $currentSalesTotal += $hSale->items->sum('amount');
-        }
-
-        // 4. Calculate Previous Balance (strictly before $from_date)
-        $prevSales = Sale::where('customer_id', $customer_id)
-            ->whereDate('date', '<', $from_date)
-            ->sum('total_amount');
-
-        $prevHotelSales = HotelSale::whereHas('items')
-            ->where('customer_id', $customer_id)
-            ->whereDate('date', '<', $from_date)
-            ->get()
-            ->sum(function ($hSale) {
-                return $hSale->items->sum('total');
-            });
-
-        $prevPayments = CustomerPayment::where('customer_id', $customer_id)
-            ->whereDate('date', '<', $from_date)
-            ->sum('amount');
-
-        $previousBalance = ($customer->opening_balance ?? 0) + $prevSales + $prevHotelSales - $prevPayments;
-
-        // 5. Total Payments received on current date
-        $receivedToday = CustomerPayment::where('customer_id', $customer_id)
-            ->whereDate('date', $from_date)
-            ->sum('amount');
-
-        $subtotal = $currentSalesTotal + $previousBalance;
-        $remainingBalance = $subtotal - $receivedToday;
-
-        // Subtotal & Net Balance Due
-        $subtotal = $currentSalesTotal + $previousBalance;
-        $netBalanceDue = $subtotal - $receivedToday;
-
-        return view('customers.invoice', compact(
-            'customer',
-            'sales',
-            'hotelSales',
-            'from_date',
-            'currentSalesTotal',
-            'previousBalance',
-            'subtotal',
-            'receivedToday',
-            'remainingBalance'
-        ));
-
-        // // Render PDF statement matching the ledger invoice format
-        // $pdf = Pdf::loadView('invoices.customer_statement_invoice', compact(
-        //     'customer',
-        //     'sales',
-        //     'hotelSales',
-        //     'from_date',
-        //     'currentSalesTotal',
-        //     'previousBalance',
-        //     'subtotal',
-        //     'receivedToday',
-        //     'netBalanceDue'
-        // ));
-
-        // return $pdf->download("Invoice_{$customer->name}_{$from_date}.pdf");
     }
 }

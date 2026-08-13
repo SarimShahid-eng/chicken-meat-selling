@@ -204,7 +204,6 @@
                 }
 
                 function populateView(data) {
-                    console.log(data)
                     // Basic Information
                     document.getElementById('modalVoucherNo').textContent = data.voucher_no ?? '—';
                     document.getElementById('modalCustomer').textContent = data.customer?.name ?? '—';

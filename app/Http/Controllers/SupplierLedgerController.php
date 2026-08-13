@@ -52,39 +52,42 @@ class SupplierLedgerController extends Controller
                 $toDate = now()->format('Y-m-d');
             }
 
-            // Calculate opening balance before $fromDate
-            // Calculate opening balance before $fromDate
+            // Opening balance before $fromDate
             $priorPaymentsDebit = SupplierPayment::where('supplier_id', $supplierId)
-                ->where('payment_type', 'debit') // Change to 'type' if your DB column is named 'type'
+                ->where('payment_type', 'debit')
                 ->whereDate('date', '<', $fromDate)
                 ->sum('amount');
 
             $priorPaymentsCredit = SupplierPayment::where('supplier_id', $supplierId)
-                ->where('payment_type', 'credit') // Change to 'type' if your DB column is named 'type'
+                ->where('payment_type', 'credit')
                 ->whereDate('date', '<', $fromDate)
                 ->sum('amount');
 
             $openingBalance = $supplier->opening_balance + $priorPaymentsCredit - $priorPaymentsDebit;
-            // 1. Fetch Purchases Query (Set sort_order = 1 so Purchases come FIRST)
+
+            // 1. Purchases (sort_order = 1) — now also select id so we can pull vehicles
             $purchases = DB::table('purchases')
                 ->select(
+                    'id as purchase_id',
+                    'product_id',
                     'date',
                     DB::raw('"Purchase" as description'),
                     DB::raw('NULL as debit'),
                     'total_amount as credit',
                     'voucher_no as reference_id',
                     'created_at',
-                    DB::raw('1 as sort_order') // High Priority (First)
+                    DB::raw('1 as sort_order')
                 )
                 ->where('supplier_id', $supplierId)
                 ->whereBetween('date', [$fromDate, $toDate]);
 
-            // 2. Fetch Supplier Payments Query (Set sort_order = 2 so Payments come SECOND)
+            // 2. Supplier Payments (sort_order = 2) — purchase_id NULL so union column counts match
             $ledgerEntries = DB::table('supplier_payments')
                 ->select(
+                    DB::raw('NULL as purchase_id'),
+                    DB::raw('NULL as product_id'),
                     'date',
                     DB::raw('CONCAT("Payment (", type, ")") as description'),
-                    // Dynamic mapping based on payment_type
                     DB::raw('CASE WHEN payment_type = "debit" THEN amount ELSE NULL END as debit'),
                     DB::raw('CASE WHEN payment_type = "credit" THEN amount ELSE NULL END as credit'),
                     'id as reference_id',
@@ -99,9 +102,36 @@ class SupplierLedgerController extends Controller
                 ->orderBy('created_at', 'asc')
                 ->get();
 
+            // 3. Load vehicles for every purchase row in one query, keyed by purchase_id
+            $purchaseIds = $ledgerEntries
+                ->where('sort_order', 1)
+                ->pluck('purchase_id')
+                ->filter()
+                ->unique()
+                ->values();
+
+            $purchasesWithVehicles = Purchase::with(['purchaseVehicles', 'product'])
+                ->whereIn('id', $purchaseIds)
+                ->get()
+                ->keyBy('id');
+
+            // 4. Attach vehicles + rate onto each purchase ledger entry
+            $ledgerEntries = $ledgerEntries->map(function ($entry) use ($purchasesWithVehicles) {
+                if ($entry->sort_order == 1 && $entry->purchase_id && $purchasesWithVehicles->has($entry->purchase_id)) {
+                    $purchase = $purchasesWithVehicles->get($entry->purchase_id);
+                    $entry->rate = $purchase->rate;
+                    $entry->vehicles = $purchase->purchaseVehicles;
+                    $entry->product_name = $purchase->product->name ?? null;
+                } else {
+                    $entry->rate = null;
+                    $entry->vehicles = collect();
+                    $entry->product_name = null;
+                }
+                return $entry;
+            });
+
             if ($request->filled('export') && $request->input('export') === 'pdf') {
                 $pdf = Pdf::loadView('ledger.supplierExportPdf', compact('supplier', 'ledgerEntries', 'openingBalance', 'fromDate', 'toDate'));
-
                 return $pdf->download('suppliersLedger.pdf');
             }
 

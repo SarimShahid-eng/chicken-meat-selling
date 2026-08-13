@@ -5,40 +5,6 @@
     <meta charset="UTF-8">
     <title>Supplier Account Ledger Statement</title>
     <style>
-        .summary-container {
-            width: 100%;
-            margin-top: 15px;
-            page-break-inside: avoid;
-        }
-
-        .summary-card-table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: #f8fafc;
-            border: 2px solid #1e293b;
-            border-radius: 4px;
-        }
-
-        .summary-card-table td {
-            padding: 12px 15px;
-            vertical-align: middle;
-            border: none;
-        }
-
-        .summary-label {
-            font-size: 10pt;
-            font-weight: 700;
-            color: #0f172a;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .summary-value {
-            font-size: 10pt;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
         /* Vehicle sub-table styling */
         .vehicle-subrow td {
             padding: 0 10px 10px 10px;
@@ -293,20 +259,11 @@
                     <td class="text-right font-bold">Rs. {{ number_format($openingBalance, 2) }}</td>
                 </tr>
 
-                @php
-                $running = $openingBalance;
-                    $debitSum = 0;
-                    $creditSum = 0;
-                @endphp
+                @php $running = $openingBalance; @endphp
 
                 @forelse($ledgerEntries as $entry)
                     @php
-                        $debitVal = $entry->debit ?? 0;
-                        $creditVal = $entry->credit ?? 0;
-
-                        $debitSum += $debitVal;
-                        $creditSum += $creditVal;
-                        $running += $creditVal - $debitVal;
+                        $running += ($entry->credit ?? 0) - ($entry->debit ?? 0);
                         $hasVehicles =
                             $entry->sort_order == 1 && isset($entry->vehicles) && count($entry->vehicles) > 0;
                     @endphp
@@ -343,20 +300,29 @@
                                     <thead>
                                         <tr>
                                             <th style="width: 22%;">Vehicle</th>
+                                            <th style="width: 13%; text-align: right;">Crates</th>
+                                            <th style="width: 15%; text-align: right;">Weight</th>
+                                            <th style="width: 13%; text-align: right;">Cut</th>
                                             <th style="width: 15%; text-align: right;">Net Weight</th>
-                                            <th style="width: 15%; text-align: right;">Rate</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach ($entry->vehicles as $vehicle)
                                             @php $vehicleAmount = $vehicle->netweight * ($entry->rate ?? 0); @endphp
                                             <tr>
-                                                <td class="font-medium text-center">{{ $vehicle->name }}</td>
-
+                                                <td class="font-medium">{{ $vehicle->name }}</td>
+                                                <td class="text-right">{{ $vehicle->crate_qty }}</td>
+                                                <td class="text-right">{{ number_format($vehicle->total_weight, 2) }}
+                                                </td>
+                                                <td class="text-right text-debit">
+                                                    {{ number_format($vehicle->weight_cut, 2) }}</td>
                                                 <td class="text-right font-semibold">
                                                     {{ number_format($vehicle->netweight, 2) }}</td>
-                                                <td class="text-right">
+                                                /* <td class="text-right">
                                                     {{ $entry->rate ? number_format($entry->rate, 2) : '—' }}</td>
+                                                <td class="text-right font-semibold">
+                                                    {{ $entry->rate ? 'Rs. ' . number_format($vehicleAmount, 2) : '—' }}
+                                                </td> */
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -375,30 +341,6 @@
                     </tr>
                 @endforelse
             </tbody>
-        </table>
-    </div>
-    <div class="summary-container">
-        <table class="summary-card-table">
-            <tr>
-                <td style="width: 25%;" class="summary-label">
-                    Statement Summary
-                </td>
-                <td style="width: 25%; text-align: right;">
-                    <span style="font-size: 7.5pt; color: #64748b; display: block; text-transform: uppercase;">Total
-                        Paid (Debit)</span>
-                    <span class="summary-value text-debit">Rs. {{ number_format($debitSum, 2) }}</span>
-                </td>
-                <td style="width: 25%; text-align: right;">
-                    <span style="font-size: 7.5pt; color: #64748b; display: block; text-transform: uppercase;">Total
-                        Purchases (Credit)</span>
-                    <span class="summary-value text-credit">Rs. {{ number_format($creditSum, 2) }}</span>
-                </td>
-                <td style="width: 25%; text-align: right;">
-                    <span style="font-size: 7.5pt; color: #64748b; display: block; text-transform: uppercase;">Closing
-                        Balance</span>
-                    <span class="summary-value" style="color: #0f172a;">Rs. {{ number_format($running, 2) }}</span>
-                </td>
-            </tr>
         </table>
     </div>
 

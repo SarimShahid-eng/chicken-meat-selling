@@ -92,24 +92,58 @@
                             <!-- Opening Balance Row Entry -->
                             <tr class="bg-amber-50/40 font-medium text-amber-900">
                                 <td class="px-6 py-3.5">{{ date('d-M-Y', strtotime($fromDate)) }}</td>
-                                <td class="px-6 py-3.5 italic">Opening Balance Carriage</td>
+                                <td class="px-6 py-3.5 italic">Weight</td>
                                 <td class="px-6 py-3.5 text-right">-</td>
                                 <td class="px-6 py-3.5 text-right">-</td>
                                 <td class="px-6 py-3.5 text-right font-bold">Rs. {{ number_format($openingBalance, 2) }}
                                 </td>
                             </tr>
 
-                            @php $running = $openingBalance; @endphp
+                            @php
+                                $running = $openingBalance;
+                                $debitSum = 0;
+                                $creditSum = 0;
+                            @endphp
 
                             @forelse($ledgerEntries as $entry)
                                 @php
-                                    // Supplier running calculation formula adjustments
-                                    $running += ($entry->credit ?? 0) - ($entry->debit ?? 0);
+                                    $debitVal = $entry->debit ?? 0;
+                                    $creditVal = $entry->credit ?? 0;
+
+                                    $debitSum += $debitVal;
+                                    $creditSum += $creditVal;
+                                    $running += $creditVal - $debitVal;
+                                    $hasVehicles =
+                                        $entry->sort_order == 1 &&
+                                        isset($entry->vehicles) &&
+                                        count($entry->vehicles) > 0;
+                                    $rowId = 'veh-' . $entry->purchase_id . '-' . $loop->index;
                                 @endphp
-                                <tr class="hover:bg-gray-50/70 transition-colors">
-                                    <td class="px-6 py-3.5 text-gray-500">{{ date('d-M-Y', strtotime($entry->date)) }}</td>
+                                <tr class="hover:bg-gray-50/70 transition-colors {{ $hasVehicles ? 'cursor-pointer' : '' }}"
+                                    @if ($hasVehicles) onclick="toggleVehicleRow('{{ $rowId }}', this)" @endif>
+                                    <td class="px-6 py-3.5 text-gray-500">
+                                        @if ($hasVehicles)
+                                            <i class="fa-solid fa-chevron-right text-xs text-amber-500 mr-2 transition-transform"
+                                                id="chevron-{{ $rowId }}"></i>
+                                        @endif
+                                        {{ date('d-M-Y', strtotime($entry->date)) }}
+                                    </td>
                                     <td class="px-6 py-3.5 font-medium">
                                         {{ $entry->description }}
+                                        @if ($entry->product_name)
+                                            <span class="text-xs text-gray-500 block">
+                                                <i class="fa-solid fa-drumstick-bite text-amber-500"></i>
+                                                {{ $entry->product_name }}
+                                            </span>
+                                        @endif
+                                        @if ($entry->rate)
+                                            <span class="text-xs text-gray-500 block">
+                                                Rate:
+                                                {{ $entry->rate }}
+                                            </span>
+                                        @else
+                                            <!--<span>rate not </span>-->
+                                        @endif
                                         <span class="text-xs text-gray-400 block">Ref ID:
                                             #{{ $entry->reference_id }}</span>
                                     </td>
@@ -123,6 +157,44 @@
                                         Rs. {{ number_format($running, 2) }}
                                     </td>
                                 </tr>
+
+                                @if ($hasVehicles)
+                                    <tr id="{{ $rowId }}" class="hidden bg-gray-50/50">
+                                        <td colspan="5" class="px-6 py-3">
+                                            <div class="ml-6 rounded-lg border border-gray-200 overflow-hidden">
+                                                <table class="w-full text-xs">
+                                                    <thead class="bg-gray-100 text-gray-500 uppercase tracking-wide">
+                                                        <tr>
+                                                            <th class="px-4 py-2 text-left">Vehicle</th>
+                                                            <th class="px-4 py-2 text-right">Crates</th>
+                                                            <th class="px-4 py-2 text-right">Weight</th>
+                                                            <th class="px-4 py-2 text-right">Cut</th>
+                                                            <th class="px-4 py-2 text-right">Net Weight</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="divide-y divide-gray-100">
+                                                        @foreach ($entry->vehicles as $vehicle)
+                                                            @php $vehicleAmount = $vehicle->netweight * ($entry->rate ?? 0); @endphp
+                                                            <tr>
+                                                                <td class="px-4 py-2 font-medium text-gray-700">
+                                                                    {{ $vehicle->name }}</td>
+                                                                <td class="px-4 py-2 text-right">{{ $vehicle->crate_qty }}
+                                                                </td>
+                                                                <td class="px-4 py-2 text-right">
+                                                                    {{ number_format($vehicle->total_weight, 2) }}</td>
+                                                                <td class="px-4 py-2 text-right text-red-500">
+                                                                    {{ number_format($vehicle->weight_cut, 2) }}</td>
+                                                                <td
+                                                                    class="px-4 py-2 text-right font-semibold text-amber-700">
+                                                                    {{ number_format($vehicle->netweight, 2) }}</td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endif
                             @empty
                                 <tr>
                                     <td colspan="5" class="px-6 py-10 text-center text-gray-400">
@@ -135,13 +207,61 @@
                     </table>
                 </div>
             </div>
+            <!-- Exact Statement Summary Card Component -->
+            <div class="bg-white rounded-b-xl border-t border-gray-100 p-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
+
+                    <!-- Label Section -->
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-lg">
+                            <i class="fa-solid fa-calculator"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Statement
+                                Summary</span>
+                            <span class="text-sm font-bold text-gray-800">Supplier Overview</span>
+                        </div>
+                    </div>
+
+                    <!-- Total Debit Sum -->
+                    <div class="bg-gray-50/80 rounded-lg p-3 border border-gray-100 text-right">
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide block">Total Sales
+                            (Debit)</span>
+                        <span class="text-base font-bold text-red-600">Rs. {{ number_format($debitSum, 2) }}</span>
+                    </div>
+
+                    <!-- Total Credit Sum -->
+                    <div class="bg-gray-50/80 rounded-lg p-3 border border-gray-100 text-right">
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide block">Total Paid
+                            (Credit)</span>
+                        <span class="text-base font-bold text-green-600">Rs. {{ number_format($creditSum, 2) }}</span>
+                    </div>
+
+                    <!-- Closing Balance -->
+                    <div class="bg-slate-900 rounded-lg p-3 text-right">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide block">Closing
+                            Balance</span>
+                        <span class="text-base font-bold text-gray-500">Rs. {{ number_format($running, 2) }}</span>
+                    </div>
+
+                </div>
+            </div>
         @endif
     </div>
+
     @push('scripts')
         <script>
             $(document).ready(function() {
                 $('#supplier_id').select2()
             })
+
+            function toggleVehicleRow(rowId, triggerEl) {
+                const row = document.getElementById(rowId);
+                const chevron = document.getElementById('chevron-' + rowId);
+                row.classList.toggle('hidden');
+                if (chevron) chevron.classList.toggle('rotate-90');
+            }
 
             function submitInvoiceRoute() {
                 const supplierId = $('#supplier_id').val();
