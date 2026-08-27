@@ -23,7 +23,7 @@ class PurchaseController extends Controller
         $baseQuery = Purchase::query()
             ->with(['supplier', 'supplier.region', 'product'])
             ->when($request->filled('search'), function ($q) use ($request) {
-                $searchTerm = '%'.$request->input('search').'%';
+                $searchTerm = '%' . $request->input('search') . '%';
 
                 $q->where(function ($query) use ($searchTerm) {
                     $query->where('voucher_no', 'LIKE', $searchTerm)
@@ -135,11 +135,17 @@ class PurchaseController extends Controller
      */
     public function store(PurchaseStoreRequest $request)
     {
+        DB::table('supplier_payments')
+    ->whereNotNull('purchase_id')
+    ->whereNull('payment_type')
+    ->count();
         $validated = $request->validated();
+        // dd($validated);
         $isRatePresent = filled($validated['rate']) ? true : false;
         if (is_null($validated['paid_amount'])) {
             $validated['paid_amount'] = 0;
         }
+        // dd($validated);
         if ($isRatePresent) {
             $validated['rate_date'] = $validated['date'];
         }
@@ -147,7 +153,8 @@ class PurchaseController extends Controller
             DB::transaction(function () use ($validated, $isRatePresent) {
                 $purchase = Purchase::updateOrCreate(
                     ['id' => $validated['update_id']],
-                    $validated);
+                    $validated
+                );
                 SupplierPayment::updateOrCreate(
                     ['purchase_id' => $purchase->id], // This links it to the specific purchase
                     [
@@ -156,6 +163,7 @@ class PurchaseController extends Controller
                         'amount' => $validated['paid_amount'],
                         'date' => $validated['date'],
                         'type' => 'cash',
+                        'payment_type' => 'debit',
                     ]
                 );
                 $purchase->purchaseVehicles()->delete();
@@ -165,7 +173,7 @@ class PurchaseController extends Controller
 
             return redirect()
                 ->route('purchases.index')
-                ->with('toast_success', 'Purchase has been '.$message.' successfully!');
+                ->with('toast_success', 'Purchase has been ' . $message . ' successfully!');
         } catch (Exception $e) {
             dd($e->getMessage());
 
@@ -212,6 +220,5 @@ class PurchaseController extends Controller
         return redirect()
             ->route('purchases.index')
             ->with('toast_success', 'Purchase rate has been updated successfully!');
-
     }
 }

@@ -245,7 +245,7 @@
 
                 <!-- Exact Statement Summary Card Component -->
                 <div class="bg-white rounded-b-xl border-t border-gray-100 p-5">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-center">
 
                         <!-- Label Section -->
                         <div class="flex items-center gap-3">
@@ -274,12 +274,21 @@
                             <span class="text-base font-bold text-green-600">Rs. {{ number_format($creditSum, 2) }}</span>
                         </div>
 
+                        <div class="bg-gray-50/80 rounded-lg p-3 border border-gray-100 text-right">
+                            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide block">Monthly Net
+                                Change</span>
+                            <span class="text-base font-bold text-slate-700">Rs.
+                                {{ number_format($debitSum - $creditSum, 2) }}</span>
+                        </div>
+
                         <!-- Closing Balance -->
                         <div class="bg-slate-900 rounded-lg p-3 text-right">
-                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide block">Closing
+                            <span class="text-xs font-semibold text-amber-400 uppercase tracking-wide block">Closing
                                 Balance</span>
-                            <span class="text-base font-bold text-gray-500">Rs. {{ number_format($running, 2) }}</span>
+                            <span class="text-base font-bold text-white">Rs. {{ number_format($running, 2) }}</span>
                         </div>
+
+
 
                     </div>
                 </div>

@@ -39,46 +39,19 @@
             white-space: nowrap;
         }
 
-        /* Vehicle sub-table styling */
-        .vehicle-subrow td {
-            padding: 0 10px 10px 10px;
-            border-bottom: 1px solid #e5e7eb;
-            background-color: #fafafa;
-        }
-
-        .vehicle-table {
-            width: 100%;
-            margin-left: 18px;
-            width: calc(100% - 18px);
-            border: 1px solid #e5e7eb;
-            border-radius: 4px;
-        }
-
-        .vehicle-table th {
-            background-color: #f1f5f9;
-            padding: 6px 8px;
-            font-size: 7.5pt;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .vehicle-table td {
-            padding: 6px 8px;
-            font-size: 8pt;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        .vehicle-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .vehicle-label {
-            font-size: 7.5pt;
+        /* Inline vehicle number badge (used directly in the main ledger rows) */
+        .veh-no {
+            display: inline-block;
+            width: 13px;
+            height: 13px;
+            line-height: 13px;
+            font-size: 6.5pt;
             font-weight: 700;
-            color: #92400e;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin: 6px 0 4px 18px;
-            display: block;
+            text-align: center;
+            color: #ffffff;
+            background-color: #d97706;
+            border-radius: 50%;
+            margin-right: 3px;
         }
 
         /* PDF Document Layout Configuration */
@@ -294,7 +267,7 @@
                 </tr>
 
                 @php
-                $running = $openingBalance;
+                    $running = $openingBalance;
                     $debitSum = 0;
                     $creditSum = 0;
                 @endphp
@@ -310,57 +283,71 @@
                         $hasVehicles =
                             $entry->sort_order == 1 && isset($entry->vehicles) && count($entry->vehicles) > 0;
                     @endphp
-                    <tr>
-                        <td style="color: #6b7280;">
-                            {{ date('d-M-Y', strtotime($entry->date)) }}
-                        </td>
-                        <td class="font-medium" style="color: #111827;">
-                            {{ $entry->description }}
-                            @if ($entry->product_name)
-                                <span class="product-text">{{ $entry->product_name }}</span>
-                            @endif
-                            @if ($entry->rate)
-                                <span class="product-text">Rate: {{ $entry->rate }}</span>
-                            @endif
-                            <span class="sub-text">Ref ID: #{{ $entry->reference_id }}</span>
-                        </td>
-                        <td class="text-right text-debit">
-                            {{ $entry->debit ? 'Rs. ' . number_format($entry->debit, 2) : '—' }}
-                        </td>
-                        <td class="text-right text-credit">
-                            {{ $entry->credit ? 'Rs. ' . number_format($entry->credit, 2) : '—' }}
-                        </td>
-                        <td class="text-right font-semibold" style="color: #111827;">
-                            Rs. {{ number_format($running, 2) }}
-                        </td>
-
-                    </tr>
                     @if ($hasVehicles)
-                        <tr class="vehicle-subrow">
-                            <td colspan="5">
-                                <span class="vehicle-label">Vehicle Breakdown</span>
-                                <table class="vehicle-table">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 22%;">Vehicle</th>
-                                            <th style="width: 15%; text-align: right;">Net Weight</th>
-                                            <th style="width: 15%; text-align: right;">Rate</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($entry->vehicles as $vehicle)
-                                            @php $vehicleAmount = $vehicle->netweight * ($entry->rate ?? 0); @endphp
-                                            <tr>
-                                                <td class="font-medium text-center">{{ $vehicle->name }}</td>
-
-                                                <td class="text-right font-semibold">
-                                                    {{ number_format($vehicle->netweight, 2) }}</td>
-                                                <td class="text-right">
-                                                    {{ $entry->rate ? number_format($entry->rate, 2) : '—' }}</td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
+                        @php $vehicleCount = count($entry->vehicles); @endphp
+                        @foreach ($entry->vehicles as $vehicle)
+                            @php
+                                $vehicleAmount = $vehicle->netweight * ($entry->rate ?? 0);
+                                $vehicleDebit = $vehicle->debit ?? 0;
+                                $vehicleCredit = $vehicle->credit ?? $vehicleAmount;
+                            @endphp
+                            <tr>
+                                @if ($loop->first)
+                                    <td rowspan="{{ $vehicleCount }}" style="color: #6b7280; vertical-align: middle;">
+                                        {{ date('d-M-Y', strtotime($entry->date)) }}
+                                    </td>
+                                @endif
+                                <td class="font-medium" style="color: #111827;">
+                                    <span class="veh-no">{{ $loop->iteration }}</span>
+                                    {{ $vehicle->name }}
+                                    (<span class="font-medium">Product:
+                                        {{ $entry->product_name }}
+                                    </span>)
+                                    <span class="product-text">
+                                        {{ number_format($vehicle->netweight, 2) }} Kg
+                                        @if ($entry->rate)
+                                            &nbsp;@&nbsp;Rs. {{ number_format($entry->rate, 2) }}
+                                        @endif
+                                    </span>
+                                </td>
+                                <td class="text-right text-debit">
+                                    {{ $vehicleDebit ? 'Rs. ' . number_format($vehicleDebit, 2) : '—' }}
+                                </td>
+                                <td class="text-right text-credit">
+                                    {{ $vehicleCredit ? 'Rs. ' . number_format($vehicleCredit, 2) : '—' }}
+                                </td>
+                                @if ($loop->last)
+                                    <td class="text-right font-semibold" style="color: #111827;">
+                                        Rs. {{ number_format($running, 2) }}
+                                    </td>
+                                @else
+                                    <td class="text-right" style="color: #d1d5db;">—</td>
+                                @endif
+                            </tr>
+                        @endforeach
+                    @else
+                        <tr>
+                            <td style="color: #6b7280;">
+                                {{ date('d-M-Y', strtotime($entry->date)) }}
+                            </td>
+                            <td class="font-medium" style="color: #111827;">
+                                {{ $entry->description }}
+                                @if (@$entry->product_name)
+                                    <span class="product-text">{{ $entry->product_name }}</span>
+                                @endif
+                                @if ($entry->rate)
+                                    <span class="product-text">Rate: {{ $entry->rate }}</span>
+                                @endif
+                                <span class="sub-text">Ref ID: #{{ $entry->reference_id }}</span>
+                            </td>
+                            <td class="text-right text-debit">
+                                {{ $entry->debit ? 'Rs. ' . number_format($entry->debit, 2) : '—' }}
+                            </td>
+                            <td class="text-right text-credit">
+                                {{ $entry->credit ? 'Rs. ' . number_format($entry->credit, 2) : '—' }}
+                            </td>
+                            <td class="text-right font-semibold" style="color: #111827;">
+                                Rs. {{ number_format($running, 2) }}
                             </td>
                         </tr>
                     @endif
@@ -380,22 +367,26 @@
     <div class="summary-container">
         <table class="summary-card-table">
             <tr>
-                <td style="width: 25%;" class="summary-label">
+                <td style="width: 20%;" class="summary-label">
                     Statement Summary
                 </td>
-                <td style="width: 25%; text-align: right;">
+                <td style="width: 20%; text-align: right;">
                     <span style="font-size: 7.5pt; color: #64748b; display: block; text-transform: uppercase;">Total
                         Paid (Debit)</span>
                     <span class="summary-value text-debit">Rs. {{ number_format($debitSum, 2) }}</span>
                 </td>
-                <td style="width: 25%; text-align: right;">
+                <td style="width: 20%; text-align: right;">
                     <span style="font-size: 7.5pt; color: #64748b; display: block; text-transform: uppercase;">Total
                         Purchases (Credit)</span>
                     <span class="summary-value text-credit">Rs. {{ number_format($creditSum, 2) }}</span>
                 </td>
-                <td style="width: 25%; text-align: right;">
-                    <span style="font-size: 7.5pt; color: #64748b; display: block; text-transform: uppercase;">Closing
-                        Balance</span>
+                <td style="width: 20%; text-align: right;">
+                    <span style="font-size: 7.5pt; color: #64748b; display: block; text-transform: uppercase;">Monthly
+                        Net Change</span>
+                    <span class="summary-value" style="color: #0f172a;">Rs. {{ number_format($creditSum - $debitSum, 2) }}</span>
+                </td>
+                <td style="width: 20%; text-align: right;">
+                    <span style="font-size: 7.5pt; color: #64748b; display: block; text-transform: uppercase;">Closing Balance</span>
                     <span class="summary-value" style="color: #0f172a;">Rs. {{ number_format($running, 2) }}</span>
                 </td>
             </tr>

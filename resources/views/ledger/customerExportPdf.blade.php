@@ -452,20 +452,25 @@
     <div class="summary-container">
         <table class="summary-card-table">
             <tr>
-                <td style="width: 25%;" class="summary-label">
+                <td style="width: 20%;" class="summary-label">
                     Statement Summary
                 </td>
-                <td style="width: 25%; text-align: right;">
+                <td style="width: 20%; text-align: right;">
                     <span style="font-size: 7.5pt; color: #64748b; display: block; text-transform: uppercase;">Total
                         Paid (Debit)</span>
                     <span class="summary-value text-debit">Rs. {{ number_format($debitSum, 2) }}</span>
                 </td>
-                <td style="width: 25%; text-align: right;">
+                <td style="width: 20%; text-align: right;">
                     <span style="font-size: 7.5pt; color: #64748b; display: block; text-transform: uppercase;">Total
                         Purchases (Credit)</span>
                     <span class="summary-value text-credit">Rs. {{ number_format($creditSum, 2) }}</span>
                 </td>
-                <td style="width: 25%; text-align: right;">
+                 <td style="width: 20%; text-align: right;">
+                    <span style="font-size: 7.5pt; color: #64748b; display: block; text-transform: uppercase;">Monthly
+                        Net Change</span>
+                    <span class="summary-value" style="color: #0f172a;">Rs. {{ number_format($debitSum - $creditSum, 2) }}</span>
+                </td>
+                <td style="width: 20%; text-align: right;">
                     <span style="font-size: 7.5pt; color: #64748b; display: block; text-transform: uppercase;">Closing
                         Balance</span>
                     <span class="summary-value" style="color: #0f172a;">Rs. {{ number_format($running, 2) }}</span>

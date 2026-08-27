@@ -23,7 +23,7 @@ class SaleController extends Controller
         $baseQuery = Sale::query()
             ->with(['customer', 'customer.region', 'product'])
             ->when($request->filled('search'), function ($q) use ($request) {
-                $searchTerm = '%'.$request->input('search').'%';
+                $searchTerm = '%' . $request->input('search') . '%';
 
                 $q->where(function ($query) use ($searchTerm) {
                     $query->where('voucher_no', 'LIKE', $searchTerm)
@@ -78,7 +78,8 @@ class SaleController extends Controller
             return $pdf->download('sales.pdf');
         }
         $products = Product::all(['id', 'name']);
-        $customers = Customer::with('region')->get();
+        $customers = Customer::with('region')->where('category', 'customer')->get();
+
 
         return view('sales.index', compact('sales', 'products', 'customers'));
     }
@@ -90,7 +91,7 @@ class SaleController extends Controller
     {
         $voucher_no = Sale::max('voucher_no') + 1;
         $products = Product::all();
-        $customers = Customer::with('region')->get();
+        $customers = Customer::with('region')->where('category', 'customer')->get();
 
         return view('sales.create', compact('products', 'customers', 'voucher_no'));
         //
@@ -100,7 +101,7 @@ class SaleController extends Controller
     {
         $sale->load(['product', 'customer.region', 'customerPayment']);
         $receivedAmount = $sale->customerPayment->amount;
-        $saleAmount=$sale->total_amount;
+        $saleAmount = $sale->total_amount;
         $totalAmount = $saleAmount - $receivedAmount;
         $data = [
             'product' => [
@@ -137,10 +138,11 @@ class SaleController extends Controller
             $validated['amount_received'] = 0;
         }
         try {
-            DB::transaction(function () use ($validated) {
+            $sale =  DB::transaction(function () use ($validated) {
                 $sale = Sale::updateOrCreate(
                     ['id' => $validated['update_id']],
-                    $validated);
+                    $validated
+                );
 
                 CustomerPayment::updateOrCreate([
                     'sale_id' => $sale->id,
@@ -154,12 +156,20 @@ class SaleController extends Controller
                     'payment_type' => 'debit',
                     'type' => 'cash',
                 ]);
+                return $sale;
             });
             $message = filled($validated['update_id']) ? 'updated' : 'created';
+            // $sale;
+            return redirect()
+                ->route('sales.create')
+                ->with('sales_successful', 'Sale Added Successfully!')
+                ->with('sale_id', $sale->id);
 
             return redirect()
-                ->route('sales.index')
-                ->with('toast_success', 'Sale has been '.$message.' successfully!');
+                ->route('sales.create', $sale);
+            // -
+            // ->route('sales.index')
+            // ->with('toast_success', 'Sale has been '.$message.' successfully!');
         } catch (Exception $e) {
             return redirect()
                 ->route('sales.index')
@@ -175,7 +185,7 @@ class SaleController extends Controller
     public function edit(Sale $sale)
     {
         $products = Product::all(['id', 'name']);
-        $customers = Customer::with('region')->get();
+        $customers = Customer::with('region')->where('category', 'customer')->get();
 
         return view('sales.create', compact('sale', 'products', 'customers'));
     }
@@ -198,6 +208,11 @@ class SaleController extends Controller
         return redirect()
             ->route('sales.index')
             ->with('toast_success', 'Sale rate has been updated successfully!');
-
+    }
+    public function receipt(Sale $sale)
+    {
+        $customer = Customer::findOrFail($sale->customer_id);
+        $previousBalance = $customer->getPreviousBalanceBeforeSale($sale);
+        return view('sales.receipt', compact('sale', 'previousBalance'));
     }
 }

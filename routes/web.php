@@ -15,6 +15,7 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\SupplierLedgerController;
 use App\Http\Controllers\SupplierLedgerRegionWiseController;
 use App\Http\Controllers\SupplierPaymentController;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -26,6 +27,11 @@ Route::get('/', function () {
 //     return view('login');
 // });
 Route::middleware('auth')->group(function () {
+    Route::get('/optimize', function () {
+        Artisan::call('optimize');
+
+        return 'Application optimized successfully! (Config, routes, and views cached)';
+    });
     Route::controller(DashboardController::class)->group(function () {
         Route::get('dashboard', 'dashboard')->name('dashboard');
     });
@@ -96,6 +102,7 @@ Route::middleware('auth')->group(function () {
             Route::post('store', 'store')->name('store');
             Route::get('edit/{sale}', 'edit')->name('edit');
             Route::get('show/{sale}', 'show')->name('show');
+            Route::get('receipt/{sale}', 'receipt')->name('receipt');
         });
     Route::controller(HotelSaleController::class)->name('hotel_sales.')
         ->prefix('hotel_sales')

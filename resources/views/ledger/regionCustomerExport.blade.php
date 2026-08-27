@@ -354,25 +354,31 @@
     <div class="summary-box">
         <table class="summary-table">
             <tr>
-                <td style="width: 25%; padding: 0; border: none;">
+                <td style="width: 20%; padding: 0; border: none;">
                     <div class="summary-card card-gray" style="text-align: left;">
                         <span class="summary-label" style="color: #94a3b8;">Statement Summary</span>
                         <span class="summary-value" style="color: #1e293b; font-size: 9pt;">Regional Ledger</span>
                     </div>
                 </td>
-                <td style="width: 25%; padding: 0; border: none;">
+                <td style="width: 20%; padding: 0; border: none;">
                     <div class="summary-card card-gray">
                         <span class="summary-label" style="color: #64748b;">Total Sales (Debit)</span>
                         <span class="summary-value text-debit">Rs. {{ number_format($debitSum, 2) }}</span>
                     </div>
                 </td>
-                <td style="width: 25%; padding: 0; border: none;">
+                <td style="width: 20%; padding: 0; border: none;">
                     <div class="summary-card card-gray">
                         <span class="summary-label" style="color: #64748b;">Total Paid (Credit)</span>
                         <span class="summary-value text-credit">Rs. {{ number_format($creditSum, 2) }}</span>
                     </div>
                 </td>
-                <td style="width: 25%; padding: 0; border: none;">
+                <td style="width: 20%; text-align: right;">
+                    <span style="font-size: 7.5pt; color: #64748b; display: block; text-transform: uppercase;">
+                        Net Change</span>
+                    <span class="summary-value" style="color: #0f172a;">Rs.
+                        {{ number_format($debitSum - $creditSum, 2) }}</span>
+                </td>
+                <td style="width: 20%; padding: 0; border: none;">
                     <div class="summary-card card-dark">
                         <span class="summary-label" style="color: #121314;">Closing Balance</span>
                         <span class="summary-value" style="color: #181515;">Rs. {{ number_format($running, 2) }}</span>
