@@ -157,6 +157,7 @@
                                             <i class="fas fa-edit text-base"></i>
                                         </a>
                                         <a href="{{ route('hotel_sales.receipt', ['hotel_sale' => $sale->id]) }}"
+                                            target="_blank"
                                             class="cursor-pointer text-gray-400 hover:text-blue-600 transition-colors"
                                             title="Receipt">
                                             <i class="fa-solid fa-money-bill-1-wave text-base"></i>
