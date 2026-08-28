@@ -10,6 +10,7 @@
                 <p class="text-sm text-gray-500 mt-1">Track comprehensive purchase histories, cash payables, and outstanding
                     party ledger balances.</p>
             </div>
+
         </div>
         <!-- Filter Configuration Control Card -->
         <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6">

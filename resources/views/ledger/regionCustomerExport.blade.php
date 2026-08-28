@@ -11,10 +11,7 @@
             margin: 15mm 10mm;
 
             @bottom-right {
-                content: "Page " counter(page) " of " counter(pages);
-                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-                font-size: 8pt;
-                color: #718096;
+                content: "Page " counter(page);
             }
 
             @bottom-left {
@@ -23,6 +20,10 @@
                 font-size: 8pt;
                 color: #718096;
             }
+        }
+
+        .row-alt {
+            background-color: #f9fafb;
         }
 
         *,
@@ -99,9 +100,6 @@
             border-bottom: 2px solid #e5e7eb;
         }
 
-        tr {
-            page-break-inside: avoid;
-        }
 
         /* Highlight wrapper for the custom opening row balance */
         .opening-balance-row {
@@ -111,9 +109,6 @@
             color: #78350f;
         }
 
-        tbody tr:nth-child(even):not(.opening-balance-row) {
-            background-color: #f9fafb;
-        }
 
         td {
             padding: 8px 6px;
@@ -125,22 +120,16 @@
 
         /* Inline Badges Optimized for Dompdf */
         .badge {
-            display: inline-block;
-            padding: 2px 6px;
             font-size: 7.5pt;
             font-weight: 600;
-            border-radius: 4px;
-            text-transform: uppercase;
             margin-right: 4px;
         }
 
         .badge-sale {
-            background-color: #dbeafe;
             color: #1e40af;
         }
 
         .badge-hotel {
-            background-color: #f3e8ff;
             color: #6b21a8;
         }
 
@@ -277,7 +266,7 @@
                     $creditSum = 0;
                 @endphp
 
-                @forelse($ledgerEntries as $entry)
+                @forelse($ledgerEntries as $index=> $entry)
                     @php
                         $debitVal = $entry->debit ?? 0;
                         $creditVal = $entry->credit ?? 0;
@@ -288,9 +277,9 @@
                         // Customer Accounting: Debits (Sales) increase balance, Credits (Payments) decrease it.
                         $running += $debitVal - $creditVal;
                     @endphp
-                    <tr>
+                    <tr class="{{ $index % 2 === 1 ? 'row-alt' : '' }}">
                         <td style="color: #6b7280;">
-                            {{ date('d-M-Y', strtotime($entry->date)) }}
+                            {{ $entry->date_formatted }}
                         </td>
                         <td class="font-semibold" style="color: #1f2937;">
                             {{ $entry->customer_name }}

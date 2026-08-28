@@ -136,9 +136,9 @@ class PurchaseController extends Controller
     public function store(PurchaseStoreRequest $request)
     {
         DB::table('supplier_payments')
-    ->whereNotNull('purchase_id')
-    ->whereNull('payment_type')
-    ->count();
+            ->whereNotNull('purchase_id')
+            ->whereNull('payment_type')
+            ->count();
         $validated = $request->validated();
         // dd($validated);
         $isRatePresent = filled($validated['rate']) ? true : false;
@@ -150,7 +150,7 @@ class PurchaseController extends Controller
             $validated['rate_date'] = $validated['date'];
         }
         try {
-            DB::transaction(function () use ($validated, $isRatePresent) {
+            $purchase = DB::transaction(function () use ($validated, $isRatePresent) {
                 $purchase = Purchase::updateOrCreate(
                     ['id' => $validated['update_id']],
                     $validated
@@ -168,12 +168,17 @@ class PurchaseController extends Controller
                 );
                 $purchase->purchaseVehicles()->delete();
                 $purchase->purchaseVehicles()->createMany($validated['vehicles']);
+                return $purchase;
             });
             $message = filled($validated['update_id']) ? 'updated' : 'created';
-
             return redirect()
-                ->route('purchases.index')
-                ->with('toast_success', 'Purchase has been ' . $message . ' successfully!');
+                ->route('purchases.create')
+                ->with('purchases_successful', 'Purchase Added Successfully!')
+                ->with('purchase_id', $purchase->id);
+
+            // return redirect()
+            //     ->route('purchases.index')
+            //     ->with('toast_success', 'Purchase has been ' . $message . ' successfully!');
         } catch (Exception $e) {
             dd($e->getMessage());
 
@@ -220,5 +225,12 @@ class PurchaseController extends Controller
         return redirect()
             ->route('purchases.index')
             ->with('toast_success', 'Purchase rate has been updated successfully!');
+    }
+    public function receipt(Purchase $purchase)
+    {
+        $purchase->load(['purchaseVehicles', 'supplierPayment', 'product']);
+        $supplier = Supplier::findOrFail($purchase->supplier_id);
+        $previousBalance = $supplier->getPreviousBalanceBeforePurchase($purchase);
+        return view('purchases.receipt', compact('previousBalance', 'purchase'));
     }
 }

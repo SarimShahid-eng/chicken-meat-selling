@@ -92,6 +92,7 @@ Route::middleware('auth')->group(function () {
             Route::get('edit/{purchase}', 'edit')->name('edit');
             Route::get('show/{purchase}', 'show')->name('show');
             Route::post('update-rate/{purchase}', 'update_rate')->name('update_rate');
+            Route::get('receipt/{purchase}', 'receipt')->name('receipt');
         });
     // Sale
     Route::controller(SaleController::class)->name('sales.')
@@ -112,6 +113,7 @@ Route::middleware('auth')->group(function () {
             Route::post('store', 'store')->name('store');
             Route::get('edit/{hotel_sale}', 'edit')->name('edit');
             Route::get('show/{hotel_sale}', 'show')->name('show');
+            Route::get('receipt/{hotel_sale}', 'receipt')->name('receipt');
         });
     Route::prefix('ledger')->name('ledger.')->group(function () {
         Route::controller(CustomerLedgerController::class)->group(function () {

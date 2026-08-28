@@ -107,7 +107,6 @@
                             <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Items Count</th>
                             <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Total Amount</th>
                             <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Amount Received</th>
-                            {{-- <th scope="col" class="px-6 py-4 font-semibold text-gray-700">Balance</th> --}}
                             <th scope="col" class="px-6 py-4 font-semibold text-gray-700 text-right">Actions</th>
                         </tr>
                     </thead>

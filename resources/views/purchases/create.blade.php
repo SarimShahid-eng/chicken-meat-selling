@@ -3,8 +3,14 @@
 @section('content')
 
     <div class="max-w-5xl mx-auto space-y-6 animate-fade-in">
-
-        @if ($errors->any())
+        @if (session()->has('purchases_successful'))
+            @php
+                $customMessage = session('purchases_successful');
+                $purchaseId = session('purchase_id');
+            @endphp
+            <x-success-modal title="Payment Processed!" :message="$customMessage" :sale-id="$purchaseId" print-route="purchases.receipt" />
+        @endif
+        {{-- @if ($errors->any())
             <div class="alert alert-danger bg-red-50 border border-red-200 text-red-700 rounded-lg p-4">
                 <ul class="list-disc list-inside text-sm space-y-1">
                     @foreach ($errors->all() as $error)
@@ -12,7 +18,7 @@
                     @endforeach
                 </ul>
             </div>
-        @endif
+        @endif --}}
 
         <div class="flex items-center justify-between">
             <div>
@@ -125,7 +131,8 @@
                             Date
                         </label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 font-medium text-sm">
+                            <span
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 font-medium text-sm">
                                 <i class="fa-solid fa-calendar"></i>
                             </span>
                             <input type="date" id="date" name="date"
@@ -188,8 +195,8 @@
                                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                             <i class="fa-solid fa-boxes-stacked"></i>
                                         </span>
-                                        <input type="number" step="1" min="0" id="crate_qty" name="crate_qty" readonly
-                                            value="{{ old('crate_qty') ?? (@$purchase->crate_qty ?? 0) }}"
+                                        <input type="number" step="1" min="0" id="crate_qty" name="crate_qty"
+                                            readonly value="{{ old('crate_qty') ?? (@$purchase->crate_qty ?? 0) }}"
                                             class="w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-700 font-semibold focus:outline-none cursor-not-allowed">
                                     </div>
                                     <p class="text-[11px] text-gray-400">Each crate cuts 0.5 kg.</p>
@@ -207,8 +214,9 @@
                                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                             <i class="fa-solid fa-weight-scale"></i>
                                         </span>
-                                        <input type="number" step="0.01" min="0" id="total_weight" name="total_weight"
-                                            readonly value="{{ old('total_weight') ?? (@$purchase->total_weight ?? '0.00') }}"
+                                        <input type="number" step="0.01" min="0" id="total_weight"
+                                            name="total_weight" readonly
+                                            value="{{ old('total_weight') ?? (@$purchase->total_weight ?? '0.00') }}"
                                             class="w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-700 font-semibold focus:outline-none cursor-not-allowed">
                                     </div>
                                     <p class="text-[11px] text-gray-400">Sum of all vehicle weights.</p>
@@ -226,8 +234,9 @@
                                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                             <i class="fa-solid fa-scissors"></i>
                                         </span>
-                                        <input type="number" step="0.01" min="0" id="weight_cut" name="weight_cut"
-                                            readonly value="{{ old('weight_cut') ?? (@$purchase->weight_cut ?? '0.00') }}"
+                                        <input type="number" step="0.01" min="0" id="weight_cut"
+                                            name="weight_cut" readonly
+                                            value="{{ old('weight_cut') ?? (@$purchase->weight_cut ?? '0.00') }}"
                                             class="w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-700 font-semibold focus:outline-none cursor-not-allowed">
                                     </div>
                                     <p class="text-[11px] text-gray-400">(crates × 0.5) + 2% if Punjab.</p>
@@ -245,8 +254,9 @@
                                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                             <i class="fa-solid fa-balance-scale"></i>
                                         </span>
-                                        <input type="number" step="0.01" min="0" id="netweight" name="netweight"
-                                            readonly value="{{ old('netweight') ?? (@$purchase->netweight ?? '0.00') }}"
+                                        <input type="number" step="0.01" min="0" id="netweight"
+                                            name="netweight" readonly
+                                            value="{{ old('netweight') ?? (@$purchase->netweight ?? '0.00') }}"
                                             class="w-full pl-10 pr-3 py-2.5 bg-white border border-amber-200 rounded-lg text-amber-700 font-bold focus:outline-none cursor-not-allowed">
                                     </div>
                                     <p class="text-[11px] text-gray-400">Total weight − weight cut.</p>
@@ -272,7 +282,8 @@
                                 value="{{ old('rate') ?? @$purchase->rate }}" placeholder="To be decided later"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('rate') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
                         </div>
-                        <p class="text-xs text-gray-400">Leave blank if the rate hasn't been decided yet — it can be updated
+                        <p class="text-xs text-gray-400">Leave blank if the rate hasn't been decided yet — it can be
+                            updated
                             later.</p>
                         @error('rate')
                             <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
@@ -285,11 +296,12 @@
                             Total Amount
                         </label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 font-medium text-sm">
+                            <span
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 font-medium text-sm">
                                 <i class="fa-solid fa-wallet"></i>
                             </span>
-                            <input type="number" step="0.01" min="0" id="total_amount" name="total_amount" readonly
-                                value="{{ old('total_amount') ?? (@$purchase->total_amount ?? '0.00') }}"
+                            <input type="number" step="0.01" min="0" id="total_amount" name="total_amount"
+                                readonly value="{{ old('total_amount') ?? (@$purchase->total_amount ?? '0.00') }}"
                                 placeholder="0.00"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 font-semibold focus:outline-none cursor-not-allowed">
                         </div>
@@ -309,7 +321,8 @@
                                 <i class="fa-solid fa-money-bill-wave"></i>
                             </span>
                             <input type="number" step="0.01" min="0" id="paid_amount" name="paid_amount"
-                                value="{{ old('paid_amount') ?? @$purchase->supplierPayment->amount }}" placeholder="0.00"
+                                value="{{ old('paid_amount') ?? @$purchase->supplierPayment->amount }}"
+                                placeholder="0.00"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border @error('paid_amount') border-red-500 focus:ring-2 focus:ring-red-200 @else border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 @enderror rounded-lg text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
                         </div>
                         @error('paid_amount')
@@ -323,11 +336,13 @@
                             Remaining Balance
                         </label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 font-medium text-sm">
+                            <span
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 font-medium text-sm">
                                 <i class="fa-solid fa-scale-unbalanced"></i>
                             </span>
-                            <input type="number" step="0.01" min="0" id="remaining_amount" name="remaining_amount"
-                                readonly value="{{ old('remaining_amount') ?? (@$purchase->remaining_amount ?? '0.00') }}"
+                            <input type="number" step="0.01" min="0" id="remaining_amount"
+                                name="remaining_amount" readonly
+                                value="{{ old('remaining_amount') ?? (@$purchase->remaining_amount ?? '0.00') }}"
                                 placeholder="0.00"
                                 class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 font-semibold focus:outline-none cursor-not-allowed">
                         </div>
@@ -366,16 +381,16 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                             <i class="fa-solid fa-truck text-xs"></i>
                         </span>
-                        <input type="text" data-field="name" name="vehicles[INDEX][name]" placeholder="e.g., LEA-4521"
-                            required
+                        <input type="text" data-field="name" name="vehicles[INDEX][name]"
+                            placeholder="e.g., LEA-4521" required
                             class="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 rounded-lg text-sm text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
                     </div>
                 </div>
 
                 <div class="col-span-1 sm:col-span-2 space-y-1">
                     <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Crates</label>
-                    <input type="number" step="1" min="0" data-field="crate_qty" name="vehicles[INDEX][crate_qty]"
-                        value="0" placeholder="0"
+                    <input type="number" step="1" min="0" data-field="crate_qty"
+                        name="vehicles[INDEX][crate_qty]" value="0" placeholder="0"
                         class="w-full px-3 py-2 bg-white border border-gray-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 rounded-lg text-sm text-gray-900 focus:outline-none transition-colors placeholder:text-gray-400">
                 </div>
 
@@ -388,15 +403,15 @@
 
                 <div class="col-span-1 sm:col-span-2 space-y-1">
                     <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Cut</label>
-                    <input type="number" step="0.01" min="0" data-field="weight_cut" name="vehicles[INDEX][weight_cut]"
-                        value="0.00" readonly
+                    <input type="number" step="0.01" min="0" data-field="weight_cut"
+                        name="vehicles[INDEX][weight_cut]" value="0.00" readonly
                         class="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none cursor-not-allowed">
                 </div>
 
                 <div class="col-span-1 sm:col-span-2 space-y-1">
                     <label class="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Net Weight</label>
-                    <input type="number" step="0.01" min="0" data-field="netweight" name="vehicles[INDEX][netweight]"
-                        value="0.00" readonly
+                    <input type="number" step="0.01" min="0" data-field="netweight"
+                        name="vehicles[INDEX][netweight]" value="0.00" readonly
                         class="w-full px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700 font-semibold focus:outline-none cursor-not-allowed">
                 </div>
 

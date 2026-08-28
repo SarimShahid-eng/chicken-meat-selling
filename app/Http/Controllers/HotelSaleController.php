@@ -102,7 +102,7 @@ class HotelSaleController extends Controller
         $validated['total_amount'] = $totalAmount;
         $isUpdating = filled($validated['update_id']);
         try {
-            DB::transaction(function () use ($validated, $isUpdating) {
+            $sale = DB::transaction(function () use ($validated, $isUpdating) {
                 $sale = HotelSale::updateOrCreate(
                     ['id' => $validated['update_id']],
                     $validated
@@ -123,12 +123,16 @@ class HotelSaleController extends Controller
                     'payment_type' => 'debit',
                     'type' => 'cash',
                 ]);
+                return $sale;
             });
             $message = $isUpdating ? 'updated' : 'created';
-
             return redirect()
-                ->route('hotel_sales.index')
-                ->with('toast_success', 'Sale has been ' . $message . ' successfully!');
+                ->route('hotel_sales.create')
+                ->with('sales_successful', 'Hotel Sale Added Successfully!')
+                ->with('sale_id', $sale->id);
+            // return redirect()
+            // ->route('hotel_sales.create')
+            //     ->with('toast_success', 'Sale has been ' . $message . ' successfully!');
         } catch (Exception $e) {
             dd($e->getMessage());
             return redirect()
@@ -161,5 +165,21 @@ class HotelSaleController extends Controller
         ];
 
         return response()->json($data);
+    }
+    public function receipt(HotelSale $hotelSale, Request $request)
+    {
+        $customer = Customer::findOrFail($hotelSale->customer_id);
+        $previousBalance = $customer->getPreviousBalanceBeforeHotelSale($hotelSale);
+        if (filled($request->export) && $request->export === "pdf") {
+            $pdf = Pdf::loadView('hotel_sale.receipt', compact('hotelSale', 'previousBalance'));
+            return $pdf->download('receipt');
+        }
+        $hotelSale->load(['items', 'items.product']);
+        // $hotelSale->items->transform(function ($item) {
+        //     $item->amount = ($item->netweight ?? 0) * ($item->rate ?? 0);
+        //     return $item;
+        // });
+
+        return view('hotel_sales.receipt', compact('hotelSale', 'previousBalance'));
     }
 }

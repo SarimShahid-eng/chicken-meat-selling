@@ -29,6 +29,7 @@ class CustomerLedgerRegionWiseController extends Controller
 
         $regionId = $validated['region_id'];
         $regions = Region::where('category', 'sale')->orderBy('name')->get();
+        // dd($regions);
 
         // Default dates if not supplied
         $fromDate = $request->filled('from_date')
@@ -149,7 +150,14 @@ class CustomerLedgerRegionWiseController extends Controller
 
         // PDF Export Support
         if ($request->filled('export') && $request->input('export') === 'pdf') {
-            $pdf = Pdf::loadView('ledger.regionCustomerExport', compact('regions', 'ledgerEntries', 'openingBalance', 'fromDate', 'toDate', 'regionId'));
+            // Give PHP enough memory and time to build a massive 2,000+ row PDF
+            ini_set('memory_limit', '1024M');
+            set_time_limit(300);
+            $ledgerEntries->transform(function ($entry) {
+                $entry->date_formatted = date('d-M-Y', strtotime($entry->date));
+                return $entry;
+            });
+            $pdf = Pdf::loadView('ledger.regionCustomerExport', compact('ledgerEntries', 'openingBalance', 'fromDate', 'toDate', 'regionId'));
 
             return $pdf->download('region_customer_ledger.pdf');
         }

@@ -69,24 +69,85 @@ class Customer extends Model
 
     public function getPreviousBalanceBeforeSale(Sale $sale): float
     {
-        // Total Sales created BEFORE this specific sale
+        // Total finalized Sales before this sale
         $totalSales = $this->sales()
-            ->where('date', '<', $sale->date)
+            ->whereNotNull('rate') // Exclude sales where rate is not final
+            ->where(function ($query) use ($sale) {
+                $query->where('date', '<', $sale->date)
+                    ->orWhere(function ($q) use ($sale) {
+                        $q->where('date', '=', $sale->date)
+                            ->where('id', '<', $sale->id);
+                    });
+            })
             ->sum('total_amount');
 
-        // Total Credits (payments made) recorded BEFORE this sale
+        // Total Credits before this sale
         $credits = $this->customerPayments()
-            ->where('date', '<', $sale->date)
+            ->where(function ($query) use ($sale) {
+                $query->where('date', '<', $sale->date)
+                    ->orWhere(function ($q) use ($sale) {
+                        $q->where('date', '=', $sale->date)
+                            ->where('id', '<', $sale->id);
+                    });
+            })
             ->where('payment_type', 'credit')
             ->sum('amount');
 
-        // Total Debits recorded BEFORE this sale
+        // Total Debits before this sale
         $debits = $this->customerPayments()
-            ->where('date', '<', $sale->date)
+            ->where(function ($query) use ($sale) {
+                $query->where('date', '<', $sale->date)
+                    ->orWhere(function ($q) use ($sale) {
+                        $q->where('date', '=', $sale->date)
+                            ->where('id', '<', $sale->id);
+                    });
+            })
             ->where('payment_type', 'debit')
             ->sum('amount');
 
         return ($totalSales + $debits) - $credits;
+    }
+    public function getPreviousBalanceBeforeHotelSale(HotelSale $hotelSale): float
+    {
+        // Total finalized Sales before this sale
+        $totalHotelSales = $this->hotelSales()
+            // ->whereNotNull('rate') // Exclude sales where rate is not final
+            ->where(function ($query) use ($hotelSale) {
+                $query->where('date', '<', $hotelSale->date)
+                    ->orWhere(function ($q) use ($hotelSale) {
+                        $q->where('date', '=', $hotelSale->date)
+                            ->where('id', '<', $hotelSale->id);
+                    });
+            })
+            ->sum('total_amount');
+
+        // Total Credits before this hotelSale
+        $credits = $this->customerPayments()
+            ->where('reference', 'hotel_sale')
+            ->where(function ($query) use ($hotelSale) {
+                $query->where('date', '<', $hotelSale->date)
+                    ->orWhere(function ($q) use ($hotelSale) {
+                        $q->where('date', '=', $hotelSale->date)
+                            ->where('id', '<', $hotelSale->id);
+                    });
+            })
+            ->where('payment_type', 'credit')
+            ->sum('amount');
+
+        // Total Debits before this hotelSale
+        $debits = $this->customerPayments()
+            ->where('reference', 'hotel_sale')
+            ->where(function ($query) use ($hotelSale) {
+                $query->where('date', '<', $hotelSale->date)
+                    ->orWhere(function ($q) use ($hotelSale) {
+                        $q->where('date', '=', $hotelSale->date)
+                            ->where('id', '<', $hotelSale->id);
+                    });
+            })
+            ->where('payment_type', 'debit')
+            ->sum('amount');
+
+        return ($totalHotelSales + $debits) - $credits;
     }
     public function region(): BelongsTo
     {

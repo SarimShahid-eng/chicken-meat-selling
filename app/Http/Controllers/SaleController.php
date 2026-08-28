@@ -165,8 +165,8 @@ class SaleController extends Controller
                 ->with('sales_successful', 'Sale Added Successfully!')
                 ->with('sale_id', $sale->id);
 
-            return redirect()
-                ->route('sales.create', $sale);
+            // return redirect()
+            //     ->route('sales.create', $sale);
             // -
             // ->route('sales.index')
             // ->with('toast_success', 'Sale has been '.$message.' successfully!');

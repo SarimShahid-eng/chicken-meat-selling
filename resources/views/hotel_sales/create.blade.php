@@ -2,6 +2,13 @@
 
 @section('content')
     <div class="max-w-5xl mx-auto space-y-6 animate-fade-in">
+        @if (session()->has('sales_successful'))
+            @php
+                $customMessage = session('sales_successful');
+                $hotelSaleId = session('hotelSale_id');
+            @endphp
+            <x-success-modal title="Payment Processed!" :message="$customMessage" :sale-id="$hotelSaleId" print-route="hotel_sales.receipt" />
+        @endif
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">
