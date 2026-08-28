@@ -156,6 +156,11 @@
                                             title="Edit Sale">
                                             <i class="fas fa-edit text-base"></i>
                                         </a>
+                                        <a href="{{ route('hotel_sales.receipt', ['hotel_sale' => $sale->id]) }}"
+                                            class="cursor-pointer text-gray-400 hover:text-blue-600 transition-colors"
+                                            title="Receipt">
+                                            <i class="fa-solid fa-money-bill-1-wave text-base"></i>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -207,11 +212,12 @@
                     document.getElementById('modalVoucherNo').textContent = data.voucher_no ?? '—';
                     document.getElementById('modalCustomer').textContent = data.customer?.name ?? '—';
                     document.getElementById('modalRegion').textContent = data.customer?.region?.name ?? '—';
-                    document.getElementById('modalCreatedAt').textContent = data.formatted_date ?? data.formatted_date  ?? '—';
+                    document.getElementById('modalCreatedAt').textContent = data.formatted_date ?? data.formatted_date ??
+                        '—';
 
                     // Payment Summaries
                     const totalAmt = parseFloat(data.total_amount ?? 0);
-                    const paidAmt = parseFloat(data.customer_payment.amount  ?? 0);
+                    const paidAmt = parseFloat(data.customer_payment.amount ?? 0);
                     const balance = totalAmt - paidAmt;
 
                     document.getElementById('modalTotalAmount').textContent = totalAmt.toFixed(2);

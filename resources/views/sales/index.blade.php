@@ -170,6 +170,11 @@
                                             title="Edit Sale">
                                             <i class="fas fa-edit text-base"></i>
                                         </a>
+                                        <a href="{{ route('sales.receipt', ['sale' => $sale->id]) }}"
+                                            class="cursor-pointer text-gray-400 hover:text-blue-600 transition-colors"
+                                            title="Receipt">
+                                            <i class="fa-solid fa-money-bill-1-wave text-base"></i>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>

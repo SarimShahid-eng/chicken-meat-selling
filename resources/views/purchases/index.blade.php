@@ -186,6 +186,11 @@
                                                 <i class="fas fa-receipt text-base"></i>
                                             </button>
                                         @endif
+                                        <a href="{{ route('purchases.receipt', ['purchase' => $purchase->id]) }}"
+                                            class="cursor-pointer text-gray-400 hover:text-blue-600 transition-colors"
+                                            title="Receipt">
+                                            <i class="fa-solid fa-money-bill-1-wave text-base"></i>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
