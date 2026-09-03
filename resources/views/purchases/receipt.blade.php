@@ -217,7 +217,7 @@
                             {{ $purchase->product->name ?? '—' }}
                         </td>
                         <td class="text-right">
-                            {{ number_format($purchase->netweight ?? 0, 2) }} kg
+                            {{ number_format($vehicle->netweight ?? 0, 2) }} kg
                         </td>
                         <td class="text-right">
                             @if (is_null($purchase->rate))
@@ -227,7 +227,10 @@
                             @endif
                         </td>
                         <td class="text-right font-medium">
-                            {{ is_null($purchase->rate) ? '—' : number_format($purchase->total_amount, 2) }}
+                            @php
+                                $subtotal = $purchase->rate * $vehicle->netweight;
+                            @endphp
+                            {{ is_null($purchase->rate) ? '—' : number_format($subtotal, 2) }}
                         </td>
                     </tr>
                 @endforeach
