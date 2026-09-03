@@ -63,7 +63,13 @@ class SupplierLedgerController extends Controller
                 ->whereDate('date', '<', $fromDate)
                 ->sum('amount');
 
-            $openingBalance = $supplier->opening_balance + $priorPaymentsCredit - $priorPaymentsDebit;
+            $priorPurchases = DB::table('purchases')
+                ->where('supplier_id', $supplierId)
+                ->whereNotNull('rate')
+                ->whereDate('date', '<', $fromDate)
+                ->sum('total_amount');
+            $openingBalance = ($supplier->opening_balance ?? 0.00) + $priorPurchases + $priorPaymentsCredit - $priorPaymentsDebit;
+            // $openingBalance = $supplier->opening_balance + $priorPaymentsCredit - $priorPaymentsDebit;
 
             // 1. Purchases (sort_order = 1) — now also select id so we can pull vehicles
             $purchases = DB::table('purchases')
@@ -127,12 +133,14 @@ class SupplierLedgerController extends Controller
                     $entry->vehicles = collect();
                     $entry->product_name = null;
                 }
+
                 return $entry;
             });
 
             if ($request->filled('export') && $request->input('export') === 'pdf') {
                 // $pdf = Pdf::loadView('ledger.supplierExportPdf', compact('supplier', 'ledgerEntries', 'openingBalance', 'fromDate', 'toDate'));
                 $pdf = Pdf::loadView('ledger.supplierExportPdf', compact('supplier', 'ledgerEntries', 'openingBalance', 'fromDate', 'toDate'));
+
                 return $pdf->download('suppliersLedger.pdf');
             }
 

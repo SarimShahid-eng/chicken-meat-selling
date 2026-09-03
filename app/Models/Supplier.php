@@ -23,7 +23,7 @@ class Supplier extends Model
         'description',
         'region_id',
         'opening_balance',
-        'date'
+        'date',
     ];
 
     /**
@@ -39,44 +39,25 @@ class Supplier extends Model
             'opening_balance' => 'decimal:2',
         ];
     }
+
     public function getPreviousBalanceBeforePurchase(Purchase $purchase): float
     {
         $totalPurchases = $this->purchases()
             ->whereNotNull('rate')
-            ->where(function ($query) use ($purchase) {
-                $query->where('date', '<', $purchase->date)
-                    ->orWhere(function ($q) use ($purchase) {
-                        $q->where('date', '=', $purchase->date)
-                            ->where('id', '<', $purchase->id);
-                    });
-            })
+            ->where('date', '<=', $purchase->date)
             ->sum('total_amount');
 
-        // Total Credits before this purchase
         $credits = $this->supplierPayments()
-            ->where(function ($query) use ($purchase) {
-                $query->where('date', '<', $purchase->date)
-                    ->orWhere(function ($q) use ($purchase) {
-                        $q->where('date', '=', $purchase->date)
-                            ->where('id', '<', $purchase->id);
-                    });
-            })
+            ->where('date', '<=', $purchase->date)
             ->where('payment_type', 'credit')
             ->sum('amount');
 
-        // Total Debits before this purchase
         $debits = $this->supplierPayments()
-            ->where(function ($query) use ($purchase) {
-                $query->where('date', '<', $purchase->date)
-                    ->orWhere(function ($q) use ($purchase) {
-                        $q->where('date', '=', $purchase->date)
-                            ->where('id', '<', $purchase->id);
-                    });
-            })
+            ->where('date', '<=', $purchase->date)
             ->where('payment_type', 'debit')
             ->sum('amount');
 
-        return ($totalPurchases + $credits) - $debits;
+        return ($this->opening_balance ?? 0.00) + $totalPurchases + $credits - $debits;
     }
 
     public function region(): BelongsTo

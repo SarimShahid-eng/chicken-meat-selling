@@ -69,14 +69,24 @@ class CustomerLedgerController extends Controller
                 ->whereDate('date', '<', $fromDate)
                 ->sum('total_amount');
 
-            $priorPayments = CustomerPayment::where('customer_id', $customerId)
+            // Split payments by type
+            $priorPaymentsCredit = CustomerPayment::where('customer_id', $customerId)
+                ->where('payment_type', 'credit')  // Money IN from customer (reduces balance)
                 ->whereDate('date', '<', $fromDate)
                 ->sum('amount');
 
+            $priorPaymentsDebit = CustomerPayment::where('customer_id', $customerId)
+                ->where('payment_type', 'debit')   // Money OUT/refund (increases balance)
+                ->whereDate('date', '<', $fromDate)
+                ->sum('amount');
+
+            // Calculate opening balance correctly
+            // Balance owed = Opening + Sales + HotelSales + Refunds - Payments Received
             $openingBalance = $customer->opening_balance
-                + $priorSales
-                + $priorHotelSales
-                - $priorPayments;
+                + $priorSales          // Add: Customer owes for these sales
+                + $priorHotelSales     // Add: Customer owes for these hotel sales
+                + $priorPaymentsDebit  // Add: We gave refunds (increases amount owed)
+                - $priorPaymentsCredit; // Subtract: Customer paid (reduces amount owed)
 
             $sales = DB::table('sales')
                 ->select(
@@ -84,8 +94,8 @@ class CustomerLedgerController extends Controller
                     'product_id',
                     'date',
                     DB::raw('"Regular Sale" as description'),
-                    'total_amount as debit',
-                    DB::raw('NULL as credit'),
+                    'total_amount as debit', // FIXED: Sales mapped to Debit
+                    DB::raw('NULL as credit'), // FIXED: NULL for Credit
                     'voucher_no as reference_id',
                     'created_at',
                     DB::raw('"sale" as type'),
@@ -109,8 +119,8 @@ class CustomerLedgerController extends Controller
                     DB::raw('NULL as product_id'),
                     'date',
                     DB::raw('"Hotel Sale" as description'),
-                    'total_amount as debit',
-                    DB::raw('NULL as credit'),
+                    'total_amount as debit', // FIXED: Hotel Sales mapped to Debit
+                    DB::raw('NULL as credit'), // FIXED: NULL for Credit
                     'voucher_no as reference_id',
                     'created_at',
                     DB::raw('"hotel_sale" as type'),
@@ -127,15 +137,21 @@ class CustomerLedgerController extends Controller
                 ->where('customer_id', $customerId)
                 ->whereBetween('date', [$fromDate, $toDate]);
 
-            // Payments — pad with matching NULLs
+            // Payments
             $ledgerEntries = DB::table('customer_payments')
                 ->select(
                     DB::raw('NULL as source_id'),
                     DB::raw('NULL as product_id'),
                     'date',
-                    DB::raw('"Payment Received" as description'),
-                    DB::raw('NULL as debit'),
-                    'amount as credit',
+                    DB::raw('"Payment" as description'),
+                    DB::raw('CASE
+                        WHEN payment_type = "debit" THEN amount
+                        ELSE NULL
+                    END as debit'), // FIXED: payment_type="debit" mapped to Debit
+                    DB::raw('CASE
+                        WHEN payment_type = "credit" THEN amount
+                        ELSE NULL
+                    END as credit'), // FIXED: payment_type="credit" mapped to Credit
                     'id as reference_id',
                     'created_at',
                     DB::raw('"payment" as type'),
@@ -143,10 +159,10 @@ class CustomerLedgerController extends Controller
                     'reference',
                     DB::raw('2 as sort_order'),
                     DB::raw('CASE
-                                WHEN sale_id IS NOT NULL AND reference = "hotel_sale" THEN CONCAT("hotel_sale_", sale_id)
-                                WHEN sale_id IS NOT NULL THEN CONCAT("sale_", sale_id)
-                                ELSE CONCAT("payment_", id)
-                            END as group_key'),
+                        WHEN sale_id IS NOT NULL AND reference = "hotel_sale" THEN CONCAT("hotel_sale_", sale_id)
+                        WHEN sale_id IS NOT NULL THEN CONCAT("sale_", sale_id)
+                        ELSE CONCAT("payment_", id)
+                    END as group_key'),
                     DB::raw('NULL as sale_crate_qty'),
                     DB::raw('NULL as sale_total_weight'),
                     DB::raw('NULL as sale_weight_cut'),
@@ -187,6 +203,7 @@ class CustomerLedgerController extends Controller
 
             if ($request->filled('export') && $request->input('export') === 'pdf') {
                 $pdf = Pdf::loadView('ledger.customerExportPdf', compact('customer', 'ledgerEntries', 'openingBalance', 'fromDate', 'toDate'));
+
                 return $pdf->download('customer_ledger.pdf');
             }
         }

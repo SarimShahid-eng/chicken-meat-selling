@@ -70,7 +70,9 @@ class SaleController extends Controller
                 });
             });
         $sales = (clone $baseQuery)
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
+            ;
         if ($request->filled('export') && $request->input('export') === 'pdf') {
             $data = (clone $baseQuery)->get();
             $pdf = Pdf::loadView('sales.exportPdf', compact('data'));
@@ -153,7 +155,7 @@ class SaleController extends Controller
                     'amount' => $validated['amount_received'],
                     'reference' => 'sale',
                     'date' => $validated['date'],
-                    'payment_type' => 'debit',
+                    'payment_type' => 'credit',
                     'type' => 'cash',
                 ]);
                 return $sale;

@@ -23,7 +23,7 @@ class PurchaseController extends Controller
         $baseQuery = Purchase::query()
             ->with(['supplier', 'supplier.region', 'product'])
             ->when($request->filled('search'), function ($q) use ($request) {
-                $searchTerm = '%' . $request->input('search') . '%';
+                $searchTerm = '%'.$request->input('search').'%';
 
                 $q->where(function ($query) use ($searchTerm) {
                     $query->where('voucher_no', 'LIKE', $searchTerm)
@@ -69,7 +69,8 @@ class PurchaseController extends Controller
                     $query->whereDate('date', $fromDate);
                 });
             });
-        $purchases = (clone $baseQuery)->paginate(10);
+        $purchases = (clone $baseQuery)->paginate(10)
+        ->withQueryString();
         if ($request->filled('export') && $request->input('export') === 'pdf') {
             // dd('ss');
             $data = (clone $baseQuery)->get();
@@ -155,6 +156,9 @@ class PurchaseController extends Controller
                     ['id' => $validated['update_id']],
                     $validated
                 );
+                if ((float) $validated['paid_amount'] > 0) {
+
+                }
                 SupplierPayment::updateOrCreate(
                     ['purchase_id' => $purchase->id], // This links it to the specific purchase
                     [
@@ -168,9 +172,11 @@ class PurchaseController extends Controller
                 );
                 $purchase->purchaseVehicles()->delete();
                 $purchase->purchaseVehicles()->createMany($validated['vehicles']);
+
                 return $purchase;
             });
             $message = filled($validated['update_id']) ? 'updated' : 'created';
+
             return redirect()
                 ->route('purchases.create')
                 ->with('purchases_successful', 'Purchase Added Successfully!')
@@ -226,11 +232,13 @@ class PurchaseController extends Controller
             ->route('purchases.index')
             ->with('toast_success', 'Purchase rate has been updated successfully!');
     }
+
     public function receipt(Purchase $purchase)
     {
         $purchase->load(['purchaseVehicles', 'supplierPayment', 'product']);
         $supplier = Supplier::findOrFail($purchase->supplier_id);
         $previousBalance = $supplier->getPreviousBalanceBeforePurchase($purchase);
+
         return view('purchases.receipt', compact('previousBalance', 'purchase'));
     }
 }
