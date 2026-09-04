@@ -205,7 +205,7 @@ class CustomerLedgerController extends Controller
             if ($request->filled('export') && $request->input('export') === 'pdf') {
                 $pdf = Pdf::loadView('ledger.customerExportPdf', compact('customer', 'ledgerEntries', 'openingBalance', 'fromDate', 'toDate'));
                 $customerName = Str::slug($customer->name ?? 'customer');
-                $fileName = "{$customerName}.pdf";
+                $fileName = "{$customerName}-ledger.pdf";
 
                 return $pdf->download($fileName);
             }
