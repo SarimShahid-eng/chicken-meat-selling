@@ -70,7 +70,7 @@ class PurchaseController extends Controller
                 });
             });
         $purchases = (clone $baseQuery)->paginate(10)
-        ->withQueryString();
+            ->withQueryString();
         if ($request->filled('export') && $request->input('export') === 'pdf') {
             // dd('ss');
             $data = (clone $baseQuery)->get();
@@ -224,7 +224,7 @@ class PurchaseController extends Controller
             'total_amount' => $total_amount,
         ]);
         $purchase->supplierPayment->update([
-            'amount' => $total_amount,
+            // 'amount' => $total_amount,
             'rate_finalized' => true,
         ]);
 

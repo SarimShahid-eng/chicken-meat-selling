@@ -181,6 +181,10 @@
         <p class="report-meta">
             Generated on: {{ now()->format('Y-m-d H:i') }}
         </p>
+        <div style="font-size: 10.5pt; font-weight: 700; color: #2563eb; margin-top: 6px;">
+            Customer: {{ $sale->customer->name ?? '—' }}
+            {{ isset($sale->customer->region->name) ? '/ ' . $sale->customer->region->name : '' }}
+        </div>
     </div>
 
     <div class="table-container">
@@ -188,7 +192,6 @@
             <thead>
                 <tr>
                     <th style="width: 12%;">Voucher</th>
-                    <th style="width: 22%;">Customer / Region</th>
                     <th style="width: 12%;">Date</th>
                     <th style="width: 16%;">Product</th>
                     <th style="width: 11%; text-align: right;">Crate Qty</th>
@@ -201,10 +204,6 @@
                 <tr>
                     <td class="font-medium">
                         {{ $sale->voucher_no }}
-                    </td>
-                    <td class="font-medium">
-                        {{ $sale->customer->name }}
-                        <span class="sub-text">{{ $sale->customer->region->name ?? 'N/A' }}</span>
                     </td>
                     <td>
                         {{ $sale->date ? $sale->date->format('m-d-Y') : '—' }}
@@ -248,30 +247,32 @@
                 </tr>
                 <tr>
                     <td colspan="7" class="text-right font-medium">
-                        Previous Customer Balance:
+                        Amount Received in this Sale:
+
                     </td>
                     <td class="text-right">
-                        {{ @$previousBalance ?? 0 }}
+                        - {{ number_format(@$sale->customerPayment->amount ?? 0, 2) }}
+
                     </td>
                 </tr>
                 <tr>
                     <td colspan="7" class="text-right font-medium">
-                        Amount Received in this Sale:
-                    </td>
-                    <td class="text-right text-red">
-                        - {{ number_format(@$sale->customerPayment->amount ?? 0, 2) }}
-                    </td>
-                </tr>
-                <tr class="grand-total">
-                    <td colspan="7" class="text-right">
                         Remaining Balance Out of This Sale:
                     </td>
-                    <td class="text-right">
+                    <td class="text-right text-red">
                         @if (is_null($sale->rate))
                             —
                         @else
                             {{ number_format(($sale->total_amount ?? 0) - (@$sale->customerPayment->amount ?? 0), 2) }}
                         @endif
+                    </td>
+                </tr>
+                <tr class="grand-total">
+                    <td colspan="7" class="text-right">
+                        Previous Customer Balance:
+                    </td>
+                    <td class="text-right">
+                        {{ @$previousBalance ?? 0 }}
                     </td>
                 </tr>
             </tfoot>

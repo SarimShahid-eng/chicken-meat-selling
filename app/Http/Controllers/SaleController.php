@@ -155,7 +155,6 @@ class SaleController extends Controller
                     'amount' => $validated['amount_received'],
                     'reference' => 'sale',
                     'date' => $validated['date'],
-                    'payment_type' => 'credit',
                     'type' => 'cash',
                 ]);
                 return $sale;
@@ -203,9 +202,9 @@ class SaleController extends Controller
             'rate_date' => now(),
             'total_amount' => $total_amount,
         ]);
-        $sale->customerPayment->update([
-            'amount' => $total_amount,
-        ]);
+        // $sale->customerPayment->update([
+        //     'amount' => $total_amount,
+        // ]);
 
         return redirect()
             ->route('sales.index')

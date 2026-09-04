@@ -253,30 +253,32 @@
                 </tr>
                 <tr>
                     <td colspan="6" class="text-right font-medium">
-                        Previous Supplier Balance:
+                        Amount Paid in this Purchase:
+
                     </td>
                     <td class="text-right">
-                        {{ number_format(@$previousBalance ?? 0, 2) }}
+                        - {{ number_format(@$purchase->supplierPayment->amount ?? 0, 2) }}
+
                     </td>
                 </tr>
                 <tr>
                     <td colspan="6" class="text-right font-medium">
-                        Amount Paid in this Purchase:
-                    </td>
-                    <td class="text-right text-red">
-                        - {{ number_format(@$purchase->supplierPayment->amount ?? 0, 2) }}
-                    </td>
-                </tr>
-                <tr class="grand-total">
-                    <td colspan="6" class="text-right">
                         Remaining Balance Out of This Purchase:
                     </td>
-                    <td class="text-right">
+                    <td class="text-right text-red">
                         @if (is_null($purchase->rate))
                             —
                         @else
                             {{ number_format(($purchase->total_amount ?? 0) - (@$purchase->supplierPayment->amount ?? 0), 2) }}
                         @endif
+                    </td>
+                </tr>
+                <tr class="grand-total">
+                    <td colspan="6" class="text-right">
+                        Previous Supplier Balance:
+                    </td>
+                    <td class="text-right">
+                        {{ number_format(@$previousBalance ?? 0, 2) }}
                     </td>
                 </tr>
             </tfoot>
