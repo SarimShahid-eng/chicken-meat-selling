@@ -44,16 +44,16 @@ class Supplier extends Model
     {
         $totalPurchases = $this->purchases()
             ->whereNotNull('rate')
-            ->where('date', '<', $purchase->date)
+            ->where('date', '<=', $purchase->date)
             ->sum('total_amount');
 
         $credits = $this->supplierPayments()
-            ->where('date', '<', $purchase->date)
+            ->where('date', '<=', $purchase->date)
             ->where('payment_type', 'credit')
             ->sum('amount');
 
         $debits = $this->supplierPayments()
-            ->where('date', '<', $purchase->date)
+            ->where('date', '<=', $purchase->date)
             ->where('payment_type', 'debit')
             ->sum('amount');
 

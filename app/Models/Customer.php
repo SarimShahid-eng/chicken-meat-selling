@@ -72,23 +72,23 @@ class Customer extends Model
     {
         // Regular sales
         $totalSales = $this->sales()
-            ->where('date', '<', $sale->date)
+            ->where('date', '<=', $sale->date)
             ->sum('total_amount');
 
         // Hotel sales - ADD THIS!
         $totalHotelSales = $this->hotelSales()
-            ->where('date', '<', $sale->date)
+            ->where('date', '<=', $sale->date)
             ->sum('total_amount');
 
         // Payments - debit type (money OUT to customer, increases balance owed)
         $debits = $this->customerPayments()
-            ->where('date', '<', $sale->date)
+            ->where('date', '<=', $sale->date)
             ->where('payment_type', 'debit')
             ->sum('amount');
 
         // Payments - credit type (money IN from customer, reduces balance owed)
         $credits = $this->customerPayments()
-            ->where('date', '<', $sale->date)
+            ->where('date', '<=', $sale->date)
             ->where('payment_type', 'credit')
             ->sum('amount');
 
