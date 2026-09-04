@@ -120,7 +120,6 @@ class HotelSaleController extends Controller
                     'customer_id' => $validated['customer_id'],
                     'amount' => $validated['amount_received'],
                     'date' => $validated['date'],
-                    'payment_type' => 'debit',
                     'type' => 'cash',
                 ]);
                 return $sale;
