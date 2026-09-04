@@ -81,6 +81,7 @@
 
         table {
             width: 100%;
+            table-layout: fixed;
             border-collapse: collapse;
             text-align: left;
         }
@@ -193,11 +194,11 @@
                 <tr>
                     <th style="width: 12%;">Voucher</th>
                     <th style="width: 12%;">Date</th>
-                    <th style="width: 16%;">Product</th>
-                    <th style="width: 11%; text-align: right;">Crate Qty</th>
-                    <th style="width: 13%; text-align: right;">Net Weight</th>
+                    <th style="width: 20%;">Product</th>
+                    <th style="width: 12%; text-align: right;">Crate Qty</th>
+                    <th style="width: 14%; text-align: right;">Net Weight</th>
                     <th style="width: 14%; text-align: right;">Rate</th>
-                    <th style="width: 13%; text-align: right;">Total</th>
+                    <th style="width: 16%; text-align: right;">Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -233,12 +234,12 @@
             <!-- Financial Summary Rows spanning all columns -->
             <tfoot>
                 <tr class="summary-header">
-                    <td colspan="8" class="text-center">
+                    <td colspan="7" class="text-center">
                         Financial Summary Breakdown
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="7" class="text-right font-medium">
+                    <td colspan="6" class="text-right font-medium">
                         Total Sale Amount:
                     </td>
                     <td class="text-right font-bold">
@@ -246,17 +247,15 @@
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="7" class="text-right font-medium">
+                    <td colspan="6" class="text-right font-medium">
                         Amount Received in this Sale:
-
                     </td>
                     <td class="text-right">
                         - {{ number_format(@$sale->customerPayment->amount ?? 0, 2) }}
-
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="7" class="text-right font-medium">
+                    <td colspan="6" class="text-right font-medium">
                         Remaining Balance Out of This Sale:
                     </td>
                     <td class="text-right text-red">
@@ -268,7 +267,7 @@
                     </td>
                 </tr>
                 <tr class="grand-total">
-                    <td colspan="7" class="text-right">
+                    <td colspan="6" class="text-right">
                         Previous Customer Balance:
                     </td>
                     <td class="text-right">
