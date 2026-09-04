@@ -103,7 +103,6 @@ class Customer extends Model
     public function getPreviousBalanceBeforeHotelSale(HotelSale $hotelSale): float
     {
         $totalHotelSales = $this->hotelSales()
-            ->whereNotNull('rate')
             ->where('date', '<=', $hotelSale->date)
             ->sum('total_amount');
 

@@ -9,6 +9,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class SupplierLedgerController extends Controller
 {
@@ -138,10 +139,11 @@ class SupplierLedgerController extends Controller
             });
 
             if ($request->filled('export') && $request->input('export') === 'pdf') {
-                // $pdf = Pdf::loadView('ledger.supplierExportPdf', compact('supplier', 'ledgerEntries', 'openingBalance', 'fromDate', 'toDate'));
                 $pdf = Pdf::loadView('ledger.supplierExportPdf', compact('supplier', 'ledgerEntries', 'openingBalance', 'fromDate', 'toDate'));
+                $supplierName = Str::slug($supplier->name ?? 'supplier');
+                $fileName = "{$supplierName}.pdf";
 
-                return $pdf->download('suppliersLedger.pdf');
+                return $pdf->download($fileName);
             }
 
             return view('ledger.supplier', compact('suppliers', 'ledgerEntries', 'openingBalance', 'fromDate', 'toDate'));

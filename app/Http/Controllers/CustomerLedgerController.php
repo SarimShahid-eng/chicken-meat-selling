@@ -10,6 +10,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class CustomerLedgerController extends Controller
 {
@@ -203,11 +204,85 @@ class CustomerLedgerController extends Controller
 
             if ($request->filled('export') && $request->input('export') === 'pdf') {
                 $pdf = Pdf::loadView('ledger.customerExportPdf', compact('customer', 'ledgerEntries', 'openingBalance', 'fromDate', 'toDate'));
+                $customerName = Str::slug($customer->name ?? 'customer');
+                $fileName = "{$customerName}.pdf";
 
-                return $pdf->download('customer_ledger.pdf');
+                return $pdf->download($fileName);
             }
         }
 
         return view('ledger.customer', compact('customers', 'ledgerEntries', 'openingBalance', 'fromDate', 'toDate'));
+    }
+
+    public function customerInvoice(Customer $customer, $date)
+    {
+        // 1. Fetch Customer Info
+        // $customer = Customer::findOrFail($customer_id);
+        $customer_id = $customer->id;
+        $from_date = $date;
+        // 1. Fetch Customer
+
+        // 2. Single-item Sales for this date (directly has fields like product, quantity, rate, price, total_amount)
+        $sales = Sale::with('product')
+            ->where('customer_id', $customer_id)
+            ->whereDate('date', $from_date)
+            ->get();
+
+        // 3. Multi-item Hotel Sales for this date (has nested items relation)
+        $hotelSales = HotelSale::with('items.product')
+            ->where('customer_id', $customer_id)
+            ->whereDate('date', $from_date)
+            ->get();
+
+        // Calculate current date sales totals
+        $currentSalesTotal = $sales->sum('total_amount');
+
+        foreach ($hotelSales as $hSale) {
+            $currentSalesTotal += $hSale->items->sum('amount');
+        }
+
+        // 4. Calculate Previous Balance (strictly before $from_date)
+        $prevSales = Sale::where('customer_id', $customer_id)
+            ->whereDate('date', '<', $from_date)
+            ->sum('total_amount');
+
+        $prevHotelSales = HotelSale::whereHas('items')
+            ->where('customer_id', $customer_id)
+            ->whereDate('date', '<', $from_date)
+            ->get()
+            ->sum(function ($hSale) {
+                return $hSale->items->sum('total');
+            });
+
+        $prevPayments = CustomerPayment::where('customer_id', $customer_id)
+            ->whereDate('date', '<', $from_date)
+            ->sum('amount');
+
+        $previousBalance = ($customer->opening_balance ?? 0) + $prevSales + $prevHotelSales - $prevPayments;
+
+        // 5. Total Payments received on current date
+        $receivedToday = CustomerPayment::where('customer_id', $customer_id)
+            ->whereDate('date', $from_date)
+            ->sum('amount');
+
+        $subtotal = $currentSalesTotal + $previousBalance;
+        $remainingBalance = $subtotal - $receivedToday;
+
+        // Subtotal & Net Balance Due
+        $subtotal = $currentSalesTotal + $previousBalance;
+        $netBalanceDue = $subtotal - $receivedToday;
+
+        return view('customers.invoice', compact(
+            'customer',
+            'sales',
+            'hotelSales',
+            'from_date',
+            'currentSalesTotal',
+            'previousBalance',
+            'subtotal',
+            'receivedToday',
+            'remainingBalance'
+        ));
+
     }
 }

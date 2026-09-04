@@ -83,7 +83,7 @@
             border-collapse: collapse;
             text-align: left;
             table-layout: fixed;
-            /* Ensures exact adherence to specified column widths */
+            /* Ensures strict adherence to column width percentages */
         }
 
         thead {
@@ -182,19 +182,22 @@
         <p class="report-meta">
             Generated on: {{ now()->format('Y-m-d H:i') }}
         </p>
+        <div style="font-size: 10.5pt; font-weight: 700; color: #2563eb; margin-top: 6px;">
+            Customer: {{ $hotelSale->customer->name ?? '—' }}
+            {{ isset($hotelSale->customer->region->name) ? '/ ' . $hotelSale->customer->region->name : '' }}
+        </div>
     </div>
 
     <div class="table-container">
         <table>
             <thead>
                 <tr>
-                    <th style="width: 12%;">Voucher</th>
-                    <th style="width: 22%;">Customer / Region</th>
-                    <th style="width: 12%;">Date</th>
-                    <th style="width: 20%;">Product</th>
-                    <th style="width: 11%; text-align: right;">Net Weight</th>
-                    <th style="width: 11%; text-align: right;">Rate</th>
-                    <th style="width: 12%; text-align: right;">Total</th>
+                    <th style="width: 15%;">Voucher</th>
+                    <th style="width: 15%;">Date</th>
+                    <th style="width: 28%;">Product</th>
+                    <th style="width: 14%; text-align: right;">Net Weight</th>
+                    <th style="width: 13%; text-align: right;">Rate</th>
+                    <th style="width: 15%; text-align: right;">Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -202,10 +205,6 @@
                     <tr>
                         <td class="font-medium">
                             {{ $hotelSale->voucher_no }}
-                        </td>
-                        <td class="font-medium">
-                            {{ $hotelSale->customer->name }}
-                            <span class="sub-text">{{ $hotelSale->customer->region->name ?? 'N/A' }}</span>
                         </td>
                         <td>
                             {{ $hotelSale->date ? $hotelSale->date->format('m-d-Y') : '—' }}
@@ -228,18 +227,17 @@
                         </td>
                     </tr>
                 @endforeach
-
             </tbody>
 
-            <!-- Financial Summary Rows matching 7 total columns -->
+            <!-- Financial Summary Rows matching 6 total columns -->
             <tfoot>
                 <tr class="summary-header">
-                    <td colspan="7" class="text-center">
+                    <td colspan="6" class="text-center">
                         Financial Summary Breakdown
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="6" class="text-right font-medium">
+                    <td colspan="5" class="text-right font-medium">
                         Total Sale Amount:
                     </td>
                     <td class="text-right font-bold">
@@ -247,27 +245,27 @@
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="6" class="text-right font-medium">
+                    <td colspan="5" class="text-right font-medium">
+                        Amount Received in this Sale:
+                    </td>
+                    <td class="text-right">
+                        {{ number_format(@$hotelSale->customerPayment->amount ?? 0, 2) }}
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="5" class="text-right font-medium">
+                        Remaining Balance Out of This Sale:
+                    </td>
+                    <td class="text-right text-red">
+                        -{{ number_format(($hotelSale->total_amount ?? 0) - (@$hotelSale->customerPayment->amount ?? 0), 2) }}
+                    </td>
+                </tr>
+                <tr class="grand-total">
+                    <td colspan="5" class="text-right">
                         Previous Customer Balance:
                     </td>
                     <td class="text-right">
                         {{ number_format(@$previousBalance ?? 0, 2) }}
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="6" class="text-right font-medium">
-                        Amount Received in this Sale:
-                    </td>
-                    <td class="text-right text-red">
-                        - {{ number_format(@$hotelSale->customerPayment->amount ?? 0, 2) }}
-                    </td>
-                </tr>
-                <tr class="grand-total">
-                    <td colspan="6" class="text-right">
-                        Remaining Balance Out of This Sale:
-                    </td>
-                    <td class="text-right">
-                        {{ number_format(($hotelSale->total_amount ?? 0) - (@$hotelSale->customerPayment->amount ?? 0), 2) }}
                     </td>
                 </tr>
             </tfoot>
