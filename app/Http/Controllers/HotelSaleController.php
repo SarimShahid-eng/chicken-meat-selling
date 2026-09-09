@@ -12,6 +12,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class HotelSaleController extends Controller
@@ -21,7 +22,7 @@ class HotelSaleController extends Controller
         $baseQuery = HotelSale::query()
             ->with(['customer', 'customerPayment', 'customer.region', 'items', 'items.product'])
             ->when($request->filled('search'), function ($q) use ($request) {
-                $searchTerm = '%' . $request->input('search') . '%';
+                $searchTerm = '%'.$request->input('search').'%';
 
                 $q->where(function ($query) use ($searchTerm) {
                     $query->where('voucher_no', 'LIKE', $searchTerm)
@@ -93,27 +94,27 @@ class HotelSaleController extends Controller
     public function store(HotelSaleStoreRequest $request)
     {
         $validated = $request->validated();
-        if (is_null($validated['amount_received'])) {
-            $validated['amount_received'] = 0;
-        }
+        $validated['amount_received'] = $validated['amount_received'] ?? 0;
         $totalWeight = collect($validated['items'])->sum('weight');
         $totalAmount = collect($validated['items'])->sum('amount');
         $validated['total_weight'] = $totalWeight;
         $validated['total_amount'] = $totalAmount;
+        $updateId = $validated['update_id'] ?? null;
         $isUpdating = filled($validated['update_id']);
         try {
-            $sale = DB::transaction(function () use ($validated, $isUpdating) {
+            $sale = DB::transaction(function () use ($validated, $isUpdating,$updateId) {
+                $saleData = Arr::except($validated, ['items', 'update_id']);
                 $sale = HotelSale::updateOrCreate(
-                    ['id' => $validated['update_id']],
-                    $validated
+                    ['id' => $updateId],
+                    $saleData
                 );
                 if ($isUpdating) {
                     $sale->items()->delete();
                 }
                 $sale->items()->createMany($validated['items']);
-                CustomerPayment::updateOrCreate([
+                 CustomerPayment::updateOrCreate([
                     'sale_id' => $sale->id,
-                    'reference' => 'hotel_sale'
+                    'reference' => 'hotel_sale',
                 ], [
                     'sale_id' => $sale->id,
                     'reference' => 'hotel_sale',
@@ -122,9 +123,11 @@ class HotelSaleController extends Controller
                     'date' => $validated['date'],
                     'type' => 'cash',
                 ]);
+
                 return $sale;
             });
             $message = $isUpdating ? 'updated' : 'created';
+
             return redirect()
                 ->route('hotel_sales.create')
                 ->with('sales_successful', 'Hotel Sale Added Successfully!')
@@ -134,6 +137,7 @@ class HotelSaleController extends Controller
             //     ->with('toast_success', 'Sale has been ' . $message . ' successfully!');
         } catch (Exception $e) {
             dd($e->getMessage());
+
             return redirect()
                 ->route('hotel_sales.index')
                 ->with('toast_error', $e->getMessage());
@@ -156,7 +160,7 @@ class HotelSaleController extends Controller
             'customerPayment',
             'customer.region:id,name',
             'items:id,hotel_sale_id,product_id,amount,rate,weight',
-            'items.product:id,name'
+            'items.product:id,name',
         ]);
         //    dd($hotelSale);
         $data = [
@@ -165,12 +169,14 @@ class HotelSaleController extends Controller
 
         return response()->json($data);
     }
+
     public function receipt(HotelSale $hotelSale, Request $request)
     {
         $customer = Customer::findOrFail($hotelSale->customer_id);
         $previousBalance = $customer->getPreviousBalanceBeforeHotelSale($hotelSale);
-        if (filled($request->export) && $request->export === "pdf") {
+        if (filled($request->export) && $request->export === 'pdf') {
             $pdf = Pdf::loadView('hotel_sale.receipt', compact('hotelSale', 'previousBalance'));
+
             return $pdf->download('receipt');
         }
         $hotelSale->load(['items', 'items.product']);

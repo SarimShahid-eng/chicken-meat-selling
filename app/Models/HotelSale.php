@@ -39,7 +39,7 @@ class HotelSale extends Model
 
     public function customerPayment(): HasOne
     {
-        return $this->hasOne(CustomerPayment::class, 'sale_id', 'id');
+        return $this->hasOne(CustomerPayment::class, 'sale_id', 'id')->where('reference', 'hotel_sale');;
     }
 
     protected function formattedDate(): Attribute
