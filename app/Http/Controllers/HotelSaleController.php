@@ -14,6 +14,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class HotelSaleController extends Controller
 {
@@ -102,7 +103,7 @@ class HotelSaleController extends Controller
         $updateId = $validated['update_id'] ?? null;
         $isUpdating = filled($validated['update_id']);
         try {
-            $sale = DB::transaction(function () use ($validated, $isUpdating,$updateId) {
+            $sale = DB::transaction(function () use ($validated, $isUpdating, $updateId) {
                 $saleData = Arr::except($validated, ['items', 'update_id']);
                 $sale = HotelSale::updateOrCreate(
                     ['id' => $updateId],
@@ -112,7 +113,7 @@ class HotelSaleController extends Controller
                     $sale->items()->delete();
                 }
                 $sale->items()->createMany($validated['items']);
-                 CustomerPayment::updateOrCreate([
+                CustomerPayment::updateOrCreate([
                     'sale_id' => $sale->id,
                     'reference' => 'hotel_sale',
                 ], [
@@ -180,11 +181,9 @@ class HotelSaleController extends Controller
             return $pdf->download('receipt');
         }
         $hotelSale->load(['items', 'items.product']);
-        // $hotelSale->items->transform(function ($item) {
-        //     $item->amount = ($item->netweight ?? 0) * ($item->rate ?? 0);
-        //     return $item;
-        // });
+        $customerName = Str::slug($customer->name ?? 'customer');
+        $customerInvoiceName = "{$customerName}".'-invoice';
 
-        return view('hotel_sales.receipt', compact('hotelSale', 'previousBalance'));
+        return view('hotel_sales.receipt', compact('hotelSale', 'previousBalance','customerInvoiceName'));
     }
 }

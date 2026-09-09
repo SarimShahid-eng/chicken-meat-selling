@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class SaleController extends Controller
 {
@@ -23,7 +24,7 @@ class SaleController extends Controller
         $baseQuery = Sale::query()
             ->with(['customer', 'customer.region', 'product'])
             ->when($request->filled('search'), function ($q) use ($request) {
-                $searchTerm = '%' . $request->input('search') . '%';
+                $searchTerm = '%'.$request->input('search').'%';
 
                 $q->where(function ($query) use ($searchTerm) {
                     $query->where('voucher_no', 'LIKE', $searchTerm)
@@ -72,7 +73,7 @@ class SaleController extends Controller
         $sales = (clone $baseQuery)
             ->paginate(10)
             ->withQueryString();
-            ;
+
         if ($request->filled('export') && $request->input('export') === 'pdf') {
             $data = (clone $baseQuery)->get();
             $pdf = Pdf::loadView('sales.exportPdf', compact('data'));
@@ -81,7 +82,6 @@ class SaleController extends Controller
         }
         $products = Product::all(['id', 'name']);
         $customers = Customer::with('region')->where('category', 'customer')->get();
-
 
         return view('sales.index', compact('sales', 'products', 'customers'));
     }
@@ -140,7 +140,7 @@ class SaleController extends Controller
             $validated['amount_received'] = 0;
         }
         try {
-            $sale =  DB::transaction(function () use ($validated) {
+            $sale = DB::transaction(function () use ($validated) {
                 $sale = Sale::updateOrCreate(
                     ['id' => $validated['update_id']],
                     $validated
@@ -157,9 +157,11 @@ class SaleController extends Controller
                     'date' => $validated['date'],
                     'type' => 'cash',
                 ]);
+
                 return $sale;
             });
             $message = filled($validated['update_id']) ? 'updated' : 'created';
+
             // $sale;
             return redirect()
                 ->route('sales.create')
@@ -210,10 +212,14 @@ class SaleController extends Controller
             ->route('sales.index')
             ->with('toast_success', 'Sale rate has been updated successfully!');
     }
+
     public function receipt(Sale $sale)
     {
         $customer = Customer::findOrFail($sale->customer_id);
         $previousBalance = $customer->getPreviousBalanceBeforeSale($sale);
-        return view('sales.receipt', compact('sale', 'previousBalance'));
+        $customerName = Str::slug($customer->name ?? 'customer');
+        $customerInvoiceName="{$customerName}".'-invoice'; 
+
+        return view('sales.receipt', compact('sale', 'previousBalance', 'customerInvoiceName'));
     }
 }

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Sales Inventory Report - {{ $sale->voucher_no }}</title>
+    <title>{{ $customerInvoiceName }}</title>
     <style>
         /* PDF Document Layout Configuration */
         @page {

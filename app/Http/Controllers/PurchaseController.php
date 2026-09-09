@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class PurchaseController extends Controller
 {
@@ -238,7 +239,9 @@ class PurchaseController extends Controller
         $purchase->load(['purchaseVehicles', 'supplierPayment', 'product']);
         $supplier = Supplier::findOrFail($purchase->supplier_id);
         $previousBalance = $supplier->getPreviousBalanceBeforePurchase($purchase);
+        $supplier = Str::slug($supplier->name ?? 'supplier');
+        $supplierInvoiceName = "{$supplier}".'-invoice';
 
-        return view('purchases.receipt', compact('previousBalance', 'purchase'));
+        return view('purchases.receipt', compact('previousBalance', 'purchase', 'supplierInvoiceName'));
     }
 }

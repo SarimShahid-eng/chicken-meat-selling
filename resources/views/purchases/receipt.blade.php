@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Purchases Inventory Report - {{ $purchase->voucher_no }}</title>
+    <title>{{ $supplierInvoiceName }}</title>
     <style>
         /* PDF Document Layout Configuration */
         @page {
